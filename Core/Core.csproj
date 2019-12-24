@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>NuScien</AssemblyName>
+    <RootNamespace>NuScien</RootNamespace>
+    <PackageId>NuScien</PackageId>
+    <Product>NuScien</Product>
+    <Authors>Kingcean Tuan</Authors>
+    <Company>Nanchang Jinchen Software Co., Ltd.</Company>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Description>A library providing lots of useful utilities, models and services, including hit task, retry policy, PEM, JWT, stream combination, JSON HTTP web client, JSON converters, CSV parser, numerals, coordinates, angle, arithmetic, sets, etc.</Description>
+    <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageTags>acl cms</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DocumentationFile>..\bin\Debug\netcoreapp3.1\Trivial.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DocumentationFile>..\bin\Release\netcoreapp3.1\Trivial.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Trivial" Version="3.1.0-preview.1" />
+  </ItemGroup>
+</Project>
