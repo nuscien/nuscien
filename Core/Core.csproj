@@ -39,6 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Trivial" Version="3.1.0-preview.1" />
+    <PackageReference Include="Trivial" Version="3.1.0-preview.4" />
   </ItemGroup>
 </Project>
