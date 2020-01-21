@@ -49,21 +49,39 @@ namespace NuScien.Users
     /// <summary>
     /// The user information.
     /// </summary>
-    public class UserInfo : BaseEntityInfo
+    public class UserEntity : BaseResourceEntity
     {
         /// <summary>
-        /// Gets or sets the login name.
+        /// Gets or sets the nickname.
         /// </summary>
-        [DataMember(Name = "logname")]
-        [JsonPropertyName("logname")]
-        public string Logname { get; set; }
+        [DataMember(Name = "nickname")]
+        [JsonPropertyName("nickname")]
+        public string Nickname
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        [JsonIgnore]
+        public string PasswordEncrypted
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
 
         /// <summary>
         /// Gets or sets the avatar URL.
         /// </summary>
         [DataMember(Name = "avatar")]
         [JsonPropertyName("avatar")]
-        public string Avatar { get; set; }
+        public string Avatar
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
 
         /// <summary>
         /// Gets or sets the gender.
@@ -71,7 +89,11 @@ namespace NuScien.Users
         [DataMember(Name = "id")]
         [JsonPropertyName("id")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public Genders Gender { get; set; }
+        public Genders Gender
+        {
+            get => GetCurrentProperty<Genders>();
+            set => SetCurrentProperty(value);
+        }
 
         /// <summary>
         /// Gets or sets the birthday.
@@ -79,6 +101,10 @@ namespace NuScien.Users
         [DataMember(Name = "birthday", EmitDefaultValue = true)]
         [JsonPropertyName("birthday")]
         [JsonConverter(typeof(JsonJavaScriptTicksConverter.FallbackNullableConverter))]
-        public DateTime? Birthday { get; set; }
+        public DateTime? Birthday
+        {
+            get => GetCurrentProperty<DateTime?>();
+            set => SetCurrentProperty(value);
+        }
     }
 }

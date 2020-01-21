@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{371C72EA-19C9-41CF-8177-1E68FA0343CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{371C72EA-19C9-41CF-8177-1E68FA0343CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnPremises", "OnPremises\OnPremises.csproj", "{80F0FC40-8809-44F3-881B-93AA63E80F8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{371C72EA-19C9-41CF-8177-1E68FA0343CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{371C72EA-19C9-41CF-8177-1E68FA0343CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{371C72EA-19C9-41CF-8177-1E68FA0343CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80F0FC40-8809-44F3-881B-93AA63E80F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80F0FC40-8809-44F3-881B-93AA63E80F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80F0FC40-8809-44F3-881B-93AA63E80F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80F0FC40-8809-44F3-881B-93AA63E80F8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

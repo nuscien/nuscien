@@ -14,6 +14,13 @@ using Trivial.Security;
 
 namespace NuScien.Security
 {
+    public class UserSession
+    {
+        public UserEntity User { get; }
+
+        public TokenInfo Token { get; }
+    }
+
     /// <summary>
     /// Login and session information.
     /// </summary>
@@ -22,7 +29,7 @@ namespace NuScien.Security
         /// <summary>
         /// The user groups.
         /// </summary>
-        private IList<UserGroupInfo> groups;
+        private IList<UserGroupEntity> groups;
 
         /// <summary>
         /// The service provider.
@@ -36,7 +43,7 @@ namespace NuScien.Security
         /// <param name="user">The user information.</param>
         /// <param name="tokenType">The token type.</param>
         /// <param name="accessToken">The access token.</param>
-        internal LoginSessionInfo(ILoginServiceProvider provider, UserInfo user, string tokenType, string accessToken)
+        internal LoginSessionInfo(ILoginServiceProvider provider, UserEntity user, string tokenType, string accessToken)
         {
             serviceProvider = provider;
             User = user;
@@ -58,7 +65,7 @@ namespace NuScien.Security
         /// <param name="provider">The login service provider.</param>
         /// <param name="user">The user information.</param>
         /// <param name="token">The token information.</param>
-        internal LoginSessionInfo(ILoginServiceProvider provider, UserInfo user, UserTokenInfo token)
+        internal LoginSessionInfo(ILoginServiceProvider provider, UserEntity user, UserTokenInfo token)
         {
             serviceProvider = provider;
             User = user;
@@ -86,7 +93,7 @@ namespace NuScien.Security
         /// <summary>
         /// Gets the current user.
         /// </summary>
-        public UserInfo User { get; }
+        public UserEntity User { get; }
 
         /// <summary>
         /// Gets the user identifier.
@@ -97,12 +104,12 @@ namespace NuScien.Security
         /// Gets the user groups.
         /// </summary>
         /// <returns>A user group list.</returns>
-        public async Task<IList<UserGroupInfo>> GetGroupsAsync()
+        public async Task<IList<UserGroupEntity>> GetGroupsAsync()
         {
             if (groups != null) return groups;
             if (serviceProvider == null || User == null)
             {
-                groups = new List<UserGroupInfo>();
+                groups = new List<UserGroupEntity>();
                 return groups;
             }
 
@@ -123,6 +130,6 @@ namespace NuScien.Security
         /// </summary>
         [DataMember(Name = "user", EmitDefaultValue = true)]
         [JsonPropertyName("user")]
-        public UserInfo User { get; set; }
+        public UserEntity User { get; set; }
     }
 }

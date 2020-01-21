@@ -12,6 +12,13 @@ using Trivial.Security;
 
 namespace NuScien.Security
 {
+    public enum SecurityEntityTypes
+    {
+        Unknown = 0,
+        User = 1,
+        Service = 2
+    }
+
     /// <summary>
     /// The login service provider.
     /// </summary>
@@ -57,48 +64,48 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="user">The user information.</param>
         /// <returns>Async task.</returns>
-        public Task Save(UserInfo user);
+        public Task Save(UserEntity user);
 
         /// <summary>
         /// Gets the user groups list.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A user group information list.</returns>
-        public Task<IEnumerable<UserGroupInfo>> ListGroups(UserInfo user);
+        public Task<IEnumerable<UserGroupEntity>> ListGroups(UserEntity user);
 
         /// <summary>
         /// Gets the user groups list.
         /// </summary>
         /// <param name="q">The name query; null for all.</param>
         /// <returns>A user group information list.</returns>
-        public Task<IEnumerable<UserGroupInfo>> ListGroups(string q);
+        public Task<IEnumerable<UserGroupEntity>> ListGroups(string q);
 
         /// <summary>
         /// Gets a specific group.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>The user info.</returns>
-        public Task<UserInfo> GetUser(string id);
+        public Task<UserEntity> GetUser(string id);
 
         /// <summary>
         /// Gets a specific group.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>The group info.</returns>
-        public Task<UserGroupInfo> GetGroup(string id);
+        public Task<UserGroupEntity> GetGroup(string id);
 
         /// <summary>
         /// Creates or updates.
         /// </summary>
         /// <param name="group">The user group information.</param>
         /// <returns>Async task.</returns>
-        public Task Save(UserGroupInfo group);
+        public Task Save(UserGroupEntity group);
     }
 
     /// <summary>
     /// The login service.
     /// </summary>
-    public class LoginService : TokenRequestRoute<UserInfo>
+    public class LoginService : TokenRequestRoute<UserEntity>
     {
         /// <summary>
         /// The options.
