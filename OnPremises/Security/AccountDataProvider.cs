@@ -22,35 +22,62 @@ namespace NuScien.Security
     /// <summary>
     /// The data provider of the account service.
     /// </summary>
-    public class AccountDbSetProvider
+    public class AccountDbSetProvider : IAccountDataProvider
     {
         /// <summary>
         /// Initializes a new instance of the AccountDbSetProvider class.
         /// </summary>
         /// <param name="users">The user entity database set.</param>
         /// <param name="groups">The user group entity database set.</param>
+        /// <param name="clients">The client entity database set.</param>
+        /// <param name="codes">The authorization code database set.</param>
         /// <param name="tokens">The token entity database set.</param>
-        public AccountDbSetProvider(DbSet<UserEntity> users, DbSet<UserGroupEntity> groups, DbSet<TokenEntity> tokens)
+        /// <param name="relationships">The user group relationship database set.</param>
+        public AccountDbSetProvider(
+            DbSet<UserEntity> users,
+            DbSet<UserGroupEntity> groups,
+            DbSet<AccessingClientEntity> clients,
+            DbSet<AuthorizationCodeEntity> codes,
+            DbSet<TokenEntity> tokens,
+            DbSet<UserGroupResourceEntity<UserEntity>> relationships)
         {
             Users = users;
             Groups = groups;
+            Clients = clients;
+            Codes = codes;
             Tokens = tokens;
+            Relationships = relationships;
         }
 
         /// <summary>
-        /// Gets the users.
+        /// Gets the user database set.
         /// </summary>
         protected DbSet<UserEntity> Users { get; }
 
         /// <summary>
-        /// Gets the users.
+        /// Gets the user database set.
         /// </summary>
         protected DbSet<UserGroupEntity> Groups { get; }
 
         /// <summary>
-        /// Gets the users.
+        /// Gets the client database set.
+        /// </summary>
+        protected DbSet<AccessingClientEntity> Clients { get; }
+
+        /// <summary>
+        /// Gets the authorization code database set.
+        /// </summary>
+        protected DbSet<AuthorizationCodeEntity> Codes { get; }
+
+        /// <summary>
+        /// Gets the user database set.
         /// </summary>
         protected DbSet<TokenEntity> Tokens { get; }
+
+        /// <summary>
+        /// Gets the user group relationship database set.
+        /// </summary>
+        protected DbSet<UserGroupResourceEntity<UserEntity>> Relationships { get; }
 
         /// <summary>
         /// Gets a user entity by given identifier.
@@ -58,9 +85,9 @@ namespace NuScien.Security
         /// <param name="id">The user identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user entity matched if found; otherwise, null.</returns>
-        public async Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
+        public Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return await Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+            return Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
         }
 
         /// <summary>
@@ -69,9 +96,31 @@ namespace NuScien.Security
         /// <param name="loginName">The login name of the user.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user entity matched if found; otherwise, null.</returns>
-        public async Task<UserEntity> GetUserByLognameAsync(string loginName, CancellationToken cancellationToken = default)
+        public Task<UserEntity> GetUserByLognameAsync(string loginName, CancellationToken cancellationToken = default)
         {
-            return await Users.FirstOrDefaultAsync(ele => ele.Name == loginName, cancellationToken);
+            return Users.FirstOrDefaultAsync(ele => ele.Name == loginName, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="appId">The client credential name, aka app identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<AccessingClientEntity> GetClientByNameAsync(string appId, CancellationToken cancellationToken = default)
+        {
+            return Clients.FirstOrDefaultAsync(ele => ele.Name == appId, cancellationToken);
+        }
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="code">The authorization code.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<AuthorizationCodeEntity> GetAuthorizationCodeByCodeAsync(string provider, string code, CancellationToken cancellationToken = default)
+        {
+            return Codes.FirstOrDefaultAsync(ele => ele.Code == code && ele.ServiceProvider == provider, cancellationToken);
         }
 
         /// <summary>
@@ -80,9 +129,9 @@ namespace NuScien.Security
         /// <param name="accessToken">The access token.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public async Task<TokenEntity> GetTokenByNameAsync(string accessToken, CancellationToken cancellationToken = default)
+        public Task<TokenEntity> GetTokenByNameAsync(string accessToken, CancellationToken cancellationToken = default)
         {
-            return await Tokens.FirstOrDefaultAsync(ele => ele.Name == accessToken, cancellationToken);
+            return Tokens.FirstOrDefaultAsync(ele => ele.Name == accessToken, cancellationToken);
         }
 
         /// <summary>
@@ -91,9 +140,28 @@ namespace NuScien.Security
         /// <param name="refreshToken">The refresh token.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public async Task<TokenEntity> GetTokenByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        public Task<TokenEntity> GetTokenByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            return await Tokens.FirstOrDefaultAsync(ele => ele.RefreshToken == refreshToken, cancellationToken);
+            return Tokens.FirstOrDefaultAsync(ele => ele.RefreshToken == refreshToken, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a collection of user groups joined in.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="q">The optional name query; null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupResourceEntity<UserEntity>> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        {
+            var groups = string.IsNullOrWhiteSpace(q)
+                ? Groups.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
+                : Groups.Where(ele => ele.Name.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            return groups.Join(
+                Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState),
+                ele => ele.Id,
+                ele => ele.OwnerId,
+                (group, rela) => new UserGroupResourceEntity<UserEntity>(rela, group, user));
         }
 
         /// <summary>
@@ -133,6 +201,17 @@ namespace NuScien.Security
         public Task<ChangeMethods> SaveAsync(UserEntity user, CancellationToken cancellationToken = default)
         {
             return DbResourceEntityExtensions.SaveAsync(Users, user, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a user group entity.
+        /// </summary>
+        /// <param name="group">The user group entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
+        {
+            return DbResourceEntityExtensions.SaveAsync(Groups, group, cancellationToken);
         }
 
         /// <summary>

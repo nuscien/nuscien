@@ -30,6 +30,11 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the user information.
+        /// </summary>
+        public UserEntity User => Token?.User;
+
+        /// <summary>
         /// Signs in.
         /// </summary>
         /// <param name="tokenRequest">The token request.</param>
@@ -68,5 +73,13 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
         public abstract Task<UserTokenInfo> AuthorizeAsync(string accessToken, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a collection of user groups joined in.
+        /// </summary>
+        /// <param name="q">The optional query for group.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The login response.</returns>
+        public abstract IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroups(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal);
     }
 }

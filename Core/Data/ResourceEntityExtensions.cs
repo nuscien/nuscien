@@ -122,5 +122,33 @@ namespace NuScien.Data
             if (entity is null) return null;
             return includeAllStates || entity.State == ResourceEntityStates.Normal ? entity : null;
         }
+
+        /// <summary>
+        /// Gets the owner resource entities from the relationship collection.
+        /// </summary>
+        /// <typeparam name="T">The type of owner resource.</typeparam>
+        /// <param name="source">The source.</param>
+        /// <returns>A collection of owner resource entity.</returns>
+        public static IEnumerable<T> GetTargetResources<T>(IEnumerable<OwnerResourceEntity<T>> source)
+            where T : BaseResourceEntity
+        {
+            InternalAssertion.IsNotNull(source);
+            return source.Select(ele => ele.Owner);
+        }
+
+        /// <summary>
+        /// Gets the target resource entities from the relationship collection.
+        /// </summary>
+        /// <typeparam name="TOwner">The type of owner resource.</typeparam>
+        /// <typeparam name="TTarget">The type of target resource.</typeparam>
+        /// <param name="source">The source.</param>
+        /// <returns>A collection of target resource entity.</returns>
+        public static IEnumerable<TTarget> GetTargetResources<TOwner, TTarget>(IEnumerable<OwnerResourceEntity<TOwner, TTarget>> source)
+            where TOwner : BaseResourceEntity
+            where TTarget : BaseResourceEntity
+        {
+            InternalAssertion.IsNotNull(source);
+            return source.Select(ele => ele.Target);
+        }
     }
 }

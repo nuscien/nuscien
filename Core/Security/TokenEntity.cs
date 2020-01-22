@@ -12,10 +12,19 @@ using Trivial.Text;
 
 namespace NuScien.Security
 {
+    /// <summary>
+    /// Token entity.
+    /// </summary>
     public class TokenEntity : BaseResourceEntity
     {
+        /// <summary>
+        /// The default timeout span.
+        /// </summary>
         public static TimeSpan DefaultTimeout = new TimeSpan(2, 0, 0);
 
+        /// <summary>
+        /// Gets or sets the refresh token.
+        /// </summary>
         [Column("refreshtoken")]
         public string RefreshToken
         {
@@ -23,6 +32,9 @@ namespace NuScien.Security
             set => SetCurrentProperty(value);
         }
 
+        /// <summary>
+        /// Gets or sets the expiration time.
+        /// </summary>
         [Column("expiration")]
         public DateTime ExpirationTime
         {
@@ -30,6 +42,9 @@ namespace NuScien.Security
             set => SetCurrentProperty(value);
         }
 
+        /// <summary>
+        /// Gets a value indicating whether it is expired.
+        /// </summary>
         [NotMapped]
         [JsonIgnore]
         public bool IsExpired
@@ -37,6 +52,9 @@ namespace NuScien.Security
             get => ExpirationTime <= DateTime.Now;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether it is closed to expiration.
+        /// </summary>
         [NotMapped]
         [JsonIgnore]
         public bool IsClosedToExpiration
@@ -44,6 +62,9 @@ namespace NuScien.Security
             get => (ExpirationTime - LastModificationTime).TotalSeconds / 4 < (ExpirationTime - DateTime.Now).TotalSeconds;
         }
 
+        /// <summary>
+        /// Gets or sets the user identifier.
+        /// </summary>
         [Column("user")]
         public string UserId
         {
@@ -51,6 +72,9 @@ namespace NuScien.Security
             set => SetCurrentProperty(value);
         }
 
+        /// <summary>
+        /// Gets or sets the client identifier.
+        /// </summary>
         [Column("client")]
         public string ClientId
         {
@@ -58,6 +82,9 @@ namespace NuScien.Security
             set => SetCurrentProperty(value);
         }
 
+        /// <summary>
+        /// Gets or sets the grant type.
+        /// </summary>
         [Column("granttype")]
         public string GrantType
         {
@@ -65,6 +92,10 @@ namespace NuScien.Security
             set => SetCurrentProperty(value);
         }
 
+        /// <summary>
+        /// Creates a new token.
+        /// </summary>
+        /// <param name="includeRefreshToken">true if also renew the refresh token.</param>
         public void CreateToken(bool includeRefreshToken = false)
         {
             Name = Guid.NewGuid().ToString("n") + Guid.NewGuid().ToString("n");
@@ -72,6 +103,12 @@ namespace NuScien.Security
             if (includeRefreshToken) RefreshToken = Guid.NewGuid().ToString("n") + Guid.NewGuid().ToString("n");
         }
 
+        /// <summary>
+        /// Creates a token entity from a specific user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="tokenRequest">The token request.</param>
+        /// <returns>A token entity from the given user.</returns>
         public static TokenEntity Create(Users.UserEntity user, Trivial.Security.TokenRequest tokenRequest)
         {
             InternalAssertion.IsNotNull(user, nameof(user));

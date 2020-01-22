@@ -12,10 +12,24 @@ using Trivial.Security;
 
 namespace NuScien.Security
 {
+    /// <summary>
+    /// Security entity types.
+    /// </summary>
     public enum SecurityEntityTypes
     {
+        /// <summary>
+        /// Unknown.
+        /// </summary>
         Unknown = 0,
+
+        /// <summary>
+        /// User.
+        /// </summary>
         User = 1,
+
+        /// <summary>
+        /// Service.
+        /// </summary>
         Service = 2
     }
 
@@ -100,102 +114,5 @@ namespace NuScien.Security
         /// <param name="group">The user group information.</param>
         /// <returns>Async task.</returns>
         public Task Save(UserGroupEntity group);
-    }
-
-    /// <summary>
-    /// The login service.
-    /// </summary>
-    public class LoginService : TokenRequestRoute<UserEntity>
-    {
-        /// <summary>
-        /// The options.
-        /// </summary>
-        public class OptionsInfo
-        {
-            /// <summary>
-            /// Gets or sets the error code for empty provider.
-            /// </summary>
-            public string EmptyProviderCode { get; set; }
-
-            /// <summary>
-            /// Gets or sets the error description for empty provider.
-            /// </summary>
-            public string EmptyProviderDescription { get; set; }
-
-            /// <summary>
-            /// Gets or sets the error URI for empty provider.
-            /// </summary>
-            public Uri EmptyProviderUri { get; set; }
-        }
-
-        /// <summary>
-        /// The service provider.
-        /// </summary>
-        private readonly ILoginServiceProvider serviceProvider;
-
-        /// <summary>
-        /// Initializes a new instance of the LoginService class.
-        /// </summary>
-        public LoginService(ILoginServiceProvider provider)
-        {
-            if (provider == null) return;
-            serviceProvider = provider;
-
-            Register(PasswordTokenRequestBody.PasswordGrantType, q =>
-            {
-                return PasswordTokenRequestBody.Parse(q.ToString());
-            }, async q =>
-            {
-                var r = await serviceProvider.LoginAsync(q);
-                return (r.User, r);
-            });
-            Register(RefreshTokenRequestBody.RefreshTokenGrantType, q =>
-            {
-                return RefreshTokenRequestBody.Parse(q.ToString());
-            }, async q =>
-            {
-                var r = await serviceProvider.LoginAsync(q);
-                return (r.User, r);
-            });
-            Register(CodeTokenRequestBody.AuthorizationCodeGrantType, q =>
-            {
-                return CodeTokenRequestBody.Parse(q.ToString());
-            }, async q =>
-            {
-                var r = await serviceProvider.LoginAsync(q);
-                return (r.User, r);
-            });
-            Register(ClientTokenRequestBody.ClientCredentialsGrantType, q =>
-            {
-                return ClientTokenRequestBody.Parse(q.ToString());
-            }, async q =>
-            {
-                var r = await serviceProvider.LoginAsync(q);
-                return (null, r);
-            });
-        }
-
-        /// <summary>
-        /// The options.
-        /// </summary>
-        public OptionsInfo Options { get; } = new OptionsInfo();
-
-        /// <summary>
-        /// Signs in by access token.
-        /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <returns>The login response.</returns>
-        public async Task<UserTokenInfo> AuthAsync(string accessToken)
-        {
-            if (serviceProvider == null) return new UserTokenInfo
-            {
-                ErrorCode = string.IsNullOrWhiteSpace(Options.EmptyProviderCode) ? "NotImplemented" : Options.EmptyProviderCode,
-                ErrorDescription = string.IsNullOrWhiteSpace(Options.EmptyProviderDescription) ? "No implementation injected." : Options.EmptyProviderDescription,
-                ErrorUri = Options.EmptyProviderUri
-            };
-            var bearer = TokenInfo.BearerTokenType + " ";
-            if (accessToken.StartsWith(bearer)) accessToken = accessToken.Substring(bearer.Length);
-            return await serviceProvider.AuthAsync(accessToken);
-        }
     }
 }

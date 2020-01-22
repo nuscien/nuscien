@@ -19,7 +19,7 @@ namespace Trivial.Reflection
     /// </summary>
     internal static class InternalAssertion
     {
-        internal static void IsNotNull<T>(IQueryable<T> source)
+        internal static void IsNotNull<T>(IEnumerable<T> source)
         {
             if (source == null) throw new ArgumentNullException(nameof(source), "source was null.");
         }

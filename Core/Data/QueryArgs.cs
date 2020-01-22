@@ -20,12 +20,24 @@ namespace NuScien.Data
     [DataContract]
     public class QueryArgs
     {
+        /// <summary>
+        /// Gets or sets the name query.
+        /// </summary>
         public string NameQuery { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the name is exact to search.
+        /// </summary>
         public bool NameExactly { get; set; }
 
+        /// <summary>
+        /// Gets or sets the maximum count to return.
+        /// </summary>
         public int Count { get; set; } = 100;
 
+        /// <summary>
+        /// Gets or sets the offset to return.
+        /// </summary>
         public int Offset { get; set; } = 0;
     }
 }

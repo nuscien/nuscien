@@ -14,13 +14,6 @@ using Trivial.Security;
 
 namespace NuScien.Security
 {
-    public class UserSession
-    {
-        public UserEntity User { get; }
-
-        public TokenInfo Token { get; }
-    }
-
     /// <summary>
     /// Login and session information.
     /// </summary>

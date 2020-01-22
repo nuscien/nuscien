@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -20,6 +21,10 @@ namespace NuScien.Security
     /// </summary>
     public class OnPremisesResourceAccessClient : BaseResourceAccessClient
     {
+        private const string InvalidPasswordCode = "invalid_password";
+
+        private TokenRequestRoute<UserEntity> route;
+
         /// <summary>
         /// Initializes a new instance of the OnPremisesResourceAccessClient class.
         /// </summary>
@@ -35,6 +40,52 @@ namespace NuScien.Security
         protected IAccountDataProvider DataProvider { get; }
 
         /// <summary>
+        /// Gets the token request route instance.
+        /// </summary>
+        public TokenRequestRoute<UserEntity> TokenRequestRoute
+        {
+            get
+            {
+                if (route != null) return route;
+                route = new TokenRequestRoute<UserEntity>();
+                route.Register(PasswordTokenRequestBody.PasswordGrantType, q =>
+                {
+                    return PasswordTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (r.User, r);
+                });
+                route.Register(RefreshTokenRequestBody.RefreshTokenGrantType, q =>
+                {
+                    return RefreshTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (r.User, r);
+                });
+                route.Register(CodeTokenRequestBody.AuthorizationCodeGrantType, q =>
+                {
+                    return CodeTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (r.User, r);
+                });
+                route.Register(ClientTokenRequestBody.ClientCredentialsGrantType, q =>
+                {
+                    return ClientTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (null, r);
+                });
+
+                return route;
+            }
+        }
+
+        /// <summary>
         /// Signs in.
         /// </summary>
         /// <param name="tokenRequest">The token request.</param>
@@ -43,6 +94,11 @@ namespace NuScien.Security
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<PasswordTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             AssertTokenRequest(tokenRequest);
+            if (tokenRequest.Body.Password.Length < 1) return new UserTokenInfo
+            {
+                ErrorCode = "invalid_password",
+                ErrorDescription = "The password should not be null."
+            };
             var userTask = DataProvider.GetUserByLognameAsync(tokenRequest.Body.UserName, cancellationToken);
             return await CreateTokenAsync(userTask, tokenRequest, null, cancellationToken);
         }
@@ -69,7 +125,19 @@ namespace NuScien.Security
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<CodeTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             AssertTokenRequest(tokenRequest);
-            throw new NotImplementedException();
+
+            // ToDo: Implement it.
+            var code = await DataProvider.GetAuthorizationCodeByCodeAsync(tokenRequest.Body.ServiceProvider, tokenRequest.Body.Code);
+            return code.OwnerType switch
+            {
+                SecurityEntityTypes.User => await CreateTokenAsync(await DataProvider.GetUserByIdAsync(code.OwnerId, cancellationToken), tokenRequest, null, cancellationToken),
+                SecurityEntityTypes.Service => await CreateTokenAsync(null, tokenRequest, null, cancellationToken),
+                _ => new UserTokenInfo
+                {
+                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                    ErrorDescription = "The resource is invalid."
+                },
+            };
         }
 
         /// <summary>
@@ -81,7 +149,10 @@ namespace NuScien.Security
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             AssertTokenRequest(tokenRequest);
-            throw new NotImplementedException();
+
+            // ToDo: Implement it.
+            var client = await DataProvider.GetClientByNameAsync(tokenRequest.ClientId);
+            return await CreateTokenAsync(null, tokenRequest, null, cancellationToken);
         }
 
         /// <summary>
@@ -97,31 +168,43 @@ namespace NuScien.Security
             return await CreateTokenAsync(tokenTask, null, null, cancellationToken);
         }
 
-        public async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenRequest tokenRequest, string state, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Gets user groups.
+        /// </summary>
+        /// <param name="q">The optional query for group.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The login response.</returns>
+        public override IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroups(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
-            InternalAssertion.IsNotNull(tokenRequest, nameof(tokenRequest));
-            if (user is null || user.IsNew || string.IsNullOrWhiteSpace(user.Name)) return new UserTokenInfo
-            {
-                ErrorCode = "invalid_password",
-                ErrorDescription = "The login name or password is not correct."
-            };
-            return await CreateTokenAsync(user, null, tokenRequest.ClientId, null, cancellationToken);
+            return DataProvider.ListUserGroups(User, q, relationshipState);
         }
 
-        public async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenEntity token, string clientId, string state, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Creates a token by given user.
+        /// </summary>
+        /// <param name="user">The user entity to create token.</param>
+        /// <param name="tokenRequest">The token request to login.</param>
+        /// <param name="state">The client state.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenRequest tokenRequest, string state, CancellationToken cancellationToken = default)
         {
-            if (user is null || user.IsNew || string.IsNullOrWhiteSpace(user.Name)) return new UserTokenInfo
-            {
-                ErrorCode = "invalid_password",
-                ErrorDescription = "The login name or password is not correct."
-            };
+            InternalAssertion.IsNotNull(tokenRequest, nameof(tokenRequest));
+            var errInfo = CheckUser(user);
+            if (errInfo != null) return errInfo;
+            return await CreateTokenAsync(user, null, tokenRequest.ClientId, state, cancellationToken);
+        }
+
+        private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenEntity token, string clientId, string state, CancellationToken cancellationToken = default)
+        {
             var needSave = token is null;
+            var resId = user is null ? clientId : user.Id;
             if (needSave)
             {
                 token = new TokenEntity
                 {
-                    UserId = user.Id,
-                    ClientId = clientId
+                    UserId = user?.Id,
+                    ClientId = clientId,
                 };
                 token.CreateToken(true);
             }
@@ -130,7 +213,8 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.InvalidClient,
                     ErrorDescription = "The client is not for this token."
                 };
@@ -144,8 +228,9 @@ namespace NuScien.Security
                     if (r == ChangeMethods.Invalid) return new UserTokenInfo
                     {
                         User = user,
-                        UserId = user.Id,
-                        ErrorCode = "failure_token_creation",
+                        UserId = user?.Id,
+                        ResourceId = resId,
+                        ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
                         ErrorDescription = "Generate token failed."
                     };
                 }
@@ -153,11 +238,11 @@ namespace NuScien.Security
                 return Token = new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     AccessToken = token.Name,
                     RefreshToken = token.RefreshToken,
                     ExpiredAfter = token.ExpirationTime - DateTime.Now,
-                    ResourceId = user.Id,
                     TokenType = TokenInfo.BearerTokenType,
                     State = state
                 };
@@ -167,7 +252,8 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
                     ErrorDescription = ex.Message
                 };
@@ -177,7 +263,8 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
                     ErrorDescription = ex.Message
                 };
@@ -187,7 +274,8 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
                     ErrorDescription = ex.Message
                 };
@@ -197,7 +285,8 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
                     ErrorDescription = ex.Message
                 };
@@ -207,7 +296,8 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
                     ErrorDescription = ex.Message
                 };
@@ -217,14 +307,15 @@ namespace NuScien.Security
                 return new UserTokenInfo
                 {
                     User = user,
-                    UserId = user.Id,
+                    UserId = user?.Id,
+                    ResourceId = resId,
                     ErrorCode = TokenInfo.ErrorCodeConstants.AccessDenied,
                     ErrorDescription = ex.Message
                 };
             }
         }
 
-        public async Task<UserTokenInfo> CreateTokenAsync(Task<UserEntity> userResolver, TokenRequest<PasswordTokenRequestBody> tokenRequest, string state, CancellationToken cancellationToken = default)
+        private async Task<UserTokenInfo> CreateTokenAsync(Task<UserEntity> userResolver, TokenRequest<PasswordTokenRequestBody> tokenRequest, string state, CancellationToken cancellationToken = default)
         {
             InternalAssertion.IsNotNull(userResolver, nameof(userResolver));
             InternalAssertion.IsNotNull(tokenRequest, nameof(tokenRequest));
@@ -282,10 +373,25 @@ namespace NuScien.Security
                 };
             }
 
+            if (!user.ValidatePassword(tokenRequest.Body.Password)) return new UserTokenInfo
+            {
+                ErrorCode = InvalidPasswordCode,
+                ErrorDescription = "The user name or password is incorrect."
+            };
             return await CreateTokenAsync(user, tokenRequest, state, cancellationToken);
         }
 
-        public async Task<UserTokenInfo> CreateTokenAsync(Task<TokenEntity> tokenResolver, string clientId, string state, CancellationToken cancellationToken = default)
+        private UserTokenInfo CheckUser(UserEntity user)
+        {
+            if (user is null || user.IsNew || string.IsNullOrWhiteSpace(user.Name)) return new UserTokenInfo
+            {
+                ErrorCode = InvalidPasswordCode,
+                ErrorDescription = "The login name or password is not correct."
+            };
+            return null;
+        }
+
+        private async Task<UserTokenInfo> CreateTokenAsync(Task<TokenEntity> tokenResolver, string clientId, string state, CancellationToken cancellationToken = default)
         {
             InternalAssertion.IsNotNull(tokenResolver, nameof(tokenResolver));
             TokenEntity token;
@@ -357,6 +463,8 @@ namespace NuScien.Security
                 token = null;
             }
 
+            var errInfo = CheckUser(user);
+            if (errInfo != null) return errInfo;
             return await CreateTokenAsync(user, token, clientId, state, cancellationToken);
         }
 
