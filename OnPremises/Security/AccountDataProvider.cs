@@ -111,6 +111,7 @@ namespace NuScien.Security
         {
             return Clients.FirstOrDefaultAsync(ele => ele.Name == appId, cancellationToken);
         }
+
         /// <summary>
         /// Gets a client credential by app identifier.
         /// </summary>
@@ -120,7 +121,8 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<AuthorizationCodeEntity> GetAuthorizationCodeByCodeAsync(string provider, string code, CancellationToken cancellationToken = default)
         {
-            return Codes.FirstOrDefaultAsync(ele => ele.Code == code && ele.ServiceProvider == provider, cancellationToken);
+            var codeHash = AuthorizationCodeEntity.ComputeCodeHash(code);
+            return Codes.FirstOrDefaultAsync(ele => ele.CodeEncrypted == codeHash && ele.ServiceProvider == provider, cancellationToken);
         }
 
         /// <summary>
