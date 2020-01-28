@@ -119,10 +119,49 @@ namespace NuScien.Security
     public class UserTokenInfo : TokenInfo
     {
         /// <summary>
-        /// Gets the current user.
+        /// Gets or sets the current user.
         /// </summary>
         [DataMember(Name = "user", EmitDefaultValue = true)]
         [JsonPropertyName("user")]
         public UserEntity User { get; set; }
+
+        /// <summary>
+        /// Creates an error token information.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="ex">The exception.</param>
+        /// <param name="errorCode">The optional error code.</param>
+        /// <returns>The user token information instance with error information.</returns>
+        public static UserTokenInfo CreateError(UserEntity user, Exception ex, string errorCode = null)
+        {
+            return new UserTokenInfo
+            {
+                User = user,
+                UserId = user?.Id,
+                ResourceId = user?.Id,
+                ErrorCode = errorCode ?? ErrorCodeConstants.ServerError,
+                ErrorDescription = ex?.Message
+            };
+        }
+
+        /// <summary>
+        /// Creates an error token information.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="clientId">The app client identifier.</param>
+        /// <param name="ex">The exception.</param>
+        /// <param name="errorCode">The optional error code.</param>
+        /// <returns>The user token information instance with error information.</returns>
+        public static UserTokenInfo CreateError(UserEntity user, string clientId, Exception ex, string errorCode = null)
+        {
+            return new UserTokenInfo
+            {
+                User = user,
+                UserId = user?.Id,
+                ResourceId = user is null ? clientId : user.Id,
+                ErrorCode = errorCode ?? ErrorCodeConstants.ServerError,
+                ErrorDescription = ex?.Message
+            };
+        }
     }
 }

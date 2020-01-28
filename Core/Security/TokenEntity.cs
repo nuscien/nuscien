@@ -93,6 +93,16 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets or sets the scope string.
+        /// </summary>
+        [Column("scope")]
+        public string ScopeString
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
         /// Creates a new token.
         /// </summary>
         /// <param name="includeRefreshToken">true if also renew the refresh token.</param>

@@ -13,27 +13,6 @@ using Trivial.Security;
 namespace NuScien.Security
 {
     /// <summary>
-    /// Security entity types.
-    /// </summary>
-    public enum SecurityEntityTypes
-    {
-        /// <summary>
-        /// Unknown.
-        /// </summary>
-        Unknown = 0,
-
-        /// <summary>
-        /// User.
-        /// </summary>
-        User = 1,
-
-        /// <summary>
-        /// Service.
-        /// </summary>
-        Service = 2
-    }
-
-    /// <summary>
     /// The login service provider.
     /// </summary>
     public interface ILoginServiceProvider

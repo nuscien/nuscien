@@ -21,8 +21,14 @@ namespace NuScien.Security
     /// </summary>
     public class OnPremisesResourceAccessClient : BaseResourceAccessClient
     {
+        /// <summary>
+        /// The error code of invalid user name or password.
+        /// </summary>
         private const string InvalidPasswordCode = "invalid_password";
 
+        /// <summary>
+        /// The token request route instance.
+        /// </summary>
         private TokenRequestRoute<UserEntity> route;
 
         /// <summary>
@@ -93,14 +99,23 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<PasswordTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
-            AssertTokenRequest(tokenRequest);
+            var eui = AssertTokenRequest(tokenRequest);
+            if (eui != null) return eui;
             if (tokenRequest.Body.Password.Length < 1) return new UserTokenInfo
             {
                 ErrorCode = "invalid_password",
                 ErrorDescription = "The password should not be null."
             };
             var userTask = DataProvider.GetUserByLognameAsync(tokenRequest.Body.UserName, cancellationToken);
-            return await CreateTokenAsync(userTask, tokenRequest, null, cancellationToken);
+            return await CreateTokenAsync(userTask, tokenRequest, user =>
+            {
+                if (user.ValidatePassword(tokenRequest.Body.Password)) return null;
+                return new UserTokenInfo
+                {
+                    ErrorCode = InvalidPasswordCode,
+                    ErrorDescription = "The user name or password is incorrect."
+                };
+            }, cancellationToken);
         }
 
         /// <summary>
@@ -111,9 +126,10 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<RefreshTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
-            AssertTokenRequest(tokenRequest);
+            var eui = AssertTokenRequest(tokenRequest);
+            if (eui != null) return eui;
             var tokenTask = DataProvider.GetTokenByRefreshTokenAsync(tokenRequest.Body.RefreshToken, cancellationToken);
-            return await CreateTokenAsync(tokenTask, tokenRequest.ClientId, null, cancellationToken);
+            return await CreateTokenAsync(tokenTask, tokenRequest, cancellationToken);
         }
 
         /// <summary>
@@ -124,14 +140,42 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<CodeTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
-            AssertTokenRequest(tokenRequest);
+            var eui = AssertTokenRequest(tokenRequest);
+            if (eui != null) return eui;
+            AuthorizationCodeEntity code;
+            try
+            {
+                code = await DataProvider.GetAuthorizationCodeByCodeAsync(tokenRequest.Body.ServiceProvider, tokenRequest.Body.Code);
+            }
+            catch (ArgumentException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex);
+            }
+            catch (NotImplementedException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex);
+            }
+            catch (NullReferenceException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.AccessDenied);
+            }
 
-            // ToDo: Implement it.
-            var code = await DataProvider.GetAuthorizationCodeByCodeAsync(tokenRequest.Body.ServiceProvider, tokenRequest.Body.Code);
             return code.OwnerType switch
             {
-                SecurityEntityTypes.User => await CreateTokenAsync(await DataProvider.GetUserByIdAsync(code.OwnerId, cancellationToken), tokenRequest, null, cancellationToken),
-                SecurityEntityTypes.Service => await CreateTokenAsync(null, tokenRequest, null, cancellationToken),
+                SecurityEntityTypes.User => await CreateTokenAsync(DataProvider.GetUserByIdAsync(code.OwnerId, cancellationToken), tokenRequest, null, cancellationToken),
+                SecurityEntityTypes.ServiceClient => await CreateTokenAsync(null as UserEntity, tokenRequest, cancellationToken),
                 _ => new UserTokenInfo
                 {
                     ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
@@ -148,11 +192,43 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public override async Task<UserTokenInfo> LoginAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
-            AssertTokenRequest(tokenRequest);
+            var eui = AssertTokenRequest(tokenRequest);
+            if (eui != null) return eui;
+            try
+            {
+                var client = await DataProvider.GetClientByNameAsync(tokenRequest.ClientId);
+                if (client == null) return new UserTokenInfo
+                {
+                    ErrorCode = TokenInfo.ErrorCodeConstants.UnauthorizedClient,
+                    ErrorDescription = "The client app identifier or secret key is incorrect."
+                };
+            }
+            catch (ArgumentException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex);
+            }
+            catch (NotImplementedException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex);
+            }
+            catch (NullReferenceException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.AccessDenied);
+            }
 
-            // ToDo: Implement it.
-            var client = await DataProvider.GetClientByNameAsync(tokenRequest.ClientId);
-            return await CreateTokenAsync(null, tokenRequest, null, cancellationToken);
+            return await CreateTokenAsync(null as UserEntity, tokenRequest, cancellationToken);
         }
 
         /// <summary>
@@ -163,9 +239,13 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public override async Task<UserTokenInfo> AuthorizeAsync(string accessToken, CancellationToken cancellationToken = default)
         {
-            InternalAssertion.IsNotNullOrWhiteSpace(accessToken, nameof(accessToken));
+            if (string.IsNullOrWhiteSpace(accessToken)) return new UserTokenInfo
+            {
+                ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                ErrorDescription = "The access token was null, empty or consists only of white-space characters."
+            };
             var tokenTask = DataProvider.GetTokenByNameAsync(accessToken, cancellationToken);
-            return await CreateTokenAsync(tokenTask, null, null, cancellationToken);
+            return await CreateTokenAsync(tokenTask, null, cancellationToken);
         }
 
         /// <summary>
@@ -184,27 +264,29 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="user">The user entity to create token.</param>
         /// <param name="tokenRequest">The token request to login.</param>
-        /// <param name="state">The client state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenRequest tokenRequest, string state, CancellationToken cancellationToken = default)
+        private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenRequest tokenRequest, CancellationToken cancellationToken = default)
         {
-            InternalAssertion.IsNotNull(tokenRequest, nameof(tokenRequest));
-            var errInfo = CheckUser(user);
-            if (errInfo != null) return errInfo;
-            return await CreateTokenAsync(user, null, tokenRequest.ClientId, state, cancellationToken);
+            var eui = AssertParameter(tokenRequest, nameof(tokenRequest));
+            if (eui != null) return eui;
+            eui = CheckUser(user);
+            if (eui != null) return eui;
+            return await CreateTokenAsync(user, null, tokenRequest, cancellationToken);
         }
 
-        private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenEntity token, string clientId, string state, CancellationToken cancellationToken = default)
+        private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenEntity token, TokenRequest tokenRequest, CancellationToken cancellationToken = default)
         {
             var needSave = token is null;
+            var clientId = tokenRequest.ClientId;
             var resId = user is null ? clientId : user.Id;
             if (needSave)
             {
                 token = new TokenEntity
                 {
+                    GrantType = tokenRequest.GrantType,
                     UserId = user?.Id,
-                    ClientId = clientId,
+                    ClientId = clientId
                 };
                 token.CreateToken(true);
             }
@@ -224,6 +306,7 @@ namespace NuScien.Security
             {
                 if (needSave)
                 {
+                    token.ScopeString = tokenRequest.ScopeString;
                     var r = await DataProvider.SaveAsync(token, cancellationToken);
                     if (r == ChangeMethods.Invalid) return new UserTokenInfo
                     {
@@ -244,81 +327,39 @@ namespace NuScien.Security
                     RefreshToken = token.RefreshToken,
                     ExpiredAfter = token.ExpirationTime - DateTime.Now,
                     TokenType = TokenInfo.BearerTokenType,
-                    State = state
+                    ScopeString = token.ScopeString
                 };
             }
             catch (ArgumentException ex)
             {
-                return new UserTokenInfo
-                {
-                    User = user,
-                    UserId = user?.Id,
-                    ResourceId = resId,
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(user, clientId, ex);
             }
             catch (InvalidOperationException ex)
             {
-                return new UserTokenInfo
-                {
-                    User = user,
-                    UserId = user?.Id,
-                    ResourceId = resId,
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(user, clientId, ex);
             }
             catch (NotImplementedException ex)
             {
-                return new UserTokenInfo
-                {
-                    User = user,
-                    UserId = user?.Id,
-                    ResourceId = resId,
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(user, clientId, ex);
             }
             catch (NullReferenceException ex)
             {
-                return new UserTokenInfo
-                {
-                    User = user,
-                    UserId = user?.Id,
-                    ResourceId = resId,
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(user, clientId, ex);
             }
             catch (NotSupportedException ex)
             {
-                return new UserTokenInfo
-                {
-                    User = user,
-                    UserId = user?.Id,
-                    ResourceId = resId,
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(user, clientId, ex);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return new UserTokenInfo
-                {
-                    User = user,
-                    UserId = user?.Id,
-                    ResourceId = resId,
-                    ErrorCode = TokenInfo.ErrorCodeConstants.AccessDenied,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(user, clientId, ex, TokenInfo.ErrorCodeConstants.AccessDenied);
             }
         }
 
-        private async Task<UserTokenInfo> CreateTokenAsync(Task<UserEntity> userResolver, TokenRequest<PasswordTokenRequestBody> tokenRequest, string state, CancellationToken cancellationToken = default)
+        private async Task<UserTokenInfo> CreateTokenAsync(Task<UserEntity> userResolver, TokenRequest tokenRequest, Func<UserEntity, UserTokenInfo> callback, CancellationToken cancellationToken = default)
         {
-            InternalAssertion.IsNotNull(userResolver, nameof(userResolver));
-            InternalAssertion.IsNotNull(tokenRequest, nameof(tokenRequest));
+            var eui = AssertParameter(userResolver, nameof(userResolver));
+            if (eui != null) return eui;
             UserEntity user;
             try
             {
@@ -326,59 +367,37 @@ namespace NuScien.Security
             }
             catch (ArgumentException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
             }
             catch (InvalidOperationException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (NotImplementedException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (NullReferenceException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (NotSupportedException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.AccessDenied,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
 
-            if (!user.ValidatePassword(tokenRequest.Body.Password)) return new UserTokenInfo
+            var e = callback?.Invoke(user);
+            if (e != null) return e;
+            if (user == null) return new UserTokenInfo
             {
-                ErrorCode = InvalidPasswordCode,
-                ErrorDescription = "The user name or password is incorrect."
+                ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
+                ErrorDescription = "Cannot resolve the user."
             };
-            return await CreateTokenAsync(user, tokenRequest, state, cancellationToken);
+            return await CreateTokenAsync(user, tokenRequest, cancellationToken);
         }
 
         private UserTokenInfo CheckUser(UserEntity user)
@@ -391,9 +410,10 @@ namespace NuScien.Security
             return null;
         }
 
-        private async Task<UserTokenInfo> CreateTokenAsync(Task<TokenEntity> tokenResolver, string clientId, string state, CancellationToken cancellationToken = default)
+        private async Task<UserTokenInfo> CreateTokenAsync(Task<TokenEntity> tokenResolver, TokenRequest tokenRequest, CancellationToken cancellationToken = default)
         {
-            InternalAssertion.IsNotNull(tokenResolver, nameof(tokenResolver));
+            var eui = AssertParameter(tokenResolver, nameof(tokenResolver));
+            if (eui != null) return eui;
             TokenEntity token;
             UserEntity user;
             try
@@ -410,69 +430,58 @@ namespace NuScien.Security
             }
             catch (ArgumentException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
             }
             catch (InvalidOperationException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (NotImplementedException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (NullReferenceException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex);
             }
             catch (NotSupportedException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.InvalidRequest);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return new UserTokenInfo
-                {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.AccessDenied,
-                    ErrorDescription = ex.Message
-                };
+                return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.AccessDenied);
             }
 
             if (token.IsClosedToExpiration)
             {
-                if (string.IsNullOrWhiteSpace(clientId)) clientId = token.ClientId;
+                if (string.IsNullOrWhiteSpace(tokenRequest.ClientId)) tokenRequest.ClientId = token.ClientId;
                 token = null;
             }
 
             var errInfo = CheckUser(user);
             if (errInfo != null) return errInfo;
-            return await CreateTokenAsync(user, token, clientId, state, cancellationToken);
+            return await CreateTokenAsync(user, token, tokenRequest, cancellationToken);
         }
 
-        private static void AssertTokenRequest(TokenRequest tokenRequest)
+        private static UserTokenInfo AssertTokenRequest(TokenRequest tokenRequest)
         {
-            InternalAssertion.IsNotNull(tokenRequest, nameof(tokenRequest));
-            InternalAssertion.IsNotNull(tokenRequest.Body, $"{nameof(tokenRequest)}.{nameof(tokenRequest.Body)}");
-            InternalAssertion.IsNotNull(tokenRequest.ClientId, $"{nameof(tokenRequest)}.{nameof(tokenRequest.ClientId)}");
+            if (tokenRequest == null || tokenRequest.Body == null || tokenRequest.ClientId == null) return new UserTokenInfo
+            {
+                ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                ErrorDescription = "Miss the token request information."
+            };
+            return null;
+        }
+
+        private static UserTokenInfo AssertParameter(object obj, string parameterName = null)
+        {
+            if (obj == null) return new UserTokenInfo
+            {
+                ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                ErrorDescription = (parameterName ?? "The parameter") + " was null."
+            };
+            return null;
         }
     }
 }

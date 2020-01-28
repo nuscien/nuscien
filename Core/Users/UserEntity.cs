@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 using NuScien.Data;
+using NuScien.Security;
 using Trivial.Security;
 using Trivial.Text;
 
@@ -53,8 +54,15 @@ namespace NuScien.Users
     /// The user information.
     /// </summary>
     [DataContract]
-    public class UserEntity : BaseResourceEntity
+    public class UserEntity : BaseSecurityEntity
     {
+        /// <summary>
+        /// Gets the security entity type.
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public override SecurityEntityTypes SecurityEntityType => SecurityEntityTypes.User;
+
         /// <summary>
         /// Gets or sets the nickname.
         /// </summary>
@@ -150,7 +158,7 @@ namespace NuScien.Users
         /// <param name="old">The optional old password to validate; or null, to ignore validation.</param>
         public bool SetPassword(SecureString password, string old = null)
         {
-            return SetPassword(password.ToUnsecureString(), old);
+            return SetPassword(password?.ToUnsecureString(), old);
         }
 
         /// <summary>
@@ -172,7 +180,7 @@ namespace NuScien.Users
         /// <returns>true if the password is correct; otherwise, false.</returns>
         public bool ValidatePassword(SecureString password)
         {
-            return ValidatePassword(password.ToUnsecureString());
+            return ValidatePassword(password?.ToUnsecureString());
         }
 
         private string HashPassword(string original)

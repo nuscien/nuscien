@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 using NuScien.Data;
+using NuScien.Security;
 using Trivial.Text;
 
 namespace NuScien.Users
@@ -15,8 +16,15 @@ namespace NuScien.Users
     /// User group information.
     /// </summary>
     [DataContract]
-    public class UserGroupEntity : BaseResourceEntity
+    public class UserGroupEntity : BaseSecurityEntity
     {
+        /// <summary>
+        /// Gets the security entity type.
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public override SecurityEntityTypes SecurityEntityType => SecurityEntityTypes.UserGroup;
+
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
