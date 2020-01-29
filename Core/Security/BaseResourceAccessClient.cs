@@ -21,6 +21,62 @@ namespace NuScien.Security
     public abstract class BaseResourceAccessClient : TokenContainer
     {
         /// <summary>
+        /// The token request route instance.
+        /// </summary>
+        private TokenRequestRoute<UserEntity> route;
+
+        /// <summary>
+        /// The user groups.
+        /// </summary>
+        private IEnumerable<UserGroupResourceEntity<UserEntity>> groups;
+
+        /// <summary>
+        /// Gets the token request route instance.
+        /// </summary>
+        public TokenRequestRoute<UserEntity> TokenRequestRoute
+        {
+            get
+            {
+                if (route != null) return route;
+                route = new TokenRequestRoute<UserEntity>();
+                route.Register(PasswordTokenRequestBody.PasswordGrantType, q =>
+                {
+                    return PasswordTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (r.User, r);
+                });
+                route.Register(RefreshTokenRequestBody.RefreshTokenGrantType, q =>
+                {
+                    return RefreshTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (r.User, r);
+                });
+                route.Register(CodeTokenRequestBody.AuthorizationCodeGrantType, q =>
+                {
+                    return CodeTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (r.User, r);
+                });
+                route.Register(ClientTokenRequestBody.ClientCredentialsGrantType, q =>
+                {
+                    return ClientTokenRequestBody.Parse(q.ToString());
+                }, async q =>
+                {
+                    var r = await LoginAsync(q);
+                    return (null, r);
+                });
+
+                return route;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the token cache.
         /// </summary>
         public new UserTokenInfo Token
@@ -75,11 +131,47 @@ namespace NuScien.Security
         public abstract Task<UserTokenInfo> AuthorizeAsync(string accessToken, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Signs out.
+        /// </summary>
+        /// <returns>The task.</returns>
+        public virtual Task LogoutAsync()
+        {
+            return Task.Run(() =>
+            {
+                ClearCache();
+                Token = null;
+            });
+        }
+
+        /// <summary>
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The login response.</returns>
-        public abstract IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroups(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal);
+        public IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroups(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        {
+            var isForAll = relationshipState == ResourceEntityStates.Normal && string.IsNullOrEmpty(q);
+            if (isForAll && groups != null) return groups;
+            var col = GetGroups(q, relationshipState);
+            if (isForAll) groups = col;
+            return col;
+        }
+
+        /// <summary>
+        /// Gets a collection of user groups joined in.
+        /// </summary>
+        /// <param name="q">The optional query for group.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The login response.</returns>
+        protected abstract IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroupsFromDataSource(string q, ResourceEntityStates relationshipState);
+
+        /// <summary>
+        /// Clears cache.
+        /// </summary>
+        public void ClearCache()
+        {
+            groups = null;
+        }
     }
 }

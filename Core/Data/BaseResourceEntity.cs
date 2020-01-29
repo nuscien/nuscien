@@ -9,7 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Trivial.Data;
 using Trivial.Reflection;
 using Trivial.Text;
 
@@ -49,6 +49,7 @@ namespace NuScien.Data
     {
         private string id;
         private string revision;
+        private string oldRevision;
 
         /// <summary>
         /// Gets or sets the identifier.
@@ -80,10 +81,7 @@ namespace NuScien.Data
                     IsNew = false;
                 }
 
-                var isRevChanged = string.IsNullOrEmpty(revision);
-                revision = null;
                 ForceNotify(nameof(Id));
-                if (isRevChanged) ForceNotify(nameof(Revision));
             }
         }
 
@@ -171,6 +169,7 @@ namespace NuScien.Data
             set
             {
                 if (value != null) value = value.Trim().ToLower();
+                oldRevision = value;
                 if (revision == value) return;
                 if (string.IsNullOrEmpty(value)) IsNew = true;
                 revision = value;
@@ -179,13 +178,23 @@ namespace NuScien.Data
         }
 
         /// <summary>
-        /// Renews a revision.
+        /// Prepares for saving.
         /// </summary>
-        public void RenewRevision()
+        public void PrepareForSaving()
         {
             revision = Guid.NewGuid().ToString("n");
             LastModificationTime = DateTime.Now;
+            IsNew = false;
             ForceNotify(nameof(Revision));
+        }
+
+        /// <summary>
+        /// Rollbacks the saving action.
+        /// </summary>
+        public void RollbackSaving()
+        {
+            IsNew = string.IsNullOrEmpty(oldRevision);
+            revision = oldRevision;
         }
 
         /// <summary>
@@ -197,6 +206,7 @@ namespace NuScien.Data
             revision = entity.revision;
             id = entity.id;
             IsNew = entity.IsNew;
+            oldRevision = entity.oldRevision;
             ForceNotify(nameof(Id));
             Name = entity.Name;
             State = entity.State;

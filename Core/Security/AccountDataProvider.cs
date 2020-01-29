@@ -79,6 +79,37 @@ namespace NuScien.Security
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public IEnumerable<UserGroupResourceEntity<UserEntity>> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal);
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId);
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId);
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId);
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="client">The client entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId);
 
         /// <summary>
         /// Deletes a set of tokens expired.
@@ -119,6 +150,30 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -211,6 +266,50 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="client">The client entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
         /// Deletes a set of tokens expired.
         /// </summary>
         /// <param name="userId">The user identifier of the token.</param>
@@ -261,6 +360,40 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }

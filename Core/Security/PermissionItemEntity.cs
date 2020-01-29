@@ -49,9 +49,9 @@ namespace NuScien.Security
         [NotMapped]
         [DataMember(Name = "target_type")]
         [JsonPropertyName("target_type")]
-        public string TargetTypeCode
+        public int TargetTypeCode
         {
-            get => TargetType.ToString();
+            get => (int)TargetType;
             set => _ = value;
         }
 

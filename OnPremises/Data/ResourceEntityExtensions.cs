@@ -48,28 +48,10 @@ namespace NuScien.Data
         /// <param name="entity">The entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An async task result.</returns>
-        public static async Task<ChangeMethods> SaveAsync<T>(DbSet<T> set, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        public static Task<ChangeMethods> SaveAsync<T>(DbSet<T> set, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             InternalAssertion.IsNotNull(set, nameof(set));
-            if (entity is null) return ChangeMethods.Invalid;
-            if (entity.IsNew)
-            {
-                entity.RenewRevision();
-                entity.IsNew = false;
-                await Task.Run(() =>
-                {
-                    set.Add(entity);
-                });
-                return ChangeMethods.Add;
-            }
-            else
-            {
-                await Task.Run(() =>
-                {
-                    set.Update(entity);
-                });
-                return ChangeMethods.Update;
-            }
+            return ResourceEntityExtensions.SaveAsync(set.Add, set.Update, entity, cancellationToken);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Trivial.Data;
 using Trivial.Reflection;
 using Trivial.Text;
 
@@ -149,6 +149,176 @@ namespace NuScien.Data
         {
             InternalAssertion.IsNotNull(source);
             return source.Select(ele => ele.Target);
+        }
+
+        /// <summary>
+        /// Creates or updates an entity.
+        /// </summary>
+        /// <typeparam name="T">The type of entity.</typeparam>
+        /// <param name="add">The add action handler.</param>
+        /// <param name="update">The update action handler.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public static async Task<ChangeMethods> SaveAsync<T>(Action<T> add, Action<T> update, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        {
+            if (entity is null) return ChangeMethods.Invalid;
+            if (entity.IsNew)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                InternalAssertion.IsNotNull(add, nameof(add));
+                return await Task.Run(() =>
+                {
+                    var isSucc = false;
+                    entity.PrepareForSaving();
+                    try
+                    {
+                        add(entity);
+                        isSucc = true;
+                        return ChangeMethods.Add;
+                    }
+                    finally
+                    {
+                        if (!isSucc) entity.RollbackSaving();
+                    }
+                });
+            }
+            else
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                InternalAssertion.IsNotNull(update, nameof(update));
+                return await Task.Run(() =>
+                {
+                    var isSucc = false;
+                    entity.PrepareForSaving();
+                    try
+                    {
+                        update(entity);
+                        isSucc = true;
+                        return entity.State switch
+                        {
+                            ResourceEntityStates.Deleted => ChangeMethods.Remove,
+                            _ => ChangeMethods.MemberModify
+                        };
+                    }
+                    finally
+                    {
+                        if (!isSucc) entity.RollbackSaving();
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Creates or updates an entity.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity.</typeparam>
+        /// <typeparam name="TResult">The type of action result.</typeparam>
+        /// <param name="add">The add action handler.</param>
+        /// <param name="update">The update action handler.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(Func<TEntity, TResult> add, Func<TEntity, TResult> update, TEntity entity, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
+        {
+            if (entity is null) return ChangeMethods.Invalid;
+            if (entity.IsNew)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                InternalAssertion.IsNotNull(add, nameof(add));
+                return await Task.Run(() =>
+                {
+                    var isSucc = false;
+                    entity.PrepareForSaving();
+                    try
+                    {
+                        add(entity);
+                        isSucc = true;
+                        return ChangeMethods.Add;
+                    }
+                    finally
+                    {
+                        if (!isSucc) entity.RollbackSaving();
+                    }
+                });
+            }
+            else
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                InternalAssertion.IsNotNull(update, nameof(update));
+                return await Task.Run(() =>
+                {
+                    var isSucc = false;
+                    entity.PrepareForSaving();
+                    try
+                    {
+                        update(entity);
+                        isSucc = true;
+                        return entity.State switch
+                        {
+                            ResourceEntityStates.Deleted => ChangeMethods.Remove,
+                            _ => ChangeMethods.MemberModify
+                        };
+                    }
+                    finally
+                    {
+                        if (!isSucc) entity.RollbackSaving();
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Creates or updates an entity.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity.</typeparam>
+        /// <typeparam name="TResult">The type of action result.</typeparam>
+        /// <param name="add">The add action handler.</param>
+        /// <param name="update">The update action handler.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(Func<TEntity, Task<TResult>> add, Func<TEntity, Task<TResult>> update, TEntity entity, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
+        {
+            if (entity is null) return ChangeMethods.Invalid;
+            if (entity.IsNew)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                InternalAssertion.IsNotNull(add, nameof(add));
+                var isSucc = false;
+                entity.PrepareForSaving();
+                try
+                {
+                    await add(entity);
+                    isSucc = true;
+                    return ChangeMethods.Add;
+                }
+                finally
+                {
+                    if (!isSucc) entity.RollbackSaving();
+                }
+            }
+            else
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                InternalAssertion.IsNotNull(update, nameof(update));
+                var isSucc = false;
+                entity.PrepareForSaving();
+                try
+                {
+                    await update(entity);
+                    isSucc = true;
+                    return entity.State switch
+                    {
+                        ResourceEntityStates.Deleted => ChangeMethods.Remove,
+                        _ => ChangeMethods.MemberModify
+                    };
+                }
+                finally
+                {
+                    if (!isSucc) entity.RollbackSaving();
+                }
+            }
         }
     }
 }

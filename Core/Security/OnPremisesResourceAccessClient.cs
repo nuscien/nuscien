@@ -27,11 +27,6 @@ namespace NuScien.Security
         private const string InvalidPasswordCode = "invalid_password";
 
         /// <summary>
-        /// The token request route instance.
-        /// </summary>
-        private TokenRequestRoute<UserEntity> route;
-
-        /// <summary>
         /// Initializes a new instance of the OnPremisesResourceAccessClient class.
         /// </summary>
         /// <param name="provider">The account data provider.</param>
@@ -44,52 +39,6 @@ namespace NuScien.Security
         /// Gets the account data provider.
         /// </summary>
         protected IAccountDataProvider DataProvider { get; }
-
-        /// <summary>
-        /// Gets the token request route instance.
-        /// </summary>
-        public TokenRequestRoute<UserEntity> TokenRequestRoute
-        {
-            get
-            {
-                if (route != null) return route;
-                route = new TokenRequestRoute<UserEntity>();
-                route.Register(PasswordTokenRequestBody.PasswordGrantType, q =>
-                {
-                    return PasswordTokenRequestBody.Parse(q.ToString());
-                }, async q =>
-                {
-                    var r = await LoginAsync(q);
-                    return (r.User, r);
-                });
-                route.Register(RefreshTokenRequestBody.RefreshTokenGrantType, q =>
-                {
-                    return RefreshTokenRequestBody.Parse(q.ToString());
-                }, async q =>
-                {
-                    var r = await LoginAsync(q);
-                    return (r.User, r);
-                });
-                route.Register(CodeTokenRequestBody.AuthorizationCodeGrantType, q =>
-                {
-                    return CodeTokenRequestBody.Parse(q.ToString());
-                }, async q =>
-                {
-                    var r = await LoginAsync(q);
-                    return (r.User, r);
-                });
-                route.Register(ClientTokenRequestBody.ClientCredentialsGrantType, q =>
-                {
-                    return ClientTokenRequestBody.Parse(q.ToString());
-                }, async q =>
-                {
-                    var r = await LoginAsync(q);
-                    return (null, r);
-                });
-
-                return route;
-            }
-        }
 
         /// <summary>
         /// Signs in.
@@ -249,12 +198,21 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Signs out.
+        /// </summary>
+        /// <returns>The task.</returns>
+        public override async Task LogoutAsync()
+        {
+            await base.LogoutAsync();
+        }
+
+        /// <summary>
         /// Gets user groups.
         /// </summary>
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The login response.</returns>
-        public override IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroups(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        protected override IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroupsFromDataSource(string q, ResourceEntityStates relationshipState)
         {
             return DataProvider.ListUserGroups(User, q, relationshipState);
         }

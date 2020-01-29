@@ -28,25 +28,34 @@ namespace NuScien.Security
         /// Initializes a new instance of the AccountDbSetProvider class.
         /// </summary>
         /// <param name="users">The user entity database set.</param>
-        /// <param name="groups">The user group entity database set.</param>
+        /// <param name="userGroups">The user group entity database set.</param>
         /// <param name="clients">The client entity database set.</param>
         /// <param name="codes">The authorization code database set.</param>
         /// <param name="tokens">The token entity database set.</param>
         /// <param name="relationships">The user group relationship database set.</param>
+        /// <param name="userPermissions">The user permissions database set.</param>
+        /// <param name="userGroupPermissions">The user group permissions database set.</param>
+        /// <param name="clientPermissions">The client permissions database set.</param>
         public AccountDbSetProvider(
             DbSet<UserEntity> users,
-            DbSet<UserGroupEntity> groups,
+            DbSet<UserGroupEntity> userGroups,
             DbSet<AccessingClientEntity> clients,
             DbSet<AuthorizationCodeEntity> codes,
             DbSet<TokenEntity> tokens,
-            DbSet<UserGroupResourceEntity<UserEntity>> relationships)
+            DbSet<UserGroupResourceEntity<UserEntity>> relationships,
+            DbSet<UserPermissionItemEntity> userPermissions,
+            DbSet<UserGroupPermissionItemEntity> userGroupPermissions,
+            DbSet<ClientPermissionItemEntity> clientPermissions)
         {
             Users = users;
-            Groups = groups;
+            Groups = userGroups;
             Clients = clients;
             Codes = codes;
             Tokens = tokens;
             Relationships = relationships;
+            UserPermissions = userPermissions;
+            GroupPermissions = userGroupPermissions;
+            ClientPermissions = clientPermissions;
         }
 
         /// <summary>
@@ -78,6 +87,21 @@ namespace NuScien.Security
         /// Gets the user group relationship database set.
         /// </summary>
         protected DbSet<UserGroupResourceEntity<UserEntity>> Relationships { get; }
+
+        /// <summary>
+        /// Gets the user permissions database set.
+        /// </summary>
+        protected DbSet<UserPermissionItemEntity> UserPermissions { get; }
+
+        /// <summary>
+        /// Gets the user group permissions database set.
+        /// </summary>
+        protected DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; }
+
+        /// <summary>
+        /// Gets the client permissions database set.
+        /// </summary>
+        protected DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
 
         /// <summary>
         /// Gets a user entity by given identifier.
@@ -167,6 +191,54 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId)
+        {
+            return UserPermissions.Where(ele => ele.TargetId == user.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
+        {
+            return GroupPermissions.Where(ele => ele.TargetTypeCode == (int)SecurityEntityTypes.UserGroup && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode).Join(
+                Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == ResourceEntityExtensions.NormalStateCode),
+                ele => ele.TargetId,
+                ele => ele.OwnerId,
+                (perm, rela) => perm);
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId)
+        {
+            return GroupPermissions.Where(ele => ele.TargetId == group.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="client">The client entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId)
+        {
+            return UserPermissions.Where(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
         /// Deletes a set of tokens expired.
         /// </summary>
         /// <param name="userId">The user identifier of the token.</param>
@@ -225,6 +297,39 @@ namespace NuScien.Security
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default)
         {
             return DbResourceEntityExtensions.SaveAsync(Tokens, token, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
+        {
+            return DbResourceEntityExtensions.SaveAsync(UserPermissions, permissionItem, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
+        {
+            return DbResourceEntityExtensions.SaveAsync(GroupPermissions, permissionItem, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a permission item entity.
+        /// </summary>
+        /// <param name="permissionItem">The permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
+        {
+            return DbResourceEntityExtensions.SaveAsync(ClientPermissions, permissionItem, cancellationToken);
         }
     }
 }
