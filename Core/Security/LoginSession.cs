@@ -126,6 +126,13 @@ namespace NuScien.Security
         public UserEntity User { get; set; }
 
         /// <summary>
+        /// Gets or sets the client identifier.
+        /// </summary>
+        [DataMember(Name = "client_id", EmitDefaultValue = true)]
+        [JsonPropertyName("client_id")]
+        public string ClientId { get; set; }
+
+        /// <summary>
         /// Creates an error token information.
         /// </summary>
         /// <param name="user">The user.</param>

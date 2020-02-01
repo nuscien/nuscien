@@ -172,22 +172,34 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a user group entity by given identifier.
+        /// </summary>
+        /// <param name="id">The user group identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return Groups.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="user">The user entity.</param>
         /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupRelationshipEntity> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        public async Task<IEnumerable<UserGroupRelationshipEntity>> ListUserGroupsAsync(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal, CancellationToken cancellationToken = default)
         {
             var groups = string.IsNullOrWhiteSpace(q)
                 ? Groups.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
                 : Groups.Where(ele => ele.Name.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
-            return Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState).Join(
+            return await Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState).Join(
                 groups,
                 ele => ele.OwnerId,
                 ele => ele.Id,
-                (rela, group) => new UserGroupRelationshipEntity(rela, group, user));
+                (rela, group) => new UserGroupRelationshipEntity(rela, group, user)).ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -198,7 +210,7 @@ namespace NuScien.Security
         /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role = null, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        public IQueryable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role = null, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
             var users = string.IsNullOrWhiteSpace(q)
                 ? Users.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
@@ -213,14 +225,64 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        IEnumerable<UserGroupRelationshipEntity> IAccountDataProvider.ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, string q, ResourceEntityStates relationshipState)
+        {
+            return ListUsers(group, role, q, relationshipState);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, QueryArgs q, CancellationToken cancellationToken = default)
+        {
+            if (q == null) q = InternalAssertion.DefaultQueryArgs;
+            return await ListUsers(group, role, q.NameQuery, q.State).ToListAsync(q, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a collection of user permissions.
         /// </summary>
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId)
+        public IQueryable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId)
         {
             return UserPermissions.Where(ele => ele.TargetId == user.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        IEnumerable<UserPermissionItemEntity> IAccountDataProvider.ListUserPermissions(UserEntity user, string siteId)
+        {
+            return ListUserPermissions(user, siteId);
+        }
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<UserPermissionItemEntity>> ListUserPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default)
+        {
+            return await ListUserPermissions(user, siteId).ToListAsync(null, cancellationToken);
         }
 
         /// <summary>
@@ -229,7 +291,7 @@ namespace NuScien.Security
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
+        public IQueryable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
         {
             return GroupPermissions.Where(ele => ele.TargetTypeCode == (int)SecurityEntityTypes.UserGroup && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode).Join(
                 Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == ResourceEntityExtensions.NormalStateCode),
@@ -241,12 +303,58 @@ namespace NuScien.Security
         /// <summary>
         /// Gets a collection of user group permissions.
         /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        IEnumerable<UserGroupPermissionItemEntity> IAccountDataProvider.ListGroupPermissions(UserEntity user, string siteId)
+        {
+            return ListGroupPermissions(user, siteId);
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<UserGroupPermissionItemEntity>> ListGroupPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default)
+        {
+            return await ListGroupPermissions(user, siteId).ToListAsync(null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
         /// <param name="group">The user group entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId)
+        public IQueryable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId)
         {
             return GroupPermissions.Where(ele => ele.TargetId == group.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        IEnumerable<UserGroupPermissionItemEntity> IAccountDataProvider.ListGroupPermissions(UserGroupEntity group, string siteId)
+        {
+            return ListGroupPermissions(group, siteId);
+        }
+
+        /// <summary>
+        /// Gets a collection of user group permissions.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<UserGroupPermissionItemEntity>> ListGroupPermissionsAsync(UserGroupEntity group, string siteId, CancellationToken cancellationToken = default)
+        {
+            return await ListGroupPermissions(group, siteId).ToListAsync(null, cancellationToken);
         }
 
         /// <summary>
@@ -255,9 +363,32 @@ namespace NuScien.Security
         /// <param name="client">The client entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId)
+        public IQueryable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId)
         {
             return UserPermissions.Where(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="client">The client entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        IEnumerable<UserPermissionItemEntity> IAccountDataProvider.ListClientPermissions(AccessingClientEntity client, string siteId)
+        {
+            return ListClientPermissions(client, siteId);
+        }
+
+        /// <summary>
+        /// Gets a collection of user permissions.
+        /// </summary>
+        /// <param name="client">The client entity.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<UserPermissionItemEntity>> ListClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default)
+        {
+            return await ListClientPermissions(client, siteId).ToListAsync(null, cancellationToken);
         }
 
         /// <summary>
@@ -269,8 +400,9 @@ namespace NuScien.Security
         public async Task<int> DeleteExpiredTokensAsync(string userId, CancellationToken cancellationToken = default)
         {
             var now = DateTime.Now;
-            var list = await Tokens.Where(ele => ele.UserId == userId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
-            Tokens.RemoveRange(list);
+            var tokens = Tokens;
+            var list = await tokens.Where(ele => ele.UserId == userId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
+            tokens.RemoveRange(list);
             return list.Count;
         }
 
@@ -283,9 +415,22 @@ namespace NuScien.Security
         public async Task<int> DeleteExpiredClientTokensAsync(string clientId, CancellationToken cancellationToken = default)
         {
             var now = DateTime.Now;
-            var list = await Tokens.Where(ele => ele.ClientId == clientId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
-            Tokens.RemoveRange(list);
+            var tokens = Tokens;
+            var list = await tokens.Where(ele => ele.ClientId == clientId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
+            tokens.RemoveRange(list);
             return list.Count;
+        }
+
+        /// <summary>
+        /// Deletes a specific access token.
+        /// </summary>
+        /// <param name="accessToken">The access token to delete.</param>
+        /// <returns>The async task.</returns>
+        public async Task DeleteAccessToken(string accessToken)
+        {
+            var tokens = Tokens;
+            var list = await tokens.Where(ele => ele.Name == accessToken).ToListAsync();
+            tokens.RemoveRange(list);
         }
 
         /// <summary>

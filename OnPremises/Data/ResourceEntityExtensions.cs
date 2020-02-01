@@ -53,5 +53,20 @@ namespace NuScien.Data
             InternalAssertion.IsNotNull(set, nameof(set));
             return ResourceEntityExtensions.SaveAsync(set.Add, set.Update, entity, cancellationToken);
         }
+
+        internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken)
+        {
+            if (q != null)
+            {
+                if (q.Offset > 0) col = col.Skip(q.Offset);
+                col = col.Take(q.Count);
+            }
+            else
+            {
+                col = col.Take(100);
+            }
+
+            return col.ToListAsync(cancellationToken);
+        }
     }
 }

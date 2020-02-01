@@ -203,7 +203,97 @@ namespace NuScien.Security
         /// <returns>The task.</returns>
         public override async Task LogoutAsync()
         {
-            await base.LogoutAsync();
+            var t = Token;
+            if (t == null || t.IsEmpty) return;
+            Task<int> task = null;
+            try
+            {
+                await DataProvider.DeleteAccessToken(t.AccessToken);
+                var uId = t.UserId;
+                if (!string.IsNullOrWhiteSpace(uId))
+                    task = DataProvider.DeleteExpiredClientTokensAsync(uId);
+            }
+            finally
+            {
+                await base.LogoutAsync();
+            }
+
+            if (task != null) await task;
+        }
+
+        /// <summary>
+        /// Gets a user group entity by given identifier.
+        /// </summary>
+        /// <param name="id">The user group identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public override Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetUserGroupByIdAsync(id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional query information.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public override Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            if (q == null) q = InternalAssertion.DefaultQueryArgs;
+            return DataProvider.ListUsersAsync(group, role, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="q">The optional query information.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public override Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            if (q == null) q = InternalAssertion.DefaultQueryArgs;
+            return DataProvider.ListUsersAsync(group, null, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, string q, ResourceEntityStates relationshipState)
+        {
+            return DataProvider.ListUsers(group, role, q, relationshipState);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, string q = null)
+        {
+            return DataProvider.ListUsers(group, role, q);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, string q, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        {
+            return DataProvider.ListUsers(group, null, q, relationshipState);
         }
 
         /// <summary>
@@ -211,30 +301,44 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        protected override IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroupsFromDataSource(string q, ResourceEntityStates relationshipState)
+        protected override Task<IEnumerable<UserGroupRelationshipEntity>> GetUserGroupRelationshipsAsync(string q, ResourceEntityStates relationshipState, CancellationToken cancellationToken = default)
         {
-            return DataProvider.ListUserGroups(User, q, relationshipState);
+            return DataProvider.ListUserGroupsAsync(User, q, relationshipState, cancellationToken);
         }
 
         /// <summary>
         /// Gets the user permissions of the current user.
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user permission list.</returns>
-        protected override IEnumerable<UserPermissionItemEntity> GetUserPermissions(string siteId)
+        protected override Task<IEnumerable<UserPermissionItemEntity>> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
-            return DataProvider.ListUserPermissions(User, siteId);
+            return DataProvider.ListUserPermissionsAsync(User, siteId);
         }
 
         /// <summary>
         /// Gets the user group permissions of the current user.
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group permission list.</returns>
-        protected override IEnumerable<UserGroupPermissionItemEntity> GetGroupPermissions(string siteId)
+        protected override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
-            return DataProvider.ListGroupPermissions(User, siteId);
+            return DataProvider.ListGroupPermissionsAsync(User, siteId);
+        }
+
+        /// <summary>
+        /// Creates or updates a user group entity.
+        /// </summary>
+        /// <param name="value">The user group entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override Task<ChangeMethods> SaveEntity(UserGroupEntity value, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(value, cancellationToken);
         }
 
         /// <summary>

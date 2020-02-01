@@ -113,34 +113,24 @@ namespace NuScien.Users
         public enum Roles
         {
             /// <summary>
-            /// None.
-            /// </summary>
-            None = 0,
-
-            /// <summary>
-            /// Guest.
-            /// </summary>
-            Guest = 1,
-
-            /// <summary>
             /// Member.
             /// </summary>
-            Member = 2,
+            Member = 0,
 
             /// <summary>
-            /// Information modification.
+            /// Power user.
             /// </summary>
-            InformationModification = 3,
+            PowerUser = 1,
 
             /// <summary>
-            /// Member manager.
+            /// Co-administrator.
             /// </summary>
-            UserManager = 4,
+            Master = 2,
 
             /// <summary>
-            /// Administrator.
+            /// Owner.
             /// </summary>
-            Admin = 5
+            Owner = 3
         }
 
         /// <summary>

@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using NuScien.Data;
 using Trivial.Reflection;
 using Trivial.Text;
 
@@ -19,6 +20,8 @@ namespace Trivial.Reflection
     /// </summary>
     internal static class InternalAssertion
     {
+        internal static QueryArgs DefaultQueryArgs = new QueryArgs();
+
         internal static void IsNotNull<T>(IEnumerable<T> source)
         {
             if (source == null) throw new ArgumentNullException(nameof(source), "source was null.");

@@ -39,5 +39,10 @@ namespace NuScien.Data
         /// Gets or sets the offset to return.
         /// </summary>
         public int Offset { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the resource entity state.
+        /// </summary>
+        public ResourceEntityStates State { get; set; } = ResourceEntityStates.Normal;
     }
 }
