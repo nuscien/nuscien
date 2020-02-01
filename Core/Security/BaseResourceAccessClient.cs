@@ -288,10 +288,19 @@ namespace NuScien.Security
         /// <returns>The change method.</returns>
         public async Task<ChangeMethods> Save(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
+            if (value == null) return ChangeMethods.Invalid;
+            if (value.IsNew)
+            {
+                var perms = await GetPermissionsAsync(value.OwnerSiteId);
+                if (!perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
+                    return ChangeMethods.Invalid;
+                return await SaveEntity(value, cancellationToken);
+            }
+
             var groups = await GetGroupsAsync();
             foreach (var g in groups)
             {
-                if (g.OwnerId != value.Id) continue;
+                if (g == null || g.OwnerId != value.Id) continue;
                 return g.Role switch
                 {
                     UserGroupRelationshipEntity.Roles.Owner => await SaveEntity(value, cancellationToken),

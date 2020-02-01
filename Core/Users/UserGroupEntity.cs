@@ -48,6 +48,18 @@ namespace NuScien.Users
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Gets or sets the owner site identifier.
+        /// </summary>
+        [DataMember(Name = "site")]
+        [JsonPropertyName("site")]
+        [Column("site")]
+        public string OwnerSiteId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
     }
 
     /// <summary>
