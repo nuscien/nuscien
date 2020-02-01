@@ -222,6 +222,17 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a user entity by given identifier.
+        /// </summary>
+        /// <param name="id">The user identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public override Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetUserByIdAsync(id, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a user group entity by given identifier.
         /// </summary>
         /// <param name="id">The user group identifier.</param>
@@ -240,10 +251,12 @@ namespace NuScien.Security
         /// <param name="q">The optional query information.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public override Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, QueryArgs q = null, CancellationToken cancellationToken = default)
+        public override async Task<IEnumerable<UserEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, QueryArgs q = null, CancellationToken cancellationToken = default)
         {
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
-            return DataProvider.ListUsersAsync(group, role, q, cancellationToken);
+            var col = await DataProvider.ListUsersAsync(group, role, q, cancellationToken);
+            if (col == null) return new List<UserEntity>();
+            return col.Select(ele => ele.Target);
         }
 
         /// <summary>
@@ -253,10 +266,12 @@ namespace NuScien.Security
         /// <param name="q">The optional query information.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public override Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, QueryArgs q = null, CancellationToken cancellationToken = default)
+        public override async Task<IEnumerable<UserEntity>> ListUsersAsync(UserGroupEntity group, QueryArgs q = null, CancellationToken cancellationToken = default)
         {
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
-            return DataProvider.ListUsersAsync(group, null, q, cancellationToken);
+            var col = await DataProvider.ListUsersAsync(group, null, q, cancellationToken);
+            if (col == null) return new List<UserEntity>();
+            return col.Select(ele => ele.Target);
         }
 
         /// <summary>
@@ -267,9 +282,11 @@ namespace NuScien.Security
         /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, string q, ResourceEntityStates relationshipState)
+        public IEnumerable<UserEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, string q, ResourceEntityStates relationshipState)
         {
-            return DataProvider.ListUsers(group, role, q, relationshipState);
+            var col = DataProvider.ListUsers(group, role, q, relationshipState);
+            if (col == null) return new List<UserEntity>();
+            return col.Select(ele => ele.Target);
         }
 
         /// <summary>
@@ -279,9 +296,11 @@ namespace NuScien.Security
         /// <param name="role">The role to search; or null for all roles.</param>
         /// <param name="q">The optional name query; or null for all.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, string q = null)
+        public IEnumerable<UserEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, string q = null)
         {
-            return DataProvider.ListUsers(group, role, q);
+            var col = DataProvider.ListUsers(group, role, q);
+            if (col == null) return new List<UserEntity>();
+            return col.Select(ele => ele.Target);
         }
 
         /// <summary>
@@ -291,9 +310,11 @@ namespace NuScien.Security
         /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, string q, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        public IEnumerable<UserEntity> ListUsers(UserGroupEntity group, string q, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
-            return DataProvider.ListUsers(group, null, q, relationshipState);
+            var col = DataProvider.ListUsers(group, null, q, relationshipState);
+            if (col == null) return new List<UserEntity>();
+            return col.Select(ele => ele.Target);
         }
 
         /// <summary>
@@ -331,12 +352,46 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="id">The user group relationship entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        protected override Task<UserGroupRelationshipEntity> GetRelationshipAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetRelationshipByIdAsync(id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="groupId">The user group identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        protected override Task<UserGroupRelationshipEntity> GetRelationshipAsync(string groupId, string userId, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetRelationshipByIdAsync(groupId, userId, cancellationToken);
+        }
+
+        /// <summary>
         /// Creates or updates a user group entity.
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected override Task<ChangeMethods> SaveEntity(UserGroupEntity value, CancellationToken cancellationToken = default)
+        protected override Task<ChangeMethods> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(value, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a user group relationship entity.
+        /// </summary>
+        /// <param name="value">The user group relationship entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
         }

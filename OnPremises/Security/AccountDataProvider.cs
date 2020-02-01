@@ -25,83 +25,29 @@ namespace NuScien.Security
     public class AccountDbSetProvider : IAccountDataProvider
     {
         /// <summary>
+        /// The database context factory.
+        /// </summary>
+        private readonly Func<bool, IAccountDbContext> contextFactory;
+
+        /// <summary>
         /// Initializes a new instance of the AccountDbSetProvider class.
         /// </summary>
-        /// <param name="users">The user entity database set.</param>
-        /// <param name="userGroups">The user group entity database set.</param>
-        /// <param name="clients">The client entity database set.</param>
-        /// <param name="codes">The authorization code database set.</param>
-        /// <param name="tokens">The token entity database set.</param>
-        /// <param name="relationships">The user group relationship database set.</param>
-        /// <param name="userPermissions">The user permissions database set.</param>
-        /// <param name="userGroupPermissions">The user group permissions database set.</param>
-        /// <param name="clientPermissions">The client permissions database set.</param>
-        public AccountDbSetProvider(
-            DbSet<UserEntity> users,
-            DbSet<UserGroupEntity> userGroups,
-            DbSet<AccessingClientEntity> clients,
-            DbSet<AuthorizationCodeEntity> codes,
-            DbSet<TokenEntity> tokens,
-            DbSet<UserGroupRelationshipEntity> relationships,
-            DbSet<UserPermissionItemEntity> userPermissions,
-            DbSet<UserGroupPermissionItemEntity> userGroupPermissions,
-            DbSet<ClientPermissionItemEntity> clientPermissions)
+        /// <param name="context">The database context with full-access.</param>
+        /// <param name="readonlyContext">The optional database context readonly.</param>
+        public AccountDbSetProvider(IAccountDbContext context, IAccountDbContext readonlyContext = null)
         {
-            Users = users;
-            Groups = userGroups;
-            Clients = clients;
-            Codes = codes;
-            Tokens = tokens;
-            Relationships = relationships;
-            UserPermissions = userPermissions;
-            GroupPermissions = userGroupPermissions;
-            ClientPermissions = clientPermissions;
+            if (readonlyContext == null) readonlyContext = context;
+            contextFactory = isReadonly => isReadonly ? readonlyContext : context;
         }
 
         /// <summary>
-        /// Gets the user database set.
+        /// Initializes a new instance of the AccountDbSetProvider class.
         /// </summary>
-        protected DbSet<UserEntity> Users { get; }
-
-        /// <summary>
-        /// Gets the user database set.
-        /// </summary>
-        protected DbSet<UserGroupEntity> Groups { get; }
-
-        /// <summary>
-        /// Gets the client database set.
-        /// </summary>
-        protected DbSet<AccessingClientEntity> Clients { get; }
-
-        /// <summary>
-        /// Gets the authorization code database set.
-        /// </summary>
-        protected DbSet<AuthorizationCodeEntity> Codes { get; }
-
-        /// <summary>
-        /// Gets the user database set.
-        /// </summary>
-        protected DbSet<TokenEntity> Tokens { get; }
-
-        /// <summary>
-        /// Gets the user group relationship database set.
-        /// </summary>
-        protected DbSet<UserGroupRelationshipEntity> Relationships { get; }
-
-        /// <summary>
-        /// Gets the user permissions database set.
-        /// </summary>
-        protected DbSet<UserPermissionItemEntity> UserPermissions { get; }
-
-        /// <summary>
-        /// Gets the user group permissions database set.
-        /// </summary>
-        protected DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; }
-
-        /// <summary>
-        /// Gets the client permissions database set.
-        /// </summary>
-        protected DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
+        /// <param name="contextFactory">The database context factory.</param>
+        public AccountDbSetProvider(Func<bool, IAccountDbContext> contextFactory)
+        {
+            this.contextFactory = contextFactory;
+        }
 
         /// <summary>
         /// Gets a user entity by given identifier.
@@ -111,7 +57,7 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+            return GetContext(true).Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
         }
 
         /// <summary>
@@ -122,7 +68,7 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<UserEntity> GetUserByLognameAsync(string loginName, CancellationToken cancellationToken = default)
         {
-            return Users.FirstOrDefaultAsync(ele => ele.Name == loginName, cancellationToken);
+            return GetContext(true).Users.FirstOrDefaultAsync(ele => ele.Name == loginName, cancellationToken);
         }
 
         /// <summary>
@@ -133,7 +79,7 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<AccessingClientEntity> GetClientByNameAsync(string appId, CancellationToken cancellationToken = default)
         {
-            return Clients.FirstOrDefaultAsync(ele => ele.Name == appId, cancellationToken);
+            return GetContext(true).Clients.FirstOrDefaultAsync(ele => ele.Name == appId, cancellationToken);
         }
 
         /// <summary>
@@ -146,7 +92,7 @@ namespace NuScien.Security
         public Task<AuthorizationCodeEntity> GetAuthorizationCodeByCodeAsync(string provider, string code, CancellationToken cancellationToken = default)
         {
             var codeHash = AuthorizationCodeEntity.ComputeCodeHash(code);
-            return Codes.FirstOrDefaultAsync(ele => ele.CodeEncrypted == codeHash && ele.ServiceProvider == provider, cancellationToken);
+            return GetContext(true).Codes.FirstOrDefaultAsync(ele => ele.CodeEncrypted == codeHash && ele.ServiceProvider == provider, cancellationToken);
         }
 
         /// <summary>
@@ -157,7 +103,7 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public Task<TokenEntity> GetTokenByNameAsync(string accessToken, CancellationToken cancellationToken = default)
         {
-            return Tokens.FirstOrDefaultAsync(ele => ele.Name == accessToken, cancellationToken);
+            return GetContext(true).Tokens.FirstOrDefaultAsync(ele => ele.Name == accessToken, cancellationToken);
         }
 
         /// <summary>
@@ -168,7 +114,7 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public Task<TokenEntity> GetTokenByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            return Tokens.FirstOrDefaultAsync(ele => ele.RefreshToken == refreshToken, cancellationToken);
+            return GetContext(true).Tokens.FirstOrDefaultAsync(ele => ele.RefreshToken == refreshToken, cancellationToken);
         }
 
         /// <summary>
@@ -179,7 +125,30 @@ namespace NuScien.Security
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         public Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return Groups.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+            return GetContext(true).Groups.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="id">The user group relationship entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupRelationshipEntity> GetRelationshipByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).Relationships.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="groupId">The user group identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupRelationshipEntity> GetRelationshipByIdAsync(string groupId, string userId, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).Relationships.FirstOrDefaultAsync(ele => ele.OwnerId == groupId && ele.TargetId == userId, cancellationToken);
         }
 
         /// <summary>
@@ -192,10 +161,11 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public async Task<IEnumerable<UserGroupRelationshipEntity>> ListUserGroupsAsync(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal, CancellationToken cancellationToken = default)
         {
+            var context = GetContext(true);
             var groups = string.IsNullOrWhiteSpace(q)
-                ? Groups.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
-                : Groups.Where(ele => ele.Name.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
-            return await Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState).Join(
+                ? context.Groups.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
+                : context.Groups.Where(ele => ele.Name.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            return await context.Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState).Join(
                 groups,
                 ele => ele.OwnerId,
                 ele => ele.Id,
@@ -212,10 +182,11 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public IQueryable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role = null, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
+            var context = GetContext(true);
             var users = string.IsNullOrWhiteSpace(q)
-                ? Users.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
-                : Users.Where(ele => ele.Nickname.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
-            var relationships = Relationships.Where(ele => ele.OwnerId == group.Id && ele.StateCode == (int)relationshipState);
+                ? context.Users.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
+                : context.Users.Where(ele => ele.Nickname.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            var relationships = context.Relationships.Where(ele => ele.OwnerId == group.Id && ele.StateCode == (int)relationshipState);
             if (role.HasValue) relationships = relationships.Where(ele => ele.RoleCode == (int)role.Value);
             return relationships.Join(
                 users,
@@ -259,7 +230,7 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public IQueryable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId)
         {
-            return UserPermissions.Where(ele => ele.TargetId == user.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            return GetContext(true).UserPermissions.Where(ele => ele.TargetId == user.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
         }
 
         /// <summary>
@@ -293,8 +264,9 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public IQueryable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
         {
-            return GroupPermissions.Where(ele => ele.TargetTypeCode == (int)SecurityEntityTypes.UserGroup && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode).Join(
-                Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == ResourceEntityExtensions.NormalStateCode),
+            var context = GetContext(true);
+            return context.GroupPermissions.Where(ele => ele.TargetTypeCode == (int)SecurityEntityTypes.UserGroup && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode).Join(
+                context.Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == ResourceEntityExtensions.NormalStateCode),
                 ele => ele.TargetId,
                 ele => ele.OwnerId,
                 (perm, rela) => perm);
@@ -331,7 +303,7 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public IQueryable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId)
         {
-            return GroupPermissions.Where(ele => ele.TargetId == group.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            return GetContext(true).GroupPermissions.Where(ele => ele.TargetId == group.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
         }
 
         /// <summary>
@@ -365,7 +337,7 @@ namespace NuScien.Security
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public IQueryable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId)
         {
-            return UserPermissions.Where(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            return GetContext(true).UserPermissions.Where(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
         }
 
         /// <summary>
@@ -400,7 +372,7 @@ namespace NuScien.Security
         public async Task<int> DeleteExpiredTokensAsync(string userId, CancellationToken cancellationToken = default)
         {
             var now = DateTime.Now;
-            var tokens = Tokens;
+            var tokens = GetContext().Tokens;
             var list = await tokens.Where(ele => ele.UserId == userId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
             tokens.RemoveRange(list);
             return list.Count;
@@ -415,7 +387,7 @@ namespace NuScien.Security
         public async Task<int> DeleteExpiredClientTokensAsync(string clientId, CancellationToken cancellationToken = default)
         {
             var now = DateTime.Now;
-            var tokens = Tokens;
+            var tokens = GetContext().Tokens;
             var list = await tokens.Where(ele => ele.ClientId == clientId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
             tokens.RemoveRange(list);
             return list.Count;
@@ -428,7 +400,7 @@ namespace NuScien.Security
         /// <returns>The async task.</returns>
         public async Task DeleteAccessToken(string accessToken)
         {
-            var tokens = Tokens;
+            var tokens = GetContext().Tokens;
             var list = await tokens.Where(ele => ele.Name == accessToken).ToListAsync();
             tokens.RemoveRange(list);
         }
@@ -441,7 +413,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserEntity user, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(Users, user, cancellationToken);
+            return DbResourceEntityExtensions.SaveAsync(GetContext().Users, user, cancellationToken);
         }
 
         /// <summary>
@@ -452,7 +424,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(Groups, group, cancellationToken);
+            return DbResourceEntityExtensions.SaveAsync(GetContext().Groups, group, cancellationToken);
         }
 
         /// <summary>
@@ -463,7 +435,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(Tokens, token, cancellationToken);
+            return DbResourceEntityExtensions.SaveAsync(GetContext().Tokens, token, cancellationToken);
         }
 
         /// <summary>
@@ -474,7 +446,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(UserPermissions, permissionItem, cancellationToken);
+            return DbResourceEntityExtensions.SaveAsync(GetContext().UserPermissions, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -485,7 +457,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GroupPermissions, permissionItem, cancellationToken);
+            return DbResourceEntityExtensions.SaveAsync(GetContext().GroupPermissions, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -496,7 +468,28 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(ClientPermissions, permissionItem, cancellationToken);
+            return DbResourceEntityExtensions.SaveAsync(GetContext().ClientPermissions, permissionItem, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a relationship entity.
+        /// </summary>
+        /// <param name="relationship">The user group relationship entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default)
+        {
+            return DbResourceEntityExtensions.SaveAsync(GetContext().Relationships, relationship, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets database context.
+        /// </summary>
+        /// <param name="isReadonly">true if get the readonly instance; otherwise, false.</param>
+        /// <returns>The database context.</returns>
+        protected IAccountDbContext GetContext(bool isReadonly = false)
+        {
+            return contextFactory?.Invoke(isReadonly);
         }
     }
 }

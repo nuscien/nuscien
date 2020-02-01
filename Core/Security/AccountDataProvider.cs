@@ -80,6 +80,23 @@ namespace NuScien.Security
         public Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="id">The user group relationship entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupRelationshipEntity> GetRelationshipByIdAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="groupId">The user group identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupRelationshipEntity> GetRelationshipByIdAsync(string groupId, string userId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="user">The user entity.</param>
@@ -221,7 +238,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="token">The token entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -229,7 +246,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="permissionItem">The permission item entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>An async task result.</returns>
+        /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -237,7 +254,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="permissionItem">The permission item entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>An async task result.</returns>
+        /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -245,8 +262,16 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="permissionItem">The permission item entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>An async task result.</returns>
+        /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a relationship entity.
+        /// </summary>
+        /// <param name="relationship">The user group relationship entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -333,6 +358,29 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         public Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="id">The user group relationship entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupRelationshipEntity> GetRelationshipByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a user group relationship entity.
+        /// </summary>
+        /// <param name="groupId">The user group identifier.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupRelationshipEntity> GetRelationshipByIdAsync(string groupId, string userId, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }
@@ -562,6 +610,17 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Creates or updates a relationship entity.
+        /// </summary>
+        /// <param name="relationship">The user group relationship entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method result.</returns>
+        public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }

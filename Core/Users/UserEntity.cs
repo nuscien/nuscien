@@ -35,11 +35,6 @@ namespace NuScien.Users
         Female = 2,
 
         /// <summary>
-        /// Shemale.
-        /// </summary>
-        Shemale = 4,
-
-        /// <summary>
         /// Asexual.
         /// </summary>
         Asexual = 5,
