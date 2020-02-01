@@ -57,7 +57,7 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return GetContext(true).Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+            return GetContext().Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
         }
 
         /// <summary>

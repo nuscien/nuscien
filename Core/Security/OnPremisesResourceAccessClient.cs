@@ -227,9 +227,10 @@ namespace NuScien.Security
         /// <param name="id">The user identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
-        public override Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
+        public override async Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return DataProvider.GetUserByIdAsync(id, cancellationToken);
+            var user = await DataProvider.GetUserByIdAsync(id, cancellationToken);
+            return user ?? await DataProvider.GetUserByLognameAsync(id, cancellationToken);
         }
 
         /// <summary>

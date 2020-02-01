@@ -290,8 +290,9 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="group">The user group entity to join in.</param>
         /// <param name="role">The role to request.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group relationship entity.</returns>
-        public async Task<ChangeMethods> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member)
+        public async Task<ChangeMethods> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
             var t = Token;
             if (group == null || group.IsNew || t == null || t.IsEmpty || string.IsNullOrWhiteSpace(t.UserId)) return ChangeMethods.Invalid;
@@ -305,10 +306,11 @@ namespace NuScien.Security
                 State = ResourceEntityStates.Request,
                 Name = User?.Nickname ?? User?.Name ?? t.UserId
             };
+            cancellationToken.ThrowIfCancellationRequested();
             var perms = await GetPermissionsAsync(group.OwnerSiteId);
             if (perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
                 rela.State = ResourceEntityStates.Normal;
-            return await SaveEntityAsync(rela);
+            return await SaveEntityAsync(rela, cancellationToken);
         }
 
         /// <summary>
@@ -319,7 +321,7 @@ namespace NuScien.Security
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group relationship entity.</returns>
-        public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, UserGroupRelationshipEntity.Roles role, CancellationToken cancellationToken = default)
         {
             var t = Token;
             if (group == null || group.IsNew || user == null) return ChangeMethods.Invalid;
@@ -377,6 +379,18 @@ namespace NuScien.Security
         /// Invites a user into a specific group.
         /// </summary>
         /// <param name="group">The user group entity to join in.</param>
+        /// <param name="user">The user entity.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group relationship entity.</returns>
+        public Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, CancellationToken cancellationToken = default)
+        {
+            return InviteAsync(group, user, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
+        }
+
+        /// <summary>
+        /// Invites a user into a specific group.
+        /// </summary>
+        /// <param name="group">The user group entity to join in.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
@@ -386,6 +400,18 @@ namespace NuScien.Security
             if (string.IsNullOrWhiteSpace(userId)) return ChangeMethods.Invalid;
             var user = await GetUserByIdAsync(userId, cancellationToken);
             return await InviteAsync(group, user, role, cancellationToken);
+        }
+
+        /// <summary>
+        /// Invites a user into a specific group.
+        /// </summary>
+        /// <param name="group">The user group entity to join in.</param>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group relationship entity.</returns>
+        public Task<ChangeMethods> InviteAsync(UserGroupEntity group, string userId, CancellationToken cancellationToken = default)
+        {
+            return InviteAsync(group, userId, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
         }
 
         /// <summary>
