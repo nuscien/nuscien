@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -29,6 +30,11 @@ namespace NuScien.Security
         /// The user groups.
         /// </summary>
         private IEnumerable<UserGroupResourceEntity<UserEntity>> groups;
+
+        /// <summary>
+        /// The permissions set.
+        /// </summary>
+        private readonly Dictionary<string, UserSitePermissionSet> permissions = new Dictionary<string, UserSitePermissionSet>();
 
         /// <summary>
         /// Gets the token request route instance.
@@ -89,6 +95,11 @@ namespace NuScien.Security
         /// Gets the user information.
         /// </summary>
         public UserEntity User => Token?.User;
+
+        /// <summary>
+        /// Gets the site identifier collection of permission cache.
+        /// </summary>
+        public IEnumerable<string> SiteIdsOfPermissionCache => permissions.Keys;
 
         /// <summary>
         /// Signs in.
@@ -159,12 +170,66 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the permissions.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The permission set.</returns>
+        public async Task<IPermissionSet> GetPermissionsAsync(string siteId)
+        {
+            if (permissions.TryGetValue(siteId, out var set))
+            {
+                if (DateTime.Now - set.CacheTime < TimeSpan.FromMinutes(2)) return set;
+            }
+            else
+            {
+                set = new UserSitePermissionSet(siteId);
+                permissions[siteId] = set;
+            }
+
+            set.CacheTime = DateTime.Now;
+            var userTask = Task.Run(() =>
+            {
+                set.UserPermissions = GetUserPermissions(siteId).ToList();
+            });
+            var groupTask = Task.Run(() =>
+            {
+                set.GroupPermissions = GetGroupPermissions(siteId).ToList();
+            });
+            await userTask;
+            await groupTask;
+            return set;
+        }
+
+        /// <summary>
+        /// Clears the permission cache.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        public void ClearPermissionCache(string siteId)
+        {
+            permissions.Remove(siteId);
+        }
+
+        /// <summary>
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The login response.</returns>
         protected abstract IEnumerable<UserGroupResourceEntity<UserEntity>> GetGroupsFromDataSource(string q, ResourceEntityStates relationshipState);
+
+        /// <summary>
+        /// Gets the user permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The user permission list.</returns>
+        protected abstract IEnumerable<UserPermissionItemEntity> GetUserPermissions(string siteId);
+
+        /// <summary>
+        /// Gets the user group permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The user group permission list.</returns>
+        protected abstract IEnumerable<UserGroupPermissionItemEntity> GetGroupPermissions(string siteId);
 
         /// <summary>
         /// Clears cache.

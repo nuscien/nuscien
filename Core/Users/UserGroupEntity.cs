@@ -49,6 +49,7 @@ namespace NuScien.Users
             set => SetCurrentProperty(value);
         }
     }
+
     /// <summary>
     /// The user group owner relationship resource entity.
     /// </summary>
@@ -97,6 +98,91 @@ namespace NuScien.Users
             : base(copy, owner, target)
         {
             if (!string.IsNullOrWhiteSpace(target?.Name)) Name = target.Name;
+        }
+    }
+
+    /// <summary>
+    /// The user group and user relationship entity.
+    /// </summary>
+    [DataContract]
+    public class UserGroupRelationshipEntity : UserGroupResourceEntity<UserEntity>
+    {
+        /// <summary>
+        /// The roles in user group.
+        /// </summary>
+        public enum Roles
+        {
+            /// <summary>
+            /// None.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// Guest.
+            /// </summary>
+            Guest = 1,
+
+            /// <summary>
+            /// Member.
+            /// </summary>
+            Member = 2,
+
+            /// <summary>
+            /// Information modification.
+            /// </summary>
+            InformationModification = 3,
+
+            /// <summary>
+            /// Member manager.
+            /// </summary>
+            UserManager = 4,
+
+            /// <summary>
+            /// Administrator.
+            /// </summary>
+            Admin = 5
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the UserGroupResourceEntity class.
+        /// </summary>
+        public UserGroupRelationshipEntity()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the UserGroupResourceEntity class.
+        /// </summary>
+        /// <param name="copy">The source to copy.</param>
+        /// <param name="owner">The owner resource entity.</param>
+        /// <param name="target">The target resource entity.</param>
+        public UserGroupRelationshipEntity(OwnerResourceEntity<UserGroupEntity, UserEntity> copy, UserGroupEntity owner, UserEntity target)
+            : base(copy, owner, target)
+        {
+            if (!string.IsNullOrWhiteSpace(target?.Name)) Name = target.Name;
+        }
+
+        /// <summary>
+        /// Gets or sets the avatar URL.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public Roles Role
+        {
+            get => GetCurrentProperty<Roles>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the avatar URL.
+        /// </summary>
+        [DataMember(Name = "role")]
+        [JsonPropertyName("role")]
+        [Column("role")]
+        public int RoleCode
+        {
+            get => (int)Role;
+            set => Role = (Roles)value;
         }
     }
 }

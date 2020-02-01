@@ -218,6 +218,26 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the user permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The user permission list.</returns>
+        protected override IEnumerable<UserPermissionItemEntity> GetUserPermissions(string siteId)
+        {
+            return DataProvider.ListUserPermissions(User, siteId);
+        }
+
+        /// <summary>
+        /// Gets the user group permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>The user group permission list.</returns>
+        protected override IEnumerable<UserGroupPermissionItemEntity> GetGroupPermissions(string siteId)
+        {
+            return DataProvider.ListGroupPermissions(User, siteId);
+        }
+
+        /// <summary>
         /// Creates a token by given user.
         /// </summary>
         /// <param name="user">The user entity to create token.</param>

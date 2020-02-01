@@ -42,7 +42,7 @@ namespace NuScien.Security
             DbSet<AccessingClientEntity> clients,
             DbSet<AuthorizationCodeEntity> codes,
             DbSet<TokenEntity> tokens,
-            DbSet<UserGroupResourceEntity<UserEntity>> relationships,
+            DbSet<UserGroupRelationshipEntity> relationships,
             DbSet<UserPermissionItemEntity> userPermissions,
             DbSet<UserGroupPermissionItemEntity> userGroupPermissions,
             DbSet<ClientPermissionItemEntity> clientPermissions)
@@ -86,7 +86,7 @@ namespace NuScien.Security
         /// <summary>
         /// Gets the user group relationship database set.
         /// </summary>
-        protected DbSet<UserGroupResourceEntity<UserEntity>> Relationships { get; }
+        protected DbSet<UserGroupRelationshipEntity> Relationships { get; }
 
         /// <summary>
         /// Gets the user permissions database set.
@@ -175,19 +175,41 @@ namespace NuScien.Security
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="user">The user entity.</param>
-        /// <param name="q">The optional name query; null for all.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupResourceEntity<UserEntity>> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        public IEnumerable<UserGroupRelationshipEntity> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
             var groups = string.IsNullOrWhiteSpace(q)
                 ? Groups.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
                 : Groups.Where(ele => ele.Name.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
-            return groups.Join(
-                Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState),
-                ele => ele.Id,
+            return Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState).Join(
+                groups,
                 ele => ele.OwnerId,
-                (group, rela) => new UserGroupResourceEntity<UserEntity>(rela, group, user));
+                ele => ele.Id,
+                (rela, group) => new UserGroupRelationshipEntity(rela, group, user));
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role = null, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        {
+            var users = string.IsNullOrWhiteSpace(q)
+                ? Users.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
+                : Users.Where(ele => ele.Nickname.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            var relationships = Relationships.Where(ele => ele.OwnerId == group.Id && ele.StateCode == (int)relationshipState);
+            if (role.HasValue) relationships = relationships.Where(ele => ele.RoleCode == (int)role.Value);
+            return relationships.Join(
+                users,
+                ele => ele.OwnerId,
+                ele => ele.Id,
+                (rela, user) => new UserGroupRelationshipEntity(rela, group, user));
         }
 
         /// <summary>

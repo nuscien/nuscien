@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security;
 using System.Security.Principal;
@@ -19,10 +20,15 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
-    public abstract class BasePermissionItemEntity<T> : BaseResourceEntity
-        where T : BaseSecurityEntity
+    public abstract class BasePermissionItemEntity : BaseResourceEntity
     {
+        /// <summary>
+        /// The split string for permission item.
+        /// </summary>
+        public const string PermissionSplit = "\n";
+
         private string config;
+        private List<string> cache;
 
         /// <summary>
         /// Gets the security entity type.
@@ -68,13 +74,6 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Gets or sets the target resource entity.
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public T Target { get; set; }
-
-        /// <summary>
         /// Gets or sets the permission list.
         /// </summary>
         [Column("permissions")]
@@ -82,8 +81,16 @@ namespace NuScien.Security
         [JsonPropertyName("permissions")]
         public string Permissions
         {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
+            get
+            {
+                return GetCurrentProperty<string>();
+            }
+
+            set
+            {
+                cache = null;
+                SetCurrentProperty(value);
+            }
         }
 
         /// <summary>
@@ -135,6 +142,229 @@ namespace NuScien.Security
                 }
             }
         }
+
+        /// <summary>
+        /// Gets permission list.
+        /// </summary>
+        /// <returns>The permission list.</returns>
+        public IEnumerable<string> GetPermissionList()
+        {
+            return GetPermissionListInternal().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Adds the permission item.
+        /// </summary>
+        /// <param name="value">The permission item to add.</param>
+        /// <param name="otherValues">The optional further permissions to add.</param>
+        /// <returns>The count of item added.</returns>
+        public int AddPermission(string value, params string[] otherValues)
+        {
+            var c = GetPermissionListInternal();
+            var count = 0;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                c.Add(value.Trim());
+                count++;
+            }
+
+            var col = otherValues.Where(ele => !string.IsNullOrWhiteSpace(ele)).Select(ele => ele.Trim()).ToList();
+            c.AddRange(col);
+            Permissions = string.Join(PermissionSplit, c);
+            cache = c;
+            return count + col.Count;
+        }
+
+        /// <summary>
+        /// Adds the permission item.
+        /// </summary>
+        /// <param name="values">The permissions to add.</param>
+        /// <returns>The count of item added.</returns>
+        public int AddPermission(IEnumerable<string> values)
+        {
+            var c = GetPermissionListInternal();
+            var col = values.Where(ele => !string.IsNullOrWhiteSpace(ele)).Select(ele => ele.Trim()).ToList();
+            c.AddRange(col);
+            Permissions = string.Join(PermissionSplit, c);
+            cache = c;
+            return col.Count;
+        }
+
+        /// <summary>
+        /// Removes the permission item.
+        /// </summary>
+        /// <param name="value">The permission item to remove.</param>
+        /// <param name="otherValues">The optional further permissions to remove.</param>
+        /// <returns>The count of item removed.</returns>
+        public int RemovePermission(string value, params string[] otherValues)
+        {
+            var c = GetPermissionListInternal();
+            var count = 0;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                c.Remove(value.Trim());
+                count++;
+            }
+
+            foreach (var item in otherValues)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                if (c.Remove(item)) count++;
+            }
+
+            Permissions = string.Join(PermissionSplit, c);
+            cache = c;
+            return count;
+        }
+
+        /// <summary>
+        /// Removes the permission item.
+        /// </summary>
+        /// <param name="values">The permissions to remove.</param>
+        /// <returns>The count of item removed.</returns>
+        public int RemovePermission(IEnumerable<string> values)
+        {
+            var c = GetPermissionListInternal();
+            var count = 0;
+
+            foreach (var item in values)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                if (c.Remove(item)) count++;
+            }
+
+            Permissions = string.Join(PermissionSplit, c);
+            cache = c;
+            return count;
+        }
+
+        /// <summary>
+        /// Tests if contains the specific permission item.
+        /// </summary>
+        /// <param name="value">The permission item to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public bool HasPermission(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return false;
+            var c = GetPermissionList();
+            return c.Contains(value.Trim());
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="value">The permission item to test.</param>
+        /// <param name="otherValues">Other permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public bool HasAnyPermission(string value, params string[] otherValues)
+        {
+            var c = GetPermissionList();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                if (c.Contains(value.Trim())) return true;
+            }
+
+            foreach (var item in otherValues)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                if (c.Contains(item.Trim())) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="values">The permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public bool HasAnyPermission(IEnumerable<string> values)
+        {
+            if (values == null) return false;
+            var c = GetPermissionList();
+            foreach (var item in values)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                if (c.Contains(item.Trim())) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tests if contains all of the specific permission item.
+        /// </summary>
+        /// <param name="value">The permission item to test.</param>
+        /// <param name="otherValues">Other permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public bool HasAllPermission(string value, params string[] otherValues)
+        {
+            var c = GetPermissionList();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                if (!c.Contains(value.Trim())) return false;
+            }
+
+            foreach (var item in otherValues)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                if (!c.Contains(item.Trim())) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Tests if contains all of the specific permission item.
+        /// </summary>
+        /// <param name="values">The permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public bool HasAllPermission(IEnumerable<string> values)
+        {
+            if (values == null) return false;
+            var c = GetPermissionList();
+            foreach (var item in values)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                if (!c.Contains(item.Trim())) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets permission list.
+        /// </summary>
+        /// <returns>The permission list.</returns>
+        private List<string> GetPermissionListInternal()
+        {
+            var c = cache;
+            if (c == null)
+            {
+                var s = Permissions;
+                if (string.IsNullOrWhiteSpace(s)) c = new List<string>();
+                else c = StringExtensions.ReadLines(s.Trim(), true).ToList();
+                cache = c;
+            }
+
+            return c;
+        }
+    }
+
+    /// <summary>
+    /// The permission item entity.
+    /// </summary>
+    /// <typeparam name="T">The type of target entity.</typeparam>
+    [DataContract]
+    public abstract class BasePermissionItemEntity<T> : BasePermissionItemEntity
+        where T : BaseSecurityEntity
+    {
+        /// <summary>
+        /// Gets or sets the target resource entity.
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public T Target { get; set; }
     }
 
     /// <summary>

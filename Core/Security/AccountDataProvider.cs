@@ -75,10 +75,21 @@ namespace NuScien.Security
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="user">The user entity.</param>
-        /// <param name="q">The optional name query; null for all.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupResourceEntity<UserEntity>> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal);
+        public IEnumerable<UserGroupRelationshipEntity> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal);
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role = null, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal);
+
         /// <summary>
         /// Gets a collection of user permissions.
         /// </summary>
@@ -257,10 +268,23 @@ namespace NuScien.Security
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="user">The user entity.</param>
-        /// <param name="q">The optional name query; null for all.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupResourceEntity<UserEntity>> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        public IEnumerable<UserGroupRelationshipEntity> ListUserGroups(UserEntity user, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="group">The user group entity.</param>
+        /// <param name="role">The role to search; or null for all roles.</param>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupRelationshipEntity> ListUsers(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role = null, string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
             throw GetException();
         }
