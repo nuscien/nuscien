@@ -203,7 +203,7 @@ namespace NuScien.Security
         /// Gets the cache date time of permission.
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The cahce date time.</returns>
+        /// <returns>The cache date time.</returns>
         public DateTime? GetPermissionCacheTime(string siteId)
         {
             if (!permissions.TryGetValue(siteId, out var set)) return null;
@@ -278,6 +278,29 @@ namespace NuScien.Security
             {
                 NameQuery = q
             }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a user group entity.
+        /// </summary>
+        /// <param name="value">The user group entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> Save(UserGroupEntity value, CancellationToken cancellationToken = default)
+        {
+            var groups = await GetGroupsAsync();
+            foreach (var g in groups)
+            {
+                if (g.OwnerId != value.Id) continue;
+                return g.Role switch
+                {
+                    UserGroupRelationshipEntity.Roles.Owner => await SaveEntity(value, cancellationToken),
+                    UserGroupRelationshipEntity.Roles.Master => await SaveEntity(value, cancellationToken),
+                    _ => ChangeMethods.Unchanged
+                };
+            }
+
+            return ChangeMethods.Unchanged;
         }
 
         /// <summary>
