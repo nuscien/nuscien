@@ -386,6 +386,17 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Creates or updates a user entity.
+        /// </summary>
+        /// <param name="value">The user entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(value, cancellationToken);
+        }
+
+        /// <summary>
         /// Creates or updates a user group entity.
         /// </summary>
         /// <param name="value">The user group entity to save.</param>

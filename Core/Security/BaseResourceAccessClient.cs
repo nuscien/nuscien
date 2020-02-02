@@ -490,12 +490,31 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Registers a new user or update current user.
+        /// </summary>
+        /// <param name="value">The user group entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveAsync(UserEntity value, CancellationToken cancellationToken = default)
+        {
+            if (!value.IsNew && value.Id != UserId) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(value.PasswordEncrypted))
+            {
+                if (value.IsNew) return ChangeMethods.Invalid;
+                var u = await GetUserByIdAsync(value.Id);
+                value.PasswordEncrypted = u.PasswordEncrypted;
+            }
+
+            return await SaveEntityAsync(value, cancellationToken);
+        }
+
+        /// <summary>
         /// Creates or updates a user group entity.
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethods> Save(UserGroupEntity value, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethods> SaveAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
             if (value == null) return ChangeMethods.Invalid;
             if (value.IsNew)
@@ -601,6 +620,14 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         protected abstract Task<UserGroupRelationshipEntity> GetRelationshipAsync(string groupId, string userId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a user entity.
+        /// </summary>
+        /// <param name="value">The user entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected abstract Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a user group entity.
