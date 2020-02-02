@@ -42,6 +42,21 @@ namespace NuScien.Security
         public DateTime? GroupsCacheTime { get; private set; }
 
         /// <summary>
+        /// Gets the user identifier signed in.
+        /// </summary>
+        public string UserId { get; protected set; }
+
+        /// <summary>
+        /// Gets the client identifier used to login.
+        /// </summary>
+        public string ClientId { get; protected set; }
+
+        /// <summary>
+        /// Gets the a value indicating whether the client used to login is verified.
+        /// </summary>
+        public bool IsClientCredentialVerified { get; protected set; }
+
+        /// <summary>
         /// Gets the token request route instance.
         /// </summary>
         public TokenRequestRoute<UserEntity> TokenRequestRoute
@@ -154,6 +169,9 @@ namespace NuScien.Security
         {
             return Task.Run(() =>
             {
+                UserId = null;
+                ClientId = null;
+                IsClientCredentialVerified = false;
                 ClearCache();
                 Token = null;
             });
@@ -344,18 +362,17 @@ namespace NuScien.Security
         /// <returns>The user group relationship entity.</returns>
         public async Task<ChangeMethods> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
-            var t = Token;
-            if (group == null || group.IsNew || t == null || t.IsEmpty || string.IsNullOrWhiteSpace(t.UserId)) return ChangeMethods.Invalid;
+            if (group == null || group.IsNew || IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return ChangeMethods.Invalid;
             var rela = await GetGroupRelationshipAsync(group);
             if (rela != null) return ChangeMethods.Unchanged;
             if (group.MembershipPolicy == UserGroupMembershipPolicies.Forbidden) return ChangeMethods.Invalid;
             rela = new UserGroupRelationshipEntity
             {
                 OwnerId = group.Id,
-                TargetId = t.UserId,
+                TargetId = UserId,
                 Role = role,
                 State = ResourceEntityStates.Request,
-                Name = User?.Nickname ?? User?.Name ?? t.UserId
+                Name = User?.Nickname ?? User?.Name ?? UserId
             };
             if (role == UserGroupRelationshipEntity.Roles.Member && group.MembershipPolicy == UserGroupMembershipPolicies.Allow)
             {
@@ -382,10 +399,9 @@ namespace NuScien.Security
         /// <returns>The user group relationship entity.</returns>
         public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, UserGroupRelationshipEntity.Roles role, CancellationToken cancellationToken = default)
         {
-            var t = Token;
             if (group == null || group.IsNew || user == null) return ChangeMethods.Invalid;
             var userId = user.Id;
-            if (t != null && t.UserId == userId) return await JoinAsync(group, role);
+            if (!IsTokenNullOrEmpty && UserId == userId) return await JoinAsync(group, role);
             var rela = await GetGroupRelationshipAsync(group);
             var isAdmin = false;
             if (rela == null)
@@ -418,7 +434,7 @@ namespace NuScien.Security
                 rela = new UserGroupRelationshipEntity
                 {
                     OwnerId = group.Id,
-                    TargetId = t.UserId,
+                    TargetId = user.Id,
                     Role = UserGroupRelationshipEntity.Roles.Member,
                     State = ResourceEntityStates.Normal,
                     Name = user.Nickname ?? user.Name ?? userId
@@ -523,16 +539,15 @@ namespace NuScien.Security
         public async Task<bool> CanViewMembersAsync(UserGroupEntity group)
         {
             if (group.Visibility == UserGroupVisibilities.Visible) return true;
-            var t = Token;
-            if (t == null || t.IsEmpty || string.IsNullOrWhiteSpace(t.UserId)) return false;
+            if (IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return false;
             var g = groups;
             if (g == null)
             {
-                var rela = await GetRelationshipAsync(group.Id, t.UserId);
+                var rela = await GetRelationshipAsync(group.Id, UserId);
                 return rela != null;
             }
 
-            return g.FirstOrDefault(ele => ele.OwnerId == t.UserId) != null;
+            return g.FirstOrDefault(ele => ele.OwnerId == UserId) != null;
         }
 
         /// <summary>

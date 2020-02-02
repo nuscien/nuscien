@@ -466,6 +466,15 @@ namespace NuScien.Security
                     };
                 }
 
+                UserId = user?.Id;
+                ClientId = token.ClientId;
+                IsClientCredentialVerified = false;
+                if (!string.IsNullOrWhiteSpace(token.ClientId) && tokenRequest.ClientCredentials?.Secret != null && tokenRequest.ClientCredentials.Secret.Length > 0)
+                {
+                    var clientInfo = await DataProvider.GetClientByNameAsync(token.ClientId, cancellationToken);
+                    IsClientCredentialVerified = clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret);
+                }
+
                 return Token = new UserTokenInfo
                 {
                     User = user,
