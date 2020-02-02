@@ -13,6 +13,27 @@ using Trivial.Text;
 namespace NuScien.Users
 {
     /// <summary>
+    /// User group visibilities.
+    /// </summary>
+    public enum UserGroupVisibilities
+    {
+        /// <summary>
+        /// The group information is private.
+        /// </summary>
+        Hidden = 0,
+
+        /// <summary>
+        /// The group information is visible but the members are private for guest.
+        /// </summary>
+        MembersHidden = 1,
+
+        /// <summary>
+        /// Public.
+        /// </summary>
+        Visible = 2
+    }
+
+    /// <summary>
     /// User group information.
     /// </summary>
     [DataContract]
@@ -58,133 +79,53 @@ namespace NuScien.Users
         public string OwnerSiteId
         {
             get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-    }
-
-    /// <summary>
-    /// The user group owner relationship resource entity.
-    /// </summary>
-    [DataContract]
-    public class UserGroupResourceEntity : OwnerResourceEntity<UserGroupEntity>
-    {
-        /// <summary>
-        /// Initializes a new instance of the UserGroupResourceEntity class.
-        /// </summary>
-        public UserGroupResourceEntity()
-        {
+            set => SetCurrentProperty(string.IsNullOrWhiteSpace(value) ? null : value.Trim());
         }
 
         /// <summary>
-        /// Initializes a new instance of the UserGroupResourceEntity class.
-        /// </summary>
-        /// <param name="copy">The source to copy.</param>
-        /// <param name="owner">The owner resource entity.</param>
-        public UserGroupResourceEntity(OwnerResourceEntity<UserGroupEntity> copy, UserGroupEntity owner)
-            : base(copy, owner)
-        {
-        }
-    }
-
-    /// <summary>
-    /// The user group owner relationship resource entity.
-    /// </summary>
-    /// <typeparam name="T">The type of target resource.</typeparam>
-    [DataContract]
-    public class UserGroupResourceEntity<T> : OwnerResourceEntity<UserGroupEntity, T> where T : BaseResourceEntity
-    {
-        /// <summary>
-        /// Initializes a new instance of the UserGroupResourceEntity class.
-        /// </summary>
-        public UserGroupResourceEntity()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the UserGroupResourceEntity class.
-        /// </summary>
-        /// <param name="copy">The source to copy.</param>
-        /// <param name="owner">The owner resource entity.</param>
-        /// <param name="target">The target resource entity.</param>
-        public UserGroupResourceEntity(OwnerResourceEntity<UserGroupEntity, T> copy, UserGroupEntity owner, T target)
-            : base(copy, owner, target)
-        {
-            if (!string.IsNullOrWhiteSpace(target?.Name)) Name = target.Name;
-        }
-    }
-
-    /// <summary>
-    /// The user group and user relationship entity.
-    /// </summary>
-    [DataContract]
-    public class UserGroupRelationshipEntity : UserGroupResourceEntity<UserEntity>
-    {
-        /// <summary>
-        /// The roles in user group.
-        /// </summary>
-        public enum Roles
-        {
-            /// <summary>
-            /// Member.
-            /// </summary>
-            Member = 0,
-
-            /// <summary>
-            /// Power user.
-            /// </summary>
-            PowerUser = 1,
-
-            /// <summary>
-            /// Co-administrator.
-            /// </summary>
-            Master = 2,
-
-            /// <summary>
-            /// Owner.
-            /// </summary>
-            Owner = 3
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the UserGroupResourceEntity class.
-        /// </summary>
-        public UserGroupRelationshipEntity()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the UserGroupResourceEntity class.
-        /// </summary>
-        /// <param name="copy">The source to copy.</param>
-        /// <param name="owner">The owner resource entity.</param>
-        /// <param name="target">The target resource entity.</param>
-        public UserGroupRelationshipEntity(OwnerResourceEntity<UserGroupEntity, UserEntity> copy, UserGroupEntity owner, UserEntity target)
-            : base(copy, owner, target)
-        {
-            if (!string.IsNullOrWhiteSpace(target?.Name)) Name = target.Name;
-        }
-
-        /// <summary>
-        /// Gets or sets the avatar URL.
+        /// Gets or sets the membership policy.
         /// </summary>
         [JsonIgnore]
         [NotMapped]
-        public Roles Role
+        public UserGroupMembershipPolicies MembershipPolicy
         {
-            get => GetCurrentProperty<Roles>();
+            get => GetCurrentProperty<UserGroupMembershipPolicies>();
             set => SetCurrentProperty(value);
         }
 
         /// <summary>
-        /// Gets or sets the avatar URL.
+        /// Gets or sets the membership policy code.
         /// </summary>
-        [DataMember(Name = "role")]
-        [JsonPropertyName("role")]
-        [Column("role")]
-        public int RoleCode
+        [DataMember(Name = "membership")]
+        [JsonPropertyName("membership")]
+        [Column("membership")]
+        public int MembershipPolicyCode
         {
-            get => (int)Role;
-            set => Role = (Roles)value;
+            get => (int)MembershipPolicy;
+            set => MembershipPolicy = (UserGroupMembershipPolicies)value;
+        }
+
+        /// <summary>
+        /// Gets or sets the visibility.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public UserGroupVisibilities Visibility
+        {
+            get => GetCurrentProperty<UserGroupVisibilities>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the visibility code.
+        /// </summary>
+        [DataMember(Name = "visible")]
+        [JsonPropertyName("visible")]
+        [Column("visible")]
+        public int VisibilityCode
+        {
+            get => (int)Visibility;
+            set => Visibility = (UserGroupVisibilities)value;
         }
     }
 }

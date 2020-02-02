@@ -100,7 +100,7 @@ namespace NuScien.Security
         /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="user">The user entity.</param>
-        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="q">The optional query request information.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
@@ -121,48 +121,63 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="group">The user group entity.</param>
         /// <param name="role">The role to search; or null for all roles.</param>
-        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="q">The optional query request information.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, QueryArgs q, CancellationToken cancellationToken = default);
-        /// <summary>
-        /// Searches user groups.
-        /// </summary>
-        /// <param name="q">The optional name query; or null for all.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupEntity> ListGroups(string q);
 
         /// <summary>
         /// Searches user groups.
         /// </summary>
         /// <param name="q">The optional name query; or null for all.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <param name="state">The entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, CancellationToken cancellationToken = default);
+        public IEnumerable<UserGroupEntity> ListGroups(string q, string siteId, bool onlyPublic = false, ResourceEntityStates state = ResourceEntityStates.Normal);
 
         /// <summary>
-        /// Gets a collection of user permissions.
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional query request information.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, bool onlyPublic = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupEntity> ListGroups(string q, bool onlyPublic = false);
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional query request information.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, bool onlyPublic = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a user permissions.
         /// </summary>
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId);
-
-        /// <summary>
-        /// Gets a collection of user permissions.
-        /// </summary>
-        /// <param name="user">The user entity.</param>
-        /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserPermissionItemEntity>> ListUserPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default);
+        /// <returns>The permission entity matched if found; otherwise, null.</returns>
+        public Task<UserPermissionItemEntity> GetUserPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a collection of user group permissions.
         /// </summary>
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        /// <returns>The permission entities.</returns>
         public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId);
 
         /// <summary>
@@ -171,7 +186,7 @@ namespace NuScien.Security
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        /// <returns>The permission entities.</returns>
         public Task<IEnumerable<UserGroupPermissionItemEntity>> ListGroupPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -179,25 +194,9 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="group">The user group entity.</param>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId);
-
-        /// <summary>
-        /// Gets a collection of user group permissions.
-        /// </summary>
-        /// <param name="group">The user group entity.</param>
-        /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserGroupPermissionItemEntity>> ListGroupPermissionsAsync(UserGroupEntity group, string siteId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets a collection of user permissions.
-        /// </summary>
-        /// <param name="client">The client entity.</param>
-        /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId);
+        /// <returns>The permission entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupPermissionItemEntity> GetGroupPermissionsAsync(UserGroupEntity group, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a collection of user permissions.
@@ -205,8 +204,8 @@ namespace NuScien.Security
         /// <param name="client">The client entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserPermissionItemEntity>> ListClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default);
+        /// <returns>The permission entities.</returns>
+        public Task<ClientPermissionItemEntity> GetClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes a set of token expired.
@@ -442,8 +441,24 @@ namespace NuScien.Security
         /// Searches user groups.
         /// </summary>
         /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <param name="state">The entity state.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserGroupEntity> ListGroups(string q)
+        public IEnumerable<UserGroupEntity> ListGroups(string q, string siteId, bool onlyPublic = false, ResourceEntityStates state = ResourceEntityStates.Normal)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional query request information.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, bool onlyPublic = false, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }
@@ -452,9 +467,21 @@ namespace NuScien.Security
         /// Searches user groups.
         /// </summary>
         /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupEntity> ListGroups(string q, bool onlyPublic = false)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="onlyPublic">true if only public; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, bool onlyPublic = false, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }
@@ -464,21 +491,11 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserPermissionItemEntity> ListUserPermissions(UserEntity user, string siteId)
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The permission entity matched if found; otherwise, null.</returns>
+        public Task<UserPermissionItemEntity> GetUserPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default)
         {
             throw GetException();
-        }
-        /// <summary>
-        /// Gets a collection of user permissions.
-        /// </summary>
-        /// <param name="user">The user entity.</param>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserPermissionItemEntity>> ListUserPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default)
-        {
-            return ToListAsync(ListUserPermissions(user, siteId), cancellationToken);
         }
 
         /// <summary>
@@ -486,7 +503,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        /// <returns>The permission entities.</returns>
         public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
         {
             throw GetException();
@@ -498,7 +515,7 @@ namespace NuScien.Security
         /// <param name="user">The user entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        /// <returns>The permission entities.</returns>
         public Task<IEnumerable<UserGroupPermissionItemEntity>> ListGroupPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default)
         {
             return ToListAsync(ListGroupPermissions(user, siteId), cancellationToken);
@@ -509,7 +526,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="group">The user group entity.</param>
         /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        /// <returns>The permission entity matched if found; otherwise, null.</returns>
         public IEnumerable<UserGroupPermissionItemEntity> ListGroupPermissions(UserGroupEntity group, string siteId)
         {
             throw GetException();
@@ -521,19 +538,8 @@ namespace NuScien.Security
         /// <param name="group">The user group entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserGroupPermissionItemEntity>> ListGroupPermissionsAsync(UserGroupEntity group, string siteId, CancellationToken cancellationToken = default)
-        {
-            return ToListAsync(ListGroupPermissions(group, siteId), cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets a collection of user permissions.
-        /// </summary>
-        /// <param name="client">The client entity.</param>
-        /// <param name="siteId">The site identifier.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public IEnumerable<UserPermissionItemEntity> ListClientPermissions(AccessingClientEntity client, string siteId)
+        /// <returns>The permission entity matched if found; otherwise, null.</returns>
+        public Task<UserGroupPermissionItemEntity> GetGroupPermissionsAsync(UserGroupEntity group, string siteId, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }
@@ -544,10 +550,10 @@ namespace NuScien.Security
         /// <param name="client">The client entity.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public Task<IEnumerable<UserPermissionItemEntity>> ListClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default)
+        /// <returns>The permission entity matched if found; otherwise, null.</returns>
+        public Task<ClientPermissionItemEntity> GetClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default)
         {
-            return ToListAsync(ListClientPermissions(client, siteId), cancellationToken);
+            throw GetException();
         }
 
         /// <summary>
