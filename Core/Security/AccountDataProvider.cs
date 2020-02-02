@@ -125,6 +125,20 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, QueryArgs q, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupEntity> ListGroups(string q);
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a collection of user permissions.
@@ -420,6 +434,27 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, QueryArgs q, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IEnumerable<UserGroupEntity> ListGroups(string q)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }

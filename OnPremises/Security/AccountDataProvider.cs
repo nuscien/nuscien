@@ -223,6 +223,40 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public IQueryable<UserGroupEntity> ListGroups(string q)
+        {
+            IQueryable<UserGroupEntity> col = GetContext(true).Groups;
+            if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q));
+            return col.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        IEnumerable<UserGroupEntity> IAccountDataProvider.ListGroups(string q)
+        {
+            return ListGroups(q);
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional name query; or null for all.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, CancellationToken cancellationToken = default)
+        {
+            if (q == null) q = InternalAssertion.DefaultQueryArgs;
+            return await ListGroups(q.NameQuery).ToListAsync(q, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a collection of user permissions.
         /// </summary>
         /// <param name="user">The user entity.</param>
