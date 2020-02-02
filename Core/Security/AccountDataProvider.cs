@@ -46,6 +46,7 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<AccessingClientEntity> GetClientByNameAsync(string appId, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Gets a client credential by app identifier.
         /// </summary>
@@ -54,6 +55,25 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<AuthorizationCodeEntity> GetAuthorizationCodeByCodeAsync(string provider, string code, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public IEnumerable<AuthorizationCodeEntity> GetAuthorizationCodesByOwner(string provider, SecurityEntityTypes ownerType, string ownerId);
+
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<AuthorizationCodeEntity>> GetAuthorizationCodesByOwnerAsync(string provider, SecurityEntityTypes ownerType, string ownerId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a token entity by given identifier.
@@ -285,6 +305,14 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates an authorization code entity.
+        /// </summary>
+        /// <param name="code">The authorization code entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method result.</returns>
+        public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -340,6 +368,30 @@ namespace NuScien.Security
         public Task<AuthorizationCodeEntity> GetAuthorizationCodeByCodeAsync(string provider, string code, CancellationToken cancellationToken = default)
         {
             throw GetException();
+        }
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public IEnumerable<AuthorizationCodeEntity> GetAuthorizationCodesByOwner(string provider, SecurityEntityTypes ownerType, string ownerId)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<IEnumerable<AuthorizationCodeEntity>> GetAuthorizationCodesByOwnerAsync(string provider, SecurityEntityTypes ownerType, string ownerId, CancellationToken cancellationToken = default)
+        {
+            return ToListAsync(GetAuthorizationCodesByOwner(provider, ownerType, ownerId), cancellationToken);
         }
 
         /// <summary>
@@ -666,6 +718,22 @@ namespace NuScien.Security
             throw GetException();
         }
 
+
+        /// <summary>
+        /// Creates or updates an authorization code entity.
+        /// </summary>
+        /// <param name="code">The authorization code entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method result.</returns>
+        public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets the exception to throw.
+        /// </summary>
+        /// <returns>An exception.</returns>
         private Exception GetException()
         {
             return MethodException ?? new NotImplementedException();

@@ -162,6 +162,16 @@ namespace NuScien.Security
         public abstract Task<UserTokenInfo> AuthorizeAsync(string accessToken, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Sets a new authorization code.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <param name="code">The authorization code.</param>
+        /// <param name="insertNewOne">true if need add a new one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public abstract Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Signs out.
         /// </summary>
         /// <returns>The task.</returns>
@@ -359,7 +369,7 @@ namespace NuScien.Security
         /// <param name="group">The user group entity to join in.</param>
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group relationship entity.</returns>
+        /// <returns>The status of changing result.</returns>
         public async Task<ChangeMethods> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
             if (group == null || group.IsNew || IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return ChangeMethods.Invalid;
@@ -396,7 +406,7 @@ namespace NuScien.Security
         /// <param name="user">The user entity.</param>
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group relationship entity.</returns>
+        /// <returns>The status of changing result.</returns>
         public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, UserGroupRelationshipEntity.Roles role, CancellationToken cancellationToken = default)
         {
             if (group == null || group.IsNew || user == null) return ChangeMethods.Invalid;
@@ -456,7 +466,7 @@ namespace NuScien.Security
         /// <param name="group">The user group entity to join in.</param>
         /// <param name="user">The user entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group relationship entity.</returns>
+        /// <returns>The status of changing result.</returns>
         public Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, CancellationToken cancellationToken = default)
         {
             return InviteAsync(group, user, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
@@ -469,7 +479,7 @@ namespace NuScien.Security
         /// <param name="userId">The user identifier.</param>
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group relationship entity.</returns>
+        /// <returns>The status of changing result.</returns>
         public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, string userId, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(userId)) return ChangeMethods.Invalid;
@@ -483,7 +493,7 @@ namespace NuScien.Security
         /// <param name="group">The user group entity to join in.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group relationship entity.</returns>
+        /// <returns>The status of changing result.</returns>
         public Task<ChangeMethods> InviteAsync(UserGroupEntity group, string userId, CancellationToken cancellationToken = default)
         {
             return InviteAsync(group, userId, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
@@ -494,7 +504,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         public async Task<ChangeMethods> SaveAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
             if (!value.IsNew && value.Id != UserId) return ChangeMethods.Invalid;
@@ -513,7 +523,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         public async Task<ChangeMethods> SaveAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
             if (value == null) return ChangeMethods.Invalid;
@@ -626,7 +636,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -634,7 +644,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -642,7 +652,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user group relationship entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>

@@ -96,6 +96,43 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public IQueryable<AuthorizationCodeEntity> GetAuthorizationCodesByOwner(string provider, SecurityEntityTypes ownerType, string ownerId)
+        {
+            return GetContext(true).Codes.Where(ele => ele.OwnerId == ownerId && ele.OwnerTypeCode == (int)ownerType && ele.ServiceProvider == provider);
+        }
+
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        IEnumerable<AuthorizationCodeEntity> IAccountDataProvider.GetAuthorizationCodesByOwner(string provider, SecurityEntityTypes ownerType, string ownerId)
+        {
+            return GetAuthorizationCodesByOwner(provider, ownerType, ownerId);
+        }
+
+        /// <summary>
+        /// Gets a client credential by app identifier.
+        /// </summary>
+        /// <param name="provider">The provider name or url.</param>
+        /// <param name="ownerType">The owner type.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public async Task<IEnumerable<AuthorizationCodeEntity>> GetAuthorizationCodesByOwnerAsync(string provider, SecurityEntityTypes ownerType, string ownerId, CancellationToken cancellationToken = default)
+        {
+            return await GetAuthorizationCodesByOwner(provider, ownerType, ownerId).ToListAsync(null, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a token entity by given identifier.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
@@ -245,7 +282,7 @@ namespace NuScien.Security
         {
             IQueryable<UserGroupEntity> col = GetContext(true).Groups;
             if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q));
-            if (onlyPublic) col = col.Where(ele => ele.Visibility != UserGroupVisibilities.Hidden);
+            if (onlyPublic) col = col.Where(ele => ele.VisibilityCode != (int)UserGroupVisibilities.Hidden);
             return col.Where(ele => ele.OwnerSiteId == siteId && ele.StateCode == (int)state);
         }
 
@@ -280,7 +317,7 @@ namespace NuScien.Security
                 else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
             }
 
-            if (onlyPublic) col = col.Where(ele => ele.Visibility != UserGroupVisibilities.Hidden);
+            if (onlyPublic) col = col.Where(ele => ele.VisibilityCode != (int)UserGroupVisibilities.Hidden);
             return await col.Where(ele => ele.OwnerSiteId == siteId && ele.StateCode == (int)q.State).ToListAsync(q, cancellationToken);
         }
 
@@ -294,7 +331,7 @@ namespace NuScien.Security
         {
             IQueryable<UserGroupEntity> col = GetContext(true).Groups;
             if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q));
-            if (onlyPublic) col = col.Where(ele => ele.Visibility != UserGroupVisibilities.Hidden);
+            if (onlyPublic) col = col.Where(ele => ele.VisibilityCode != (int)UserGroupVisibilities.Hidden);
             return col.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode);
         }
 
@@ -326,7 +363,7 @@ namespace NuScien.Security
                 else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
             }
 
-            if (onlyPublic) col = col.Where(ele => ele.Visibility != UserGroupVisibilities.Hidden);
+            if (onlyPublic) col = col.Where(ele => ele.VisibilityCode != (int)UserGroupVisibilities.Hidden);
             return await col.Where(ele => ele.StateCode == (int)q.State).ToListAsync(q, cancellationToken);
         }
 
@@ -525,6 +562,17 @@ namespace NuScien.Security
         public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default)
         {
             return DbResourceEntityExtensions.SaveAsync(GetContext().Relationships, relationship, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates an authorization code entity.
+        /// </summary>
+        /// <param name="code">The authorization code entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method result.</returns>
+        public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default)
+        {
+            return DbResourceEntityExtensions.SaveAsync(GetContext().Codes, code, cancellationToken);
         }
 
         /// <summary>

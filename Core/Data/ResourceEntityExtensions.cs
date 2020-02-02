@@ -8,8 +8,11 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+
+using NuScien.Security;
 using Trivial.Data;
 using Trivial.Reflection;
+using Trivial.Security;
 using Trivial.Text;
 
 namespace NuScien.Data
@@ -319,6 +322,39 @@ namespace NuScien.Data
                     if (!isSucc) entity.RollbackSaving();
                 }
             }
+        }
+
+        /// <summary>
+        /// Tries to get the third-party login provider.
+        /// </summary>
+        /// <param name="providers">The third-party login provider pool.</param>
+        /// <param name="ldap">The LDAP host name or IP address.</param>
+        /// <returns>The third-party login provider matched; or null if non-existed.</returns>
+        public static IThirdPartyLoginProvider<PasswordTokenRequestBody> TryGetProvider(this Dictionary<string, IThirdPartyLoginProvider<PasswordTokenRequestBody>> providers, string ldap)
+        {
+            if (ldap == null) return null;
+            ldap = ldap.Trim();
+            if (string.IsNullOrEmpty(ldap)) return null;
+            var startOffset = ldap.IndexOf("://");
+            if (ldap.StartsWith("//")) startOffset = 2;
+            else if (startOffset >= 0) startOffset += 3;
+            var host = startOffset > 0 ? ldap.Substring(startOffset) : ldap;
+            if (host.EndsWith("/")) host = host[0..^1];
+            return providers.TryGetValue(host, out var provider) ? provider : null;
+        }
+
+        /// <summary>
+        /// Tries to get the third-party login provider.
+        /// </summary>
+        /// <param name="providers">The third-party login provider pool.</param>
+        /// <param name="serviceProvider">The authorization code service provider name or URL.</param>
+        /// <returns>The third-party login provider matched; or null if non-existed.</returns>
+        public static IAuthorizationCodeVerifierProvider TryGetProvider(this Dictionary<string, IAuthorizationCodeVerifierProvider> providers, string serviceProvider)
+        {
+            if (serviceProvider == null) return null;
+            serviceProvider = serviceProvider.Trim();
+            if (string.IsNullOrEmpty(serviceProvider)) return null;
+            return providers.TryGetValue(serviceProvider, out var provider) ? provider : null;
         }
     }
 }

@@ -27,6 +27,16 @@ namespace NuScien.Security
         private const string InvalidPasswordCode = "invalid_password";
 
         /// <summary>
+        /// The authentication code verifier providers.
+        /// </summary>
+        private readonly Dictionary<string, IAuthorizationCodeVerifierProvider> authCodeVerifierProviders = new Dictionary<string, IAuthorizationCodeVerifierProvider>();
+
+        /// <summary>
+        /// The LDAP providers.
+        /// </summary>
+        private readonly Dictionary<string, IThirdPartyLoginProvider<PasswordTokenRequestBody>> ldapProviders = new Dictionary<string, IThirdPartyLoginProvider<PasswordTokenRequestBody>>();
+
+        /// <summary>
         /// Initializes a new instance of the OnPremisesResourceAccessClient class.
         /// </summary>
         /// <param name="provider">The account data provider.</param>
@@ -39,6 +49,34 @@ namespace NuScien.Security
         /// Gets the account data provider.
         /// </summary>
         protected IAccountDataProvider DataProvider { get; }
+
+        /// <summary>
+        /// Registers a third-party login provider.
+        /// </summary>
+        /// <param name="serviceProvider">The name or URL of authentication code service provider.</param>
+        /// <param name="provider">The third-party login provider instance; or null to remove.</param>
+        /// <returns>true if register or remove succeeded; otherwise, false.</returns>
+        public bool Register(string serviceProvider, IAuthorizationCodeVerifierProvider provider)
+        {
+            if (string.IsNullOrWhiteSpace(serviceProvider)) return false;
+            if (provider == null) return authCodeVerifierProviders.Remove(serviceProvider);
+            else authCodeVerifierProviders[serviceProvider] = provider;
+            return true;
+        }
+
+        /// <summary>
+        /// Registers a third-party login provider.
+        /// </summary>
+        /// <param name="ldap">The LDAP server name or IP address.</param>
+        /// <param name="provider">The third-party login provider instance; or null to remove.</param>
+        /// <returns>true if register or remove succeeded; otherwise, false.</returns>
+        public bool Register(string ldap, IThirdPartyLoginProvider<PasswordTokenRequestBody> provider)
+        {
+            if (string.IsNullOrWhiteSpace(ldap) || provider == null) return false;
+            if (provider == null) return ldapProviders.Remove(ldap);
+            else ldapProviders[ldap] = provider;
+            return true;
+        }
 
         /// <summary>
         /// Signs in.
@@ -55,7 +93,10 @@ namespace NuScien.Security
                 ErrorCode = "invalid_password",
                 ErrorDescription = "The password should not be null."
             };
-            var userTask = DataProvider.GetUserByLognameAsync(tokenRequest.Body.UserName, cancellationToken);
+            var provider = ldapProviders.TryGetProvider(tokenRequest.Body.Ldap);
+            var userTask = provider != null
+                ? provider.ProcessAsync(tokenRequest.Body, cancellationToken)
+                : DataProvider.GetUserByLognameAsync(tokenRequest.Body.UserName, cancellationToken);
             return await CreateTokenAsync(userTask, tokenRequest, user =>
             {
                 if (user.ValidatePassword(tokenRequest.Body.Password)) return null;
@@ -91,6 +132,13 @@ namespace NuScien.Security
         {
             var eui = AssertTokenRequest(tokenRequest);
             if (eui != null) return eui;
+            var provider = authCodeVerifierProviders.TryGetProvider(tokenRequest.Body.ServiceProvider);
+            if (provider?.HasSaved == false)
+            {
+                var userTask = provider.ProcessAsync(tokenRequest.Body, cancellationToken);
+                return await CreateTokenAsync(userTask, tokenRequest, null, cancellationToken);
+            }
+
             AuthorizationCodeEntity code;
             try
             {
@@ -121,13 +169,28 @@ namespace NuScien.Security
                 return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.AccessDenied);
             }
 
+            if (code == null)
+            {
+                if (provider?.HasSaved == true)
+                {
+                    var userTask = provider.ProcessAsync(tokenRequest.Body, cancellationToken);
+                    return await CreateTokenAsync(userTask, tokenRequest, null, cancellationToken);
+                }
+
+                return new UserTokenInfo
+                {
+                    ErrorCode = "invalid_code",
+                    ErrorDescription = "The code is invalid."
+                };
+            }
+
             return code.OwnerType switch
             {
                 SecurityEntityTypes.User => await CreateTokenAsync(DataProvider.GetUserByIdAsync(code.OwnerId, cancellationToken), tokenRequest, null, cancellationToken),
                 SecurityEntityTypes.ServiceClient => await CreateTokenAsync(null as UserEntity, tokenRequest, cancellationToken),
                 _ => new UserTokenInfo
                 {
-                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                    ErrorCode = "invalid_code",
                     ErrorDescription = "The resource is invalid."
                 },
             };
@@ -195,6 +258,57 @@ namespace NuScien.Security
             };
             var tokenTask = DataProvider.GetTokenByNameAsync(accessToken, cancellationToken);
             return await CreateTokenAsync(tokenTask, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sets a new authorization code.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <param name="code">The original authorization code.</param>
+        /// <param name="insertNewOne">true if need add a new one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        public async override Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default)
+        {
+            var kind = SecurityEntityTypes.Unknown;
+            string id;
+            if (!string.IsNullOrWhiteSpace(UserId))
+            {
+                kind = SecurityEntityTypes.User;
+                id = UserId;
+            }
+            else if (IsClientCredentialVerified)
+            {
+                kind = SecurityEntityTypes.ServiceClient;
+                id = ClientId;
+            }
+            else
+            {
+                return ChangeMethods.Invalid;
+            }
+
+            AuthorizationCodeEntity entity = null;
+            if (!insertNewOne)
+            {
+                var col = await DataProvider.GetAuthorizationCodesByOwnerAsync(serviceProvider, kind, id, cancellationToken);
+                if (col != null) entity = col.FirstOrDefault();
+            }
+
+            if (entity == null) entity = new AuthorizationCodeEntity
+            {
+                OwnerId = id,
+                OwnerType = kind,
+                ServiceProvider = serviceProvider
+            };
+            entity.SetCode(code);
+            var user = User;
+            if (kind == SecurityEntityTypes.User && user != null)
+            {
+                if (!string.IsNullOrWhiteSpace(user.Avatar)) entity.Avatar = user.Avatar;
+                entity.Name = user.Nickname ?? user.Name ?? UserId;
+            }
+
+            return await DataProvider.SaveAsync(entity, cancellationToken);
         }
 
         /// <summary>
@@ -390,7 +504,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
@@ -401,7 +515,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
@@ -412,7 +526,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="value">The user group relationship entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
+        /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
