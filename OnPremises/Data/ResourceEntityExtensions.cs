@@ -70,7 +70,7 @@ namespace NuScien.Data
             return col.ToListAsync(cancellationToken);
         }
 
-        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder, DbConnection> configureConnection, DbConnection connection)
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Func<DbContextOptionsBuilder, DbConnection, DbContextOptionsBuilder> configureConnection, DbConnection connection)
              where T : DbContext
         {
             var b = new DbContextOptionsBuilder<T>();
@@ -78,7 +78,7 @@ namespace NuScien.Data
             return b.Options;
         }
 
-        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder, string> configureConnection, string connection)
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Func<DbContextOptionsBuilder, string, DbContextOptionsBuilder> configureConnection, string connection)
              where T : DbContext
         {
             var b = new DbContextOptionsBuilder<T>();
@@ -86,7 +86,7 @@ namespace NuScien.Data
             return b.Options;
         }
 
-        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder<T>, DbConnection, Action<DbContextOptionsBuilder<T>>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<T>> optionsAction)
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Func<DbContextOptionsBuilder<T>, DbConnection, Action<DbContextOptionsBuilder<T>>, DbContextOptionsBuilder<T>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<T>> optionsAction)
              where T : DbContext
         {
             var b = new DbContextOptionsBuilder<T>();
@@ -94,7 +94,7 @@ namespace NuScien.Data
             return b.Options;
         }
 
-        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder<T>, string, Action<DbContextOptionsBuilder<T>>> configureConnection, string connection, Action<DbContextOptionsBuilder<T>> optionsAction)
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Func<DbContextOptionsBuilder<T>, string, Action<DbContextOptionsBuilder<T>>, DbContextOptionsBuilder<T>> configureConnection, string connection, Action<DbContextOptionsBuilder<T>> optionsAction)
              where T : DbContext
         {
             var b = new DbContextOptionsBuilder<T>();

@@ -74,7 +74,7 @@ namespace NuScien.Security
     /// <summary>
     /// The account database set context.
     /// </summary>
-    public class AccountDbContext : DbContext
+    public class AccountDbContext : DbContext, IAccountDbContext
     {
         /// <summary>
         /// Initializes a new instance of the AccountDbContext class.
@@ -104,7 +104,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="configureConnection">The method to configure context options with connection string.</param>
         /// <param name="connection">The database connection.</param>
-        public AccountDbContext(Action<DbContextOptionsBuilder, DbConnection> configureConnection, DbConnection connection)
+        public AccountDbContext(Func<DbContextOptionsBuilder, DbConnection, DbContextOptionsBuilder> configureConnection, DbConnection connection)
             : base(DbResourceEntityExtensions.CreateDbContextOptions<AccountDbContext>(configureConnection, connection))
         {
         }
@@ -116,7 +116,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="configureConnection">The method to configure context options with connection string.</param>
         /// <param name="connection">The connection string.</param>
-        public AccountDbContext(Action<DbContextOptionsBuilder, string> configureConnection, string connection)
+        public AccountDbContext(Func<DbContextOptionsBuilder, string, DbContextOptionsBuilder> configureConnection, string connection)
             : base(DbResourceEntityExtensions.CreateDbContextOptions<AccountDbContext>(configureConnection, connection))
         {
         }
@@ -129,7 +129,7 @@ namespace NuScien.Security
         /// <param name="configureConnection">The method to configure context options with connection string.</param>
         /// <param name="connection">The database connection.</param>
         /// <param name="optionsAction">The additional options action.</param>
-        public AccountDbContext(Action<DbContextOptionsBuilder<AccountDbContext>, DbConnection, Action<DbContextOptionsBuilder<AccountDbContext>>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<AccountDbContext>> optionsAction)
+        public AccountDbContext(Func<DbContextOptionsBuilder<AccountDbContext>, DbConnection, Action<DbContextOptionsBuilder<AccountDbContext>>, DbContextOptionsBuilder<AccountDbContext>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<AccountDbContext>> optionsAction)
             : base(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction))
         {
         }
@@ -142,7 +142,7 @@ namespace NuScien.Security
         /// <param name="configureConnection">The method to configure context options with connection string.</param>
         /// <param name="connection">The connection string.</param>
         /// <param name="optionsAction">The additional options action.</param>
-        public AccountDbContext(Action<DbContextOptionsBuilder<AccountDbContext>, string, Action<DbContextOptionsBuilder<AccountDbContext>>> configureConnection, string connection, Action<DbContextOptionsBuilder<AccountDbContext>> optionsAction)
+        public AccountDbContext(Func<DbContextOptionsBuilder<AccountDbContext>, string, Action<DbContextOptionsBuilder<AccountDbContext>>, DbContextOptionsBuilder<AccountDbContext>> configureConnection, string connection, Action<DbContextOptionsBuilder<AccountDbContext>> optionsAction)
             : base(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction))
         {
         }
