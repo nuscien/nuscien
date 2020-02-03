@@ -1,0 +1,195 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Security;
+using System.Security.Principal;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.EntityFrameworkCore;
+using NuScien.Data;
+using NuScien.Users;
+using Trivial.Data;
+using Trivial.Reflection;
+using Trivial.Text;
+
+namespace NuScien.Security
+{
+    /// <summary>
+    /// The account database set context.
+    /// </summary>
+    public interface IAccountDbContext
+    {
+        /// <summary>
+        /// Gets the user database set.
+        /// </summary>
+        public DbSet<UserEntity> Users { get; }
+
+        /// <summary>
+        /// Gets the user database set.
+        /// </summary>
+        public DbSet<UserGroupEntity> Groups { get; }
+
+        /// <summary>
+        /// Gets the client database set.
+        /// </summary>
+        public DbSet<AccessingClientEntity> Clients { get; }
+
+        /// <summary>
+        /// Gets the authorization code database set.
+        /// </summary>
+        public DbSet<AuthorizationCodeEntity> Codes { get; }
+
+        /// <summary>
+        /// Gets the user database set.
+        /// </summary>
+        public DbSet<TokenEntity> Tokens { get; }
+
+        /// <summary>
+        /// Gets the user group relationship database set.
+        /// </summary>
+        public DbSet<UserGroupRelationshipEntity> Relationships { get; }
+
+        /// <summary>
+        /// Gets the user permissions database set.
+        /// </summary>
+        public DbSet<UserPermissionItemEntity> UserPermissions { get; }
+
+        /// <summary>
+        /// Gets the user group permissions database set.
+        /// </summary>
+        public DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; }
+
+        /// <summary>
+        /// Gets the client permissions database set.
+        /// </summary>
+        public DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
+    }
+
+    /// <summary>
+    /// The account database set context.
+    /// </summary>
+    public class AccountDbContext : DbContext
+    {
+        /// <summary>
+        /// Initializes a new instance of the AccountDbContext class.
+        /// The Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)
+        /// method will be called to configure the database (and other options) to be used for this context.
+        /// </summary>
+        protected AccountDbContext()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AccountDbContext class.
+        /// It can use a specified options.
+        /// The Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)
+        /// method will still be called to allow further configuration of the options.
+        /// </summary>
+        /// <param name="options">The options for this context.</param>
+        public AccountDbContext(DbContextOptions options)
+            : base(options)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AccountDbContext class.
+        /// The Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)
+        /// method will still be called to allow further configuration of the options.
+        /// </summary>
+        /// <param name="configureConnection">The method to configure context options with connection string.</param>
+        /// <param name="connection">The database connection.</param>
+        public AccountDbContext(Action<DbContextOptionsBuilder, DbConnection> configureConnection, DbConnection connection)
+            : base(DbResourceEntityExtensions.CreateDbContextOptions<AccountDbContext>(configureConnection, connection))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AccountDbContext class.
+        /// The Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)
+        /// method will still be called to allow further configuration of the options.
+        /// </summary>
+        /// <param name="configureConnection">The method to configure context options with connection string.</param>
+        /// <param name="connection">The connection string.</param>
+        public AccountDbContext(Action<DbContextOptionsBuilder, string> configureConnection, string connection)
+            : base(DbResourceEntityExtensions.CreateDbContextOptions<AccountDbContext>(configureConnection, connection))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AccountDbContext class.
+        /// The Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)
+        /// method will still be called to allow further configuration of the options.
+        /// </summary>
+        /// <param name="configureConnection">The method to configure context options with connection string.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="optionsAction">The additional options action.</param>
+        public AccountDbContext(Action<DbContextOptionsBuilder<AccountDbContext>, DbConnection, Action<DbContextOptionsBuilder<AccountDbContext>>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<AccountDbContext>> optionsAction)
+            : base(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AccountDbContext class.
+        /// The Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)
+        /// method will still be called to allow further configuration of the options.
+        /// </summary>
+        /// <param name="configureConnection">The method to configure context options with connection string.</param>
+        /// <param name="connection">The connection string.</param>
+        /// <param name="optionsAction">The additional options action.</param>
+        public AccountDbContext(Action<DbContextOptionsBuilder<AccountDbContext>, string, Action<DbContextOptionsBuilder<AccountDbContext>>> configureConnection, string connection, Action<DbContextOptionsBuilder<AccountDbContext>> optionsAction)
+            : base(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction))
+        {
+        }
+
+        /// <summary>
+        /// Gets the user database set.
+        /// </summary>
+        public DbSet<UserEntity> Users { get; }
+
+        /// <summary>
+        /// Gets the user database set.
+        /// </summary>
+        public DbSet<UserGroupEntity> Groups { get; }
+
+        /// <summary>
+        /// Gets the client database set.
+        /// </summary>
+        public DbSet<AccessingClientEntity> Clients { get; }
+
+        /// <summary>
+        /// Gets the authorization code database set.
+        /// </summary>
+        public DbSet<AuthorizationCodeEntity> Codes { get; }
+
+        /// <summary>
+        /// Gets the user database set.
+        /// </summary>
+        public DbSet<TokenEntity> Tokens { get; }
+
+        /// <summary>
+        /// Gets the user group relationship database set.
+        /// </summary>
+        public DbSet<UserGroupRelationshipEntity> Relationships { get; }
+
+        /// <summary>
+        /// Gets the user permissions database set.
+        /// </summary>
+        public DbSet<UserPermissionItemEntity> UserPermissions { get; }
+
+        /// <summary>
+        /// Gets the user group permissions database set.
+        /// </summary>
+        public DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; }
+
+        /// <summary>
+        /// Gets the client permissions database set.
+        /// </summary>
+        public DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
+    }
+}

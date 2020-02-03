@@ -15,6 +15,7 @@ namespace NuScien.Security
     /// <summary>
     /// Token entity.
     /// </summary>
+    [Table("nstokens")]
     public class TokenEntity : BaseResourceEntity
     {
         /// <summary>

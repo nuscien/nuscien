@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -67,6 +68,38 @@ namespace NuScien.Data
             }
 
             return col.ToListAsync(cancellationToken);
+        }
+
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder, DbConnection> configureConnection, DbConnection connection)
+             where T : DbContext
+        {
+            var b = new DbContextOptionsBuilder<T>();
+            configureConnection(b, connection);
+            return b.Options;
+        }
+
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder, string> configureConnection, string connection)
+             where T : DbContext
+        {
+            var b = new DbContextOptionsBuilder<T>();
+            configureConnection(b, connection);
+            return b.Options;
+        }
+
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder<T>, DbConnection, Action<DbContextOptionsBuilder<T>>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<T>> optionsAction)
+             where T : DbContext
+        {
+            var b = new DbContextOptionsBuilder<T>();
+            configureConnection(b, connection, optionsAction);
+            return b.Options;
+        }
+
+        internal static DbContextOptions<T> CreateDbContextOptions<T>(Action<DbContextOptionsBuilder<T>, string, Action<DbContextOptionsBuilder<T>>> configureConnection, string connection, Action<DbContextOptionsBuilder<T>> optionsAction)
+             where T : DbContext
+        {
+            var b = new DbContextOptionsBuilder<T>();
+            configureConnection(b, connection, optionsAction);
+            return b.Options;
         }
     }
 }

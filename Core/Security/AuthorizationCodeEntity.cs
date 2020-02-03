@@ -16,6 +16,7 @@ namespace NuScien.Security
     /// <summary>
     /// The client entity.
     /// </summary>
+    [Table("nsauthcodes")]
     public class AuthorizationCodeEntity : BaseOwnerResourceEntity
     {
         /// <summary>

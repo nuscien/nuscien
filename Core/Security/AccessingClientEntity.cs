@@ -17,6 +17,7 @@ namespace NuScien.Security
     /// The client entity.
     /// </summary>
     [DataContract]
+    [Table("nsclients")]
     public class AccessingClientEntity : BaseSecurityEntity
     {
         /// <summary>

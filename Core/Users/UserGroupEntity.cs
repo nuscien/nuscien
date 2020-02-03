@@ -37,6 +37,7 @@ namespace NuScien.Users
     /// User group information.
     /// </summary>
     [DataContract]
+    [Table("nsusergroups")]
     public class UserGroupEntity : BaseSecurityEntity
     {
         /// <summary>

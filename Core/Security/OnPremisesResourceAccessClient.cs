@@ -270,8 +270,8 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         public async override Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default)
         {
-            var kind = SecurityEntityTypes.Unknown;
             string id;
+            SecurityEntityTypes kind;
             if (!string.IsNullOrWhiteSpace(UserId))
             {
                 kind = SecurityEntityTypes.User;
@@ -422,7 +422,7 @@ namespace NuScien.Security
         public override async Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, CancellationToken cancellationToken = default)
         {
             var perms = await GetPermissionsAsync(siteId);
-            var onlyPublic = !perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin);
+            var onlyPublic = perms == null || !perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin);
             return await DataProvider.ListGroupsAsync(q, siteId, onlyPublic, cancellationToken);
         }
 
@@ -591,13 +591,13 @@ namespace NuScien.Security
                     };
                 }
 
+                ClientVerified = null;
                 UserId = user?.Id;
                 ClientId = token.ClientId;
-                IsClientCredentialVerified = false;
                 if (!string.IsNullOrWhiteSpace(token.ClientId) && tokenRequest.ClientCredentials?.Secret != null && tokenRequest.ClientCredentials.Secret.Length > 0)
                 {
                     var clientInfo = await DataProvider.GetClientByNameAsync(token.ClientId, cancellationToken);
-                    IsClientCredentialVerified = clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret);
+                    if (clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret)) ClientVerified = clientInfo;
                 }
 
                 return Token = new UserTokenInfo

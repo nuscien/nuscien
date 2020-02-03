@@ -52,9 +52,14 @@ namespace NuScien.Security
         public string ClientId { get; protected set; }
 
         /// <summary>
+        /// Gets the client verified which is used to login.
+        /// </summary>
+        public AccessingClientEntity ClientVerified { get; protected set; }
+
+        /// <summary>
         /// Gets the a value indicating whether the client used to login is verified.
         /// </summary>
-        public bool IsClientCredentialVerified { get; protected set; }
+        public bool IsClientCredentialVerified => ClientVerified != null;
 
         /// <summary>
         /// Gets the token request route instance.
@@ -115,6 +120,11 @@ namespace NuScien.Security
         /// Gets the user information.
         /// </summary>
         public UserEntity User => Token?.User;
+
+        /// <summary>
+        /// Gets the user information.
+        /// </summary>
+        public bool IsUserSignedIn => !IsTokenNullOrEmpty && !string.IsNullOrWhiteSpace(UserId) && Token?.User != null;
 
         /// <summary>
         /// Gets the site identifier collection of permission cache.
@@ -181,9 +191,9 @@ namespace NuScien.Security
             {
                 UserId = null;
                 ClientId = null;
-                IsClientCredentialVerified = false;
-                ClearCache();
+                ClientVerified = null;
                 Token = null;
+                ClearCache();
             });
         }
 
@@ -207,6 +217,7 @@ namespace NuScien.Security
         /// <returns>The permission set.</returns>
         public async Task<IPermissionSet> GetPermissionsAsync(string siteId)
         {
+            if (string.IsNullOrWhiteSpace(siteId)) return null;
             if (permissions.TryGetValue(siteId, out var set))
             {
                 if (DateTime.Now - set.CacheTime < TimeSpan.FromMinutes(2)) return set;
@@ -254,7 +265,7 @@ namespace NuScien.Security
         public async Task<bool> HasAnyPermissionAsync(string siteId, string value, params string[] otherValues)
         {
             var perms = await GetPermissionsAsync(siteId);
-            return perms.HasAnyPermission(value, otherValues);
+            return perms != null && perms.HasAnyPermission(value, otherValues);
         }
 
         /// <summary>
@@ -266,7 +277,7 @@ namespace NuScien.Security
         public async Task<bool> HasAnyPermissionAsync(string siteId, IEnumerable<string> values)
         {
             var perms = await GetPermissionsAsync(siteId);
-            return perms.HasAnyPermission(values);
+            return perms != null && perms.HasAnyPermission(values);
         }
 
         /// <summary>
@@ -392,7 +403,7 @@ namespace NuScien.Security
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var perms = await GetPermissionsAsync(group.OwnerSiteId);
-                if (perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
+                if (perms != null && perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
                     rela.State = ResourceEntityStates.Normal;
             }
 
@@ -418,7 +429,7 @@ namespace NuScien.Security
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var perms = await GetPermissionsAsync(group.OwnerSiteId);
-                if (!perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
+                if (perms == null || !perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
                     return ChangeMethods.Invalid;
             }
             else
@@ -429,16 +440,16 @@ namespace NuScien.Security
                     UserGroupRelationshipEntity.Roles.Master => true,
                     _ => false
                 };
+
+                if (!isAdmin && rela.Role != UserGroupRelationshipEntity.Roles.Member)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var perms = await GetPermissionsAsync(group.OwnerSiteId);
+                    isAdmin = perms != null && perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin);
+                }
             }
 
-            if (!isAdmin && rela.Role != UserGroupRelationshipEntity.Roles.Member)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var perms = await GetPermissionsAsync(group.OwnerSiteId);
-                isAdmin = perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin);
-            }
-
-            rela = await GetRelationshipAsync(userId, group.Id, cancellationToken);
+            rela = string.IsNullOrWhiteSpace(userId) ? null : await GetRelationshipAsync(group.Id, userId, cancellationToken);
             if (rela == null)
             {
                 rela = new UserGroupRelationshipEntity
@@ -530,7 +541,7 @@ namespace NuScien.Security
             if (value.IsNew)
             {
                 var perms = await GetPermissionsAsync(value.OwnerSiteId);
-                if (!perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
+                if (perms == null || !perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
                     return ChangeMethods.Invalid;
                 return await SaveEntityAsync(value, cancellationToken);
             }

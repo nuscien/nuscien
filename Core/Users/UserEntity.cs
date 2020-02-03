@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Security;
@@ -49,6 +50,7 @@ namespace NuScien.Users
     /// The user information.
     /// </summary>
     [DataContract]
+    [Table("nsusers")]
     public class UserEntity : BaseSecurityEntity
     {
         /// <summary>
@@ -109,7 +111,9 @@ namespace NuScien.Users
         /// <summary>
         /// Gets or sets the gender code.
         /// </summary>
+        [JsonIgnore]
         [Column("gender")]
+        [Required]
         public int GenderCode
         {
             get => (int)Gender;

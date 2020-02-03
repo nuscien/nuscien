@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -55,6 +56,7 @@ namespace NuScien.Security
         [NotMapped]
         [DataMember(Name = "target_type")]
         [JsonPropertyName("target_type")]
+        [Required]
         public int TargetTypeCode
         {
             get => (int)TargetType;
@@ -67,6 +69,7 @@ namespace NuScien.Security
         [Column("target")]
         [DataMember(Name = "target")]
         [JsonPropertyName("target")]
+        [Required]
         public string TargetId
         {
             get => GetCurrentProperty<string>();
@@ -97,6 +100,7 @@ namespace NuScien.Security
         /// Gets or sets the additional message.
         /// </summary>
         [JsonPropertyName("config")]
+        [JsonConverter(typeof(JsonObjectConverter))]
         [NotMapped]
         public JsonObject Config
         {
@@ -371,6 +375,7 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
+    [Table("nsuserperms")]
     public class UserPermissionItemEntity : BasePermissionItemEntity<UserEntity>
     {
         /// <summary>
@@ -385,6 +390,7 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
+    [Table("nsgroupperms")]
     public class UserGroupPermissionItemEntity : BasePermissionItemEntity<UserGroupEntity>
     {
         /// <summary>
@@ -399,6 +405,7 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
+    [Table("nsclientperms")]
     public class ClientPermissionItemEntity : BasePermissionItemEntity<AccessingClientEntity>
     {
         /// <summary>

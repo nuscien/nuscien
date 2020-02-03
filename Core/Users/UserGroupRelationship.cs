@@ -88,6 +88,7 @@ namespace NuScien.Users
     /// The user group and user relationship entity.
     /// </summary>
     [DataContract]
+    [Table("nsusergrouprelas")]
     public class UserGroupRelationshipEntity : UserGroupResourceEntity<UserEntity>
     {
         /// <summary>

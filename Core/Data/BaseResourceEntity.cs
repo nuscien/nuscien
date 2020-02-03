@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
@@ -57,6 +58,7 @@ namespace NuScien.Data
         [DataMember(Name = "id")]
         [JsonPropertyName("id")]
         [Column("id")]
+        [Required]
         public string Id
         {
             get
@@ -98,6 +100,7 @@ namespace NuScien.Data
         [DataMember(Name = "name")]
         [JsonPropertyName("name")]
         [Column("name")]
+        [Required]
         public string Name
         {
             get => GetCurrentProperty<string>();
@@ -120,7 +123,9 @@ namespace NuScien.Data
         /// <summary>
         /// Gets or sets the code of the entity state.
         /// </summary>
+        [JsonIgnore]
         [Column("state")]
+        [Required]
         public int StateCode
         {
             get => (int)State;
@@ -134,6 +139,7 @@ namespace NuScien.Data
         [JsonPropertyName("creation")]
         [JsonConverter(typeof(JsonJavaScriptTicksConverter.FallbackConverter))]
         [Column("creation")]
+        [Required]
         public DateTime CreationTime
         {
             get => GetCurrentProperty(DateTime.Now);
@@ -147,6 +153,7 @@ namespace NuScien.Data
         [JsonPropertyName("update")]
         [JsonConverter(typeof(JsonJavaScriptTicksConverter.FallbackConverter))]
         [Column("update")]
+        [Required]
         public DateTime LastModificationTime
         {
             get => GetCurrentProperty(DateTime.Now);
@@ -159,6 +166,7 @@ namespace NuScien.Data
         [DataMember(Name = "revision")]
         [JsonPropertyName("revision")]
         [Column("revision")]
+        [Required]
         public string Revision
         {
             get
@@ -229,6 +237,7 @@ namespace NuScien.Data
         [DataMember(Name = "owner")]
         [JsonPropertyName("owner")]
         [Column("owner")]
+        [Required]
         public string OwnerId
         {
             get => GetCurrentProperty<string>();
@@ -239,6 +248,7 @@ namespace NuScien.Data
         /// Gets or sets the additional message.
         /// </summary>
         [JsonPropertyName("config")]
+        [JsonConverter(typeof(JsonObjectConverter))]
         [NotMapped]
         public JsonObject Config
         {
