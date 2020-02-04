@@ -41,10 +41,27 @@ namespace NuScien.Security
         /// <summary>
         /// Renews the credential key.
         /// </summary>
-        public void RenewCredentialKey()
+        /// <returns>The app accessing key.</returns>
+        public AppAccessingKey RenewCredentialKey()
         {
             var password = Guid.NewGuid().ToString("n") + Guid.NewGuid().ToString("n");
+            var key = new AppAccessingKey
+            {
+                Id = Name,
+                Secret = password.ToSecure()
+            };
             CredentialKeyEncrypted = ComputeCredentialKeyHash(password);
+            return key;
+        }
+
+        /// <summary>
+        /// Sets the app accessing key.
+        /// </summary>
+        /// <param name="key">The app accessing key.</param>
+        public void SetKey(AppAccessingKey key)
+        {
+            Name = key.Id;
+            CredentialKeyEncrypted = ComputeCredentialKeyHash(key.Secret.ToUnsecureString());
         }
 
         /// <summary>

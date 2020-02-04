@@ -281,6 +281,14 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a value indicating whether the specific user login name has been registered.
+        /// </summary>
+        /// <param name="logname">The user login name.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if the specific user login name has been registered; otherwise, false.</returns>
+        public abstract Task<bool> HasUserNameAsync(string logname, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets a user entity by given identifier.
         /// </summary>
         /// <param name="id">The user identifier.</param>
@@ -518,14 +526,21 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         public async Task<ChangeMethods> SaveAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
-            if (!value.IsNew && value.Id != UserId) return ChangeMethods.Invalid;
+            var isCurrentUser = value.Id == UserId;
+            if (!value.IsNew && !isCurrentUser) return ChangeMethods.Invalid;
             if (string.IsNullOrWhiteSpace(value.PasswordEncrypted))
             {
-                if (value.IsNew) return ChangeMethods.Invalid;
+                if (value.IsNew)
+                {
+                    if (isCurrentUser) value.IsNew = false;
+                    return ChangeMethods.Invalid;
+                }
+
                 var u = await GetUserByIdAsync(value.Id);
                 value.PasswordEncrypted = u.PasswordEncrypted;
             }
 
+            if (!isCurrentUser && !await HasUserNameAsync(value.Name)) return ChangeMethods.Invalid;
             return await SaveEntityAsync(value, cancellationToken);
         }
 
@@ -589,6 +604,14 @@ namespace NuScien.Security
 
             return g.FirstOrDefault(ele => ele.OwnerId == UserId) != null;
         }
+
+        ///// <summary>
+        ///// Renews the client app key.
+        ///// </summary>
+        ///// <param name="appId">The client app identifier.</param>
+        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        ///// <returns>The client app identifier and secret key.</returns>
+        //public abstract Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Searches users.

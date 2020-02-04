@@ -495,7 +495,8 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserEntity user, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().Users, user, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.Users, context.SaveChangesAsync, user, cancellationToken);
         }
 
         /// <summary>
@@ -506,7 +507,20 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().Groups, group, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.Groups, context.SaveChangesAsync, group, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates an accessing app client item entity.
+        /// </summary>
+        /// <param name="client">The accessing app client item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(AccessingClientEntity client, CancellationToken cancellationToken = default)
+        {
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.Clients, context.SaveChangesAsync, client, cancellationToken);
         }
 
         /// <summary>
@@ -517,7 +531,8 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().Tokens, token, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.Tokens, context.SaveChangesAsync, token, cancellationToken);
         }
 
         /// <summary>
@@ -528,7 +543,8 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().UserPermissions, permissionItem, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.UserPermissions, context.SaveChangesAsync, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -539,7 +555,8 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().GroupPermissions, permissionItem, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.GroupPermissions, context.SaveChangesAsync, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -550,7 +567,8 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().ClientPermissions, permissionItem, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.ClientPermissions, context.SaveChangesAsync, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -561,7 +579,8 @@ namespace NuScien.Security
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().Relationships, relationship, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.Relationships, context.SaveChangesAsync, relationship, cancellationToken);
         }
 
         /// <summary>
@@ -572,7 +591,8 @@ namespace NuScien.Security
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default)
         {
-            return DbResourceEntityExtensions.SaveAsync(GetContext().Codes, code, cancellationToken);
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.Codes, context.SaveChangesAsync, code, cancellationToken);
         }
 
         /// <summary>

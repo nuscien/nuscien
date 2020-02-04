@@ -99,7 +99,7 @@ namespace NuScien.Security
                 : DataProvider.GetUserByLognameAsync(tokenRequest.Body.UserName, cancellationToken);
             return await CreateTokenAsync(userTask, tokenRequest, user =>
             {
-                if (user.ValidatePassword(tokenRequest.Body.Password)) return null;
+                if (user != null && user.ValidatePassword(tokenRequest.Body.Password)) return null;
                 return new UserTokenInfo
                 {
                     ErrorCode = InvalidPasswordCode,
@@ -336,6 +336,17 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a value indicating whether the specific user login name has been registered.
+        /// </summary>
+        /// <param name="logname">The user login name.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if the specific user login name has been registered; otherwise, false.</returns>
+        public override async Task<bool> HasUserNameAsync(string logname, CancellationToken cancellationToken = default)
+        {
+            return await DataProvider.GetUserByLognameAsync(logname, cancellationToken) != null;
+        }
+
+        /// <summary>
         /// Gets a user entity by given identifier.
         /// </summary>
         /// <param name="id">The user identifier.</param>
@@ -343,6 +354,7 @@ namespace NuScien.Security
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         public override async Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(id)) return null;
             var user = await DataProvider.GetUserByIdAsync(id, cancellationToken);
             return user ?? await DataProvider.GetUserByLognameAsync(id, cancellationToken);
         }
@@ -411,6 +423,28 @@ namespace NuScien.Security
         {
             return DataProvider.ListGroupsAsync(q, false, cancellationToken);
         }
+
+        ///// <summary>
+        ///// Renews the client app key.
+        ///// </summary>
+        ///// <param name="appId">The client app identifier.</param>
+        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        ///// <returns>The client app identifier and secret key.</returns>
+        //public override async Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default)
+        //{
+        //    var client = await DataProvider.GetClientByNameAsync(appId, cancellationToken);
+        //    if (client == null) client = new AccessingClientEntity
+        //    {
+        //        State = ResourceEntityStates.Normal
+        //    };
+        //    var key = client.RenewCredentialKey();
+        //    var r = await DataProvider.SaveAsync(client, cancellationToken);
+        //    return r switch
+        //    {
+        //        ChangeMethods.Invalid => null,
+        //        _ => key
+        //    };
+        //}
 
         /// <summary>
         /// Searches user groups.

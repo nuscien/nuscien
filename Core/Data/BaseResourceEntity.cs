@@ -49,6 +49,8 @@ namespace NuScien.Data
     public abstract class BaseResourceEntity : BaseObservableProperties
     {
         private string id;
+        private bool isRandomId;
+        private bool wasRandomId;
         private string revision;
         private string oldRevision;
 
@@ -65,6 +67,7 @@ namespace NuScien.Data
             {
                 if (id != null) return id;
                 id = Guid.NewGuid().ToString("n") + Guid.NewGuid().ToString("n");
+                isRandomId = true;
                 return id;
             }
 
@@ -72,17 +75,8 @@ namespace NuScien.Data
             {
                 if (value != null) value = value.Trim().ToLower();
                 if (id == value) return;
-                if (string.IsNullOrEmpty(value))
-                {
-                    id = Guid.NewGuid().ToString("n") + Guid.NewGuid().ToString("n");
-                    IsNew = true;
-                }
-                else
-                {
-                    id = value;
-                    IsNew = false;
-                }
-
+                id = value;
+                isRandomId = false;
                 ForceNotify(nameof(Id));
             }
         }
@@ -92,7 +86,11 @@ namespace NuScien.Data
         /// </summary>
         [JsonIgnore]
         [NotMapped]
-        public bool IsNew { get; set; } = true;
+        public bool IsNew
+        {
+            get => string.IsNullOrWhiteSpace(id) || isRandomId;
+            set => isRandomId = true;
+        }
 
         /// <summary>
         /// Gets or sets the group name.
@@ -179,7 +177,6 @@ namespace NuScien.Data
                 if (value != null) value = value.Trim().ToLower();
                 oldRevision = value;
                 if (revision == value) return;
-                if (string.IsNullOrEmpty(value)) IsNew = true;
                 revision = value;
                 ForceNotify(nameof(Revision));
             }
@@ -190,9 +187,11 @@ namespace NuScien.Data
         /// </summary>
         public void PrepareForSaving()
         {
+            _ = Id;
+            wasRandomId = isRandomId;
+            isRandomId = false;
             revision = Guid.NewGuid().ToString("n");
             LastModificationTime = DateTime.Now;
-            IsNew = false;
             ForceNotify(nameof(Revision));
         }
 
@@ -201,8 +200,9 @@ namespace NuScien.Data
         /// </summary>
         public void RollbackSaving()
         {
-            IsNew = string.IsNullOrEmpty(oldRevision);
             revision = oldRevision;
+            isRandomId = wasRandomId;
+            wasRandomId = false;
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace NuScien.Data
         {
             revision = entity.revision;
             id = entity.id;
-            IsNew = entity.IsNew;
+            isRandomId = entity.isRandomId;
             oldRevision = entity.oldRevision;
             ForceNotify(nameof(Id));
             Name = entity.Name;

@@ -46,13 +46,14 @@ namespace NuScien.Data
         /// </summary>
         /// <typeparam name="T">The type of entity.</typeparam>
         /// <param name="set">The entity set.</param>
+        /// <param name="save">The save action handler.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An async task result.</returns>
-        public static Task<ChangeMethods> SaveAsync<T>(DbSet<T> set, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        public static Task<ChangeMethods> SaveAsync<T>(DbSet<T> set, Func<CancellationToken, Task<int>> save, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             InternalAssertion.IsNotNull(set, nameof(set));
-            return ResourceEntityExtensions.SaveAsync(set.Add, set.Update, entity, cancellationToken);
+            return ResourceEntityExtensions.SaveAsync(set.Add, set.Update, save, entity, cancellationToken);
         }
 
         internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken)

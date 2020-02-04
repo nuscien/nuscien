@@ -267,6 +267,14 @@ namespace NuScien.Security
         public Task<ChangeMethods> SaveAsync(UserGroupEntity group, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Creates or updates an accessing app client item entity.
+        /// </summary>
+        /// <param name="client">The accessing app client item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(AccessingClientEntity client, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Creates or updates a token entity.
         /// </summary>
         /// <param name="token">The token entity to save.</param>
@@ -673,6 +681,16 @@ namespace NuScien.Security
             throw GetException();
         }
 
+        /// <summary>
+        /// Creates or updates an accessing app client item entity.
+        /// </summary>
+        /// <param name="client">The accessing app client item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An async task result.</returns>
+        public Task<ChangeMethods> SaveAsync(AccessingClientEntity client, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
 
         /// <summary>
         /// Creates or updates a permission item entity.

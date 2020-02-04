@@ -69,6 +69,20 @@ namespace NuScien.Security
         /// Gets the client permissions database set.
         /// </summary>
         public DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
+
+        /// <summary>
+        /// Saves all changes made in this context to the database.
+        /// This method will automatically call Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.DetectChanges
+        /// to discover any changes to entity instances before saving to the underlying database.
+        /// This can be disabled via Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AutoDetectChangesEnabled.
+        /// Multiple active operations on the same context instance are not supported. Use
+        /// 'await' to ensure that any asynchronous operations have completed before calling
+        /// another method on this context.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>A number of state entries written to the database.</returns>
+        /// <exception cref="DbUpdateException">An error is encountered while saving to the database.</exception>
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -150,46 +164,46 @@ namespace NuScien.Security
         /// <summary>
         /// Gets the user database set.
         /// </summary>
-        public DbSet<UserEntity> Users { get; }
+        public DbSet<UserEntity> Users { get; set; }
 
         /// <summary>
         /// Gets the user database set.
         /// </summary>
-        public DbSet<UserGroupEntity> Groups { get; }
+        public DbSet<UserGroupEntity> Groups { get; set; }
 
         /// <summary>
         /// Gets the client database set.
         /// </summary>
-        public DbSet<AccessingClientEntity> Clients { get; }
+        public DbSet<AccessingClientEntity> Clients { get; set; }
 
         /// <summary>
         /// Gets the authorization code database set.
         /// </summary>
-        public DbSet<AuthorizationCodeEntity> Codes { get; }
+        public DbSet<AuthorizationCodeEntity> Codes { get; set; }
 
         /// <summary>
         /// Gets the user database set.
         /// </summary>
-        public DbSet<TokenEntity> Tokens { get; }
+        public DbSet<TokenEntity> Tokens { get; set; }
 
         /// <summary>
         /// Gets the user group relationship database set.
         /// </summary>
-        public DbSet<UserGroupRelationshipEntity> Relationships { get; }
+        public DbSet<UserGroupRelationshipEntity> Relationships { get; set; }
 
         /// <summary>
         /// Gets the user permissions database set.
         /// </summary>
-        public DbSet<UserPermissionItemEntity> UserPermissions { get; }
+        public DbSet<UserPermissionItemEntity> UserPermissions { get; set; }
 
         /// <summary>
         /// Gets the user group permissions database set.
         /// </summary>
-        public DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; }
+        public DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; set; }
 
         /// <summary>
         /// Gets the client permissions database set.
         /// </summary>
-        public DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
+        public DbSet<ClientPermissionItemEntity> ClientPermissions { get; set; }
     }
 }
