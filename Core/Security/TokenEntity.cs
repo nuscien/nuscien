@@ -60,7 +60,12 @@ namespace NuScien.Security
         [JsonIgnore]
         public bool IsClosedToExpiration
         {
-            get => (ExpirationTime - LastModificationTime).TotalSeconds / 4 < (ExpirationTime - DateTime.Now).TotalSeconds;
+            get
+            {
+                var rest = ExpirationTime - DateTime.Now;
+                var total = ExpirationTime - LastModificationTime;
+                return (total / 4 > rest) || (ExpirationTime <= DateTime.Now);
+            }
         }
 
         /// <summary>

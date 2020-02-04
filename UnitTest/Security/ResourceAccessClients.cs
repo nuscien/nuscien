@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuScien.Data;
 using NuScien.Security;
+using NuScien.Users;
 using Trivial.Reflection;
 using Trivial.Security;
 
@@ -23,10 +25,24 @@ namespace NuScien.UnitTest.Security
             {
                 var client = new AccessingClientEntity
                 {
-                    State = Data.ResourceEntityStates.Normal
+                    State = ResourceEntityStates.Normal
                 };
                 client.SetKey(AppKey);
                 await provider.SaveAsync(client);
+                var user = await provider.GetUserByLognameAsync(NameAndPassword.UserName);
+                if (user == null)
+                {
+                    user = new UserEntity
+                    {
+                        Name = NameAndPassword.UserName,
+                        Nickname = "Kingcean",
+                        Gender = Genders.Male,
+                        Birthday = new DateTime(1987, 7, 17),
+                        State = ResourceEntityStates.Normal
+                    };
+                    user.SetPassword(NameAndPassword.Password);
+                    await provider.SaveAsync(user);
+                }
             }
 
             return new OnPremisesResourceAccessClient(provider);

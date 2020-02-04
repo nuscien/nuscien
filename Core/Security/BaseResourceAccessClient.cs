@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -142,10 +143,89 @@ namespace NuScien.Security
         /// <summary>
         /// Signs in.
         /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="requestBody">The token request body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, PasswordTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<PasswordTokenRequestBody>(requestBody, appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="logname">The user login name.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByPasswordAsync(AppAccessingKey appKey, string logname, SecureString password, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<PasswordTokenRequestBody>(new PasswordTokenRequestBody(logname, password), appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="logname">The user login name.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByPasswordAsync(AppAccessingKey appKey, string logname, string password, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<PasswordTokenRequestBody>(new PasswordTokenRequestBody(logname, password), appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
         public abstract Task<UserTokenInfo> LoginAsync(TokenRequest<RefreshTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="requestBody">The token request body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, RefreshTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<RefreshTokenRequestBody>(requestBody, appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="refreshToken">The refresh token.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByRefreshTokenAsync(AppAccessingKey appKey, string refreshToken, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<RefreshTokenRequestBody>(new RefreshTokenRequestBody(refreshToken), appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="refreshToken">The refresh token.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByRefreshTokenAsync(AppAccessingKey appKey, SecureString refreshToken, CancellationToken cancellationToken = default)
+        {
+            return LoginByRefreshTokenAsync(appKey, refreshToken.ToUnsecureString(), cancellationToken);
+        }
 
         /// <summary>
         /// Signs in.
@@ -158,10 +238,78 @@ namespace NuScien.Security
         /// <summary>
         /// Signs in.
         /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="requestBody">The token request body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, CodeTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<CodeTokenRequestBody>(requestBody, appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="code">The authorization code token.</param>
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByAutherizationCodeWithProviderAsync(AppAccessingKey appKey, string code, string serviceProvider, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<CodeTokenRequestBody>(new CodeTokenRequestBody(code), appKey);
+            req.Body.ServiceProvider = serviceProvider;
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="code">The authorization code token.</param>
+        /// <param name="verifier">The code verifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByAutherizationCodeWithVerifierAsync(AppAccessingKey appKey, string code, string verifier, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<CodeTokenRequestBody>(new CodeTokenRequestBody(code), appKey);
+            req.Body.CodeVerifier = verifier;
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
         public abstract Task<UserTokenInfo> LoginAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="requestBody">The token request body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, ClientTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<ClientTokenRequestBody>(requestBody, appKey);
+            return LoginAsync(req, cancellationToken);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="appKey">The app accessing key.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<UserTokenInfo> LoginByClientAsync(AppAccessingKey appKey, CancellationToken cancellationToken = default)
+        {
+            var req = new TokenRequest<ClientTokenRequestBody>(new ClientTokenRequestBody(), appKey);
+            return LoginAsync(req, cancellationToken);
+        }
 
         /// <summary>
         /// Signs in.

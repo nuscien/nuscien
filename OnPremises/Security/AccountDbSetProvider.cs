@@ -454,9 +454,10 @@ namespace NuScien.Security
         public async Task<int> DeleteExpiredTokensAsync(string userId, CancellationToken cancellationToken = default)
         {
             var now = DateTime.Now;
-            var tokens = GetContext().Tokens;
-            var list = await tokens.Where(ele => ele.UserId == userId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
-            tokens.RemoveRange(list);
+            var context = GetContext();
+            var list = await context.Tokens.Where(ele => ele.UserId == userId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
+            context.Tokens.RemoveRange(list);
+            await context.SaveChangesAsync(cancellationToken);
             return list.Count;
         }
 
@@ -469,9 +470,10 @@ namespace NuScien.Security
         public async Task<int> DeleteExpiredClientTokensAsync(string clientId, CancellationToken cancellationToken = default)
         {
             var now = DateTime.Now;
-            var tokens = GetContext().Tokens;
-            var list = await tokens.Where(ele => ele.ClientId == clientId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
-            tokens.RemoveRange(list);
+            var context = GetContext();
+            var list = await context.Tokens.Where(ele => ele.ClientId == clientId && ele.ExpirationTime <= now).ToListAsync(cancellationToken);
+            context.Tokens.RemoveRange(list);
+            await context.SaveChangesAsync(cancellationToken);
             return list.Count;
         }
 
@@ -482,9 +484,10 @@ namespace NuScien.Security
         /// <returns>The async task.</returns>
         public async Task DeleteAccessToken(string accessToken)
         {
-            var tokens = GetContext().Tokens;
-            var list = await tokens.Where(ele => ele.Name == accessToken).ToListAsync();
-            tokens.RemoveRange(list);
+            var context = GetContext();
+            var list = await context.Tokens.Where(ele => ele.Name == accessToken).ToListAsync();
+            await context.SaveChangesAsync();
+            context.Tokens.RemoveRange(list);
         }
 
         /// <summary>

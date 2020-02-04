@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -585,7 +586,7 @@ namespace NuScien.Security
         private async Task<UserTokenInfo> CreateTokenAsync(UserEntity user, TokenEntity token, TokenRequest tokenRequest, CancellationToken cancellationToken = default)
         {
             var needSave = token is null;
-            var clientId = tokenRequest.ClientId;
+            var clientId = tokenRequest != null ? tokenRequest.ClientId : token?.ClientId;
             var resId = user is null ? clientId : user.Id;
             if (needSave)
             {
@@ -593,7 +594,8 @@ namespace NuScien.Security
                 {
                     GrantType = tokenRequest.GrantType,
                     UserId = user?.Id,
-                    ClientId = clientId
+                    ClientId = clientId,
+                    ScopeString = tokenRequest.ScopeString
                 };
                 token.CreateToken(true);
             }
@@ -608,12 +610,25 @@ namespace NuScien.Security
                     ErrorDescription = "The client is not for this token."
                 };
             }
+            else if (token.IsClosedToExpiration)
+            {
+                if (tokenRequest != null && string.IsNullOrWhiteSpace(tokenRequest.ClientId)) tokenRequest.ClientId = token.ClientId;
+                token = new TokenEntity
+                {
+                    GrantType = token.GrantType,
+                    UserId = token.UserId,
+                    ClientId = clientId,
+                    ScopeString = token.ScopeString,
+                    RefreshToken = token.RefreshToken,
+                };
+                token.CreateToken();
+                needSave = true;
+            }
 
             try
             {
                 if (needSave)
                 {
-                    token.ScopeString = tokenRequest.ScopeString;
                     var r = await DataProvider.SaveAsync(token, cancellationToken);
                     if (r == ChangeMethods.Invalid) return new UserTokenInfo
                     {
@@ -628,10 +643,18 @@ namespace NuScien.Security
                 ClientVerified = null;
                 UserId = user?.Id;
                 ClientId = token.ClientId;
-                if (!string.IsNullOrWhiteSpace(token.ClientId) && tokenRequest.ClientCredentials?.Secret != null && tokenRequest.ClientCredentials.Secret.Length > 0)
+                if (!string.IsNullOrWhiteSpace(token.ClientId) && tokenRequest?.ClientCredentials?.Secret != null && tokenRequest.ClientCredentials.Secret.Length > 0)
                 {
                     var clientInfo = await DataProvider.GetClientByNameAsync(token.ClientId, cancellationToken);
-                    if (clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret)) ClientVerified = clientInfo;
+                    if (clientInfo != null && clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret)) ClientVerified = clientInfo;
+                    else return new UserTokenInfo
+                    {
+                        User = user,
+                        UserId = user?.Id,
+                        ResourceId = resId,
+                        ErrorCode = TokenInfo.ErrorCodeConstants.InvalidClient,
+                        ErrorDescription = "The client secret credential key is invalid."
+                    };
                 }
 
                 return Token = new UserTokenInfo
@@ -735,11 +758,21 @@ namespace NuScien.Security
             try
             {
                 token = await tokenResolver;
-                if (token is null) return null;
+                if (token is null) return new UserTokenInfo
+                {
+                    ErrorCode = "invalid_access_token",
+                    ErrorDescription = "The access token is invalid.",
+                    ClientId = tokenRequest?.ClientId
+                };
                 if (token.IsExpired)
                 {
                     await DataProvider.DeleteExpiredTokensAsync(token.UserId, cancellationToken);
-                    return null;
+                    return new UserTokenInfo
+                    {
+                        ErrorCode = "invalid_access_token",
+                        ErrorDescription = "The access token is expired.",
+                        ClientId = tokenRequest?.ClientId
+                    };
                 }
 
                 user = await DataProvider.GetUserByIdAsync(token.UserId, cancellationToken);
@@ -767,12 +800,6 @@ namespace NuScien.Security
             catch (UnauthorizedAccessException ex)
             {
                 return UserTokenInfo.CreateError(null, ex, TokenInfo.ErrorCodeConstants.AccessDenied);
-            }
-
-            if (token.IsClosedToExpiration)
-            {
-                if (string.IsNullOrWhiteSpace(tokenRequest.ClientId)) tokenRequest.ClientId = token.ClientId;
-                token = null;
             }
 
             var errInfo = CheckUser(user);
