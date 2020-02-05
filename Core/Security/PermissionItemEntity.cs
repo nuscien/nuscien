@@ -21,14 +21,13 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
-    public abstract class BasePermissionItemEntity : BaseResourceEntity
+    public abstract class BasePermissionItemEntity : ConfigurableResourceEntity
     {
         /// <summary>
         /// The split string for permission item.
         /// </summary>
         public const string PermissionSplit = "\n";
 
-        private string config;
         private List<string> cache;
 
         /// <summary>
@@ -93,57 +92,6 @@ namespace NuScien.Security
             {
                 cache = null;
                 SetCurrentProperty(value);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the additional message.
-        /// </summary>
-        [JsonPropertyName("config")]
-        [JsonConverter(typeof(JsonObjectConverter))]
-        [NotMapped]
-        public JsonObject Config
-        {
-            get => GetCurrentProperty<JsonObject>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the additional message.
-        /// </summary>
-        [DataMember(Name = "config")]
-        [JsonIgnore]
-        [Column("config")]
-        public string ConfigString
-        {
-            get
-            {
-                return Config?.ToString() ?? string.Empty;
-            }
-
-            set
-            {
-                config = value;
-                try
-                {
-                    Config = JsonObject.Parse(config);
-                }
-                catch (JsonException)
-                {
-                    Config = new JsonObject();
-                }
-                catch (ArgumentException)
-                {
-                    Config = new JsonObject();
-                }
-                catch (InvalidOperationException)
-                {
-                    Config = new JsonObject();
-                }
-                catch (FormatException)
-                {
-                    Config = new JsonObject();
-                }
             }
         }
 

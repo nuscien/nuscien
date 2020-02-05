@@ -224,25 +224,12 @@ namespace NuScien.Data
     }
 
     /// <summary>
-    /// The base owner resource entity.
+    /// The base configurable resource entity.
     /// </summary>
     [DataContract]
-    public class BaseOwnerResourceEntity : BaseResourceEntity
+    public abstract class ConfigurableResourceEntity : BaseResourceEntity
     {
         private string config;
-
-        /// <summary>
-        /// Gets or sets the owner identifier.
-        /// </summary>
-        [DataMember(Name = "owner")]
-        [JsonPropertyName("owner")]
-        [Column("owner")]
-        [Required]
-        public string OwnerId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
 
         /// <summary>
         /// Gets or sets the additional message.
@@ -293,6 +280,26 @@ namespace NuScien.Data
                     Config = new JsonObject();
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// The base owner resource entity.
+    /// </summary>
+    [DataContract]
+    public class BaseOwnerResourceEntity : ConfigurableResourceEntity
+    {
+        /// <summary>
+        /// Gets or sets the owner identifier.
+        /// </summary>
+        [DataMember(Name = "owner")]
+        [JsonPropertyName("owner")]
+        [Column("owner")]
+        [Required]
+        public string OwnerId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
         }
     }
 

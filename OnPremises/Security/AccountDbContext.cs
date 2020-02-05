@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Configurations;
 using NuScien.Data;
 using NuScien.Users;
 using Trivial.Data;
@@ -69,6 +70,11 @@ namespace NuScien.Security
         /// Gets the client permissions database set.
         /// </summary>
         public DbSet<ClientPermissionItemEntity> ClientPermissions { get; }
+
+        /// <summary>
+        /// Gets the settings database set.
+        /// </summary>
+        public DbSet<SettingsEntity> Settings { get; }
 
         /// <summary>
         /// Saves all changes made in this context to the database.
@@ -162,48 +168,53 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Gets the user database set.
+        /// Gets or sets the user database set.
         /// </summary>
         public DbSet<UserEntity> Users { get; set; }
 
         /// <summary>
-        /// Gets the user database set.
+        /// Gets or sets the user database set.
         /// </summary>
         public DbSet<UserGroupEntity> Groups { get; set; }
 
         /// <summary>
-        /// Gets the client database set.
+        /// Gets or sets the client database set.
         /// </summary>
         public DbSet<AccessingClientEntity> Clients { get; set; }
 
         /// <summary>
-        /// Gets the authorization code database set.
+        /// Gets or sets the authorization code database set.
         /// </summary>
         public DbSet<AuthorizationCodeEntity> Codes { get; set; }
 
         /// <summary>
-        /// Gets the user database set.
+        /// Gets or sets the user database set.
         /// </summary>
         public DbSet<TokenEntity> Tokens { get; set; }
 
         /// <summary>
-        /// Gets the user group relationship database set.
+        /// Gets or sets the user group relationship database set.
         /// </summary>
         public DbSet<UserGroupRelationshipEntity> Relationships { get; set; }
 
         /// <summary>
-        /// Gets the user permissions database set.
+        /// Gets or sets the user permissions database set.
         /// </summary>
         public DbSet<UserPermissionItemEntity> UserPermissions { get; set; }
 
         /// <summary>
-        /// Gets the user group permissions database set.
+        /// Gets or sets the user group permissions database set.
         /// </summary>
         public DbSet<UserGroupPermissionItemEntity> GroupPermissions { get; set; }
 
         /// <summary>
-        /// Gets the client permissions database set.
+        /// Gets or sets the client permissions database set.
         /// </summary>
         public DbSet<ClientPermissionItemEntity> ClientPermissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settings database set.
+        /// </summary>
+        public DbSet<SettingsEntity> Settings { get; set; }
     }
 }

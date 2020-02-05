@@ -439,10 +439,23 @@ namespace NuScien.Security
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The permission entity matched if found; otherwise, null.</returns>
-        public async Task<ClientPermissionItemEntity> GetClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default)
+        public Task<ClientPermissionItemEntity> GetClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default)
         {
             if (client == null) return null;
-            return await GetContext(true).ClientPermissions.FirstOrDefaultAsync(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId, cancellationToken);
+            return GetContext(true).ClientPermissions.FirstOrDefaultAsync(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public async Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            var entity = await GetContext(true).Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
+            return entity?.Config;
         }
 
         /// <summary>
@@ -596,6 +609,41 @@ namespace NuScien.Security
         {
             var context = GetContext();
             return DbResourceEntityExtensions.SaveAsync(context.Codes, context.SaveChangesAsync, code, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        {
+            var context = GetContext();
+            var entity = await context.Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
+            var r = ChangeMethods.MemberModify;
+            if (entity == null)
+            {
+                entity = new Configurations.SettingsEntity
+                {
+                    Name = key,
+                    OwnerSiteId = siteId,
+                    State = ResourceEntityStates.Normal,
+                    Config = value
+                };
+                r = ChangeMethods.Add;
+                context.Settings.Add(entity);
+            }
+            else
+            {
+                entity.Config = value;
+                context.Settings.Update(entity);
+            }
+
+            await context.SaveChangesAsync();
+            return r;
         }
 
         /// <summary>

@@ -8,12 +8,14 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using NuScien.Configurations;
 using NuScien.Data;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
+using Trivial.Text;
 
 namespace NuScien.Security
 {
@@ -425,27 +427,63 @@ namespace NuScien.Security
             return DataProvider.ListGroupsAsync(q, false, cancellationToken);
         }
 
-        ///// <summary>
-        ///// Renews the client app key.
-        ///// </summary>
-        ///// <param name="appId">The client app identifier.</param>
-        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        ///// <returns>The client app identifier and secret key.</returns>
-        //public override async Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default)
-        //{
-        //    var client = await DataProvider.GetClientByNameAsync(appId, cancellationToken);
-        //    if (client == null) client = new AccessingClientEntity
-        //    {
-        //        State = ResourceEntityStates.Normal
-        //    };
-        //    var key = client.RenewCredentialKey();
-        //    var r = await DataProvider.SaveAsync(client, cancellationToken);
-        //    return r switch
-        //    {
-        //        ChangeMethods.Invalid => null,
-        //        _ => key
-        //    };
-        //}
+        /// <summary>
+        /// Renews the client app key.
+        /// </summary>
+        /// <param name="appId">The client app identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The client app identifier and secret key.</returns>
+        public override async Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default)
+        {
+            var client = await DataProvider.GetClientByNameAsync(appId, cancellationToken);
+            if (client == null) client = new AccessingClientEntity
+            {
+                State = ResourceEntityStates.Normal
+            };
+            var key = client.RenewCredentialKey();
+            var r = await DataProvider.SaveAsync(client, cancellationToken);
+            return r switch
+            {
+                ChangeMethods.Invalid => null,
+                _ => key
+            };
+        }
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        protected async override Task<SettingsEntity.Model> GetSettingsModelByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return null;
+            if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
+            else siteId = siteId.Trim();
+            var task = DataProvider.GetSettingsAsync(key, null, cancellationToken);
+            return siteId == null
+                ? new SettingsEntity.Model(key, await task)
+            : new SettingsEntity.Model(key,
+                siteId,
+                await DataProvider.GetSettingsAsync(key, siteId, cancellationToken),
+                await task);
+        }
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        protected override Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return null;
+            if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
+            else siteId = siteId.Trim();
+            return DataProvider.GetSettingsAsync(key, siteId, cancellationToken);
+        }
 
         /// <summary>
         /// Searches user groups.

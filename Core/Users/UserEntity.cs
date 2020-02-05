@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Security;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -51,7 +53,7 @@ namespace NuScien.Users
     /// </summary>
     [DataContract]
     [Table("nsusers")]
-    public class UserEntity : BaseSecurityEntity
+    public class UserEntity : BaseSecurityEntity, IEnumerable<Claim>
     {
         /// <summary>
         /// Gets the security entity type.
@@ -134,6 +136,18 @@ namespace NuScien.Users
         }
 
         /// <summary>
+        /// Gets or sets the code of the preferred market.
+        /// </summary>
+        [DataMember(Name = "market", EmitDefaultValue = true)]
+        [JsonPropertyName("market")]
+        [Column("market")]
+        public string Market
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
         /// Sets a new password.
         /// </summary>
         /// <param name="password">The new password.</param>
@@ -182,10 +196,46 @@ namespace NuScien.Users
             return ValidatePassword(password?.ToUnsecureString());
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the user.
+        /// </summary>
+        /// <returns>The claim enumerator.</returns>
+        public new IEnumerator<Claim> GetEnumerator()
+        {
+            var col = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, Nickname),
+                new Claim(ClaimTypes.NameIdentifier, Name),
+                new Claim(ClaimTypes.Gender, Gender.ToString())
+            };
+            if (Birthday.HasValue) col.Add(new Claim(ClaimTypes.DateOfBirth, Birthday.ToString()));
+            return col.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the user.
+        /// </summary>
+        /// <returns>The claim enumerator.</returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         private string HashPassword(string original)
         {
             var s = $"{original} - {Name}";
             return HashUtility.ComputeSHA512String(s);
+        }
+
+        /// <summary>
+        /// Converts to claims identity.
+        /// </summary>
+        /// <param name="user">The user entity.</param>
+        /// <returns>The claims identity.</returns>
+        public static explicit operator ClaimsIdentity (UserEntity user)
+        {
+            if (user == null) return null;
+            return new ClaimsIdentity(user);
         }
     }
 

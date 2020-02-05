@@ -7,13 +7,14 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
+using NuScien.Configurations;
 using NuScien.Data;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
+using Trivial.Text;
 
 namespace NuScien.Security
 {
@@ -36,6 +37,14 @@ namespace NuScien.Security
         /// The permissions set.
         /// </summary>
         private readonly Dictionary<string, UserSitePermissionSet> permissions = new Dictionary<string, UserSitePermissionSet>();
+
+        /// <summary>
+        /// The settings set.
+        /// </summary>
+        private readonly DataCacheCollection<JsonObject> settings = new DataCacheCollection<JsonObject>
+        {
+            Expiration = TimeSpan.FromMinutes(3)
+        };
 
         /// <summary>
         /// Gets the cache date time of groups.
@@ -429,6 +438,54 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public async Task<SettingsEntity.Model> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return null;
+            if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
+            else siteId = siteId.Trim();
+            var globalKey = key + " > ";
+            var hasGlobal = settings.TryGet(globalKey, out var globalModel);
+            if (siteId == null)
+            {
+                if (hasGlobal) return new SettingsEntity.Model(key, globalModel);
+                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken);
+                settings[globalKey] = globalModel;
+                return new SettingsEntity.Model(key, globalModel);
+            }
+
+            var siteKey = globalKey + siteId;
+            var hasSite = settings.TryGet(siteKey, out var siteModel);
+            if (hasSite && hasGlobal) return new SettingsEntity.Model(key, siteId, siteModel, globalModel);
+            if (!hasSite && !hasGlobal)
+            {
+                var r = await GetSettingsModelByKeyAsync(key, siteId, cancellationToken);
+                settings[globalKey] = r.GlobalConfig;
+                settings[siteKey] = r.SiteConfig;
+                return r;
+            }
+
+            if (!hasGlobal)
+            {
+                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken);
+                settings[globalKey] = globalModel;
+            }
+
+            if (!hasSite)
+            {
+                siteModel = await GetSettingsDataByKeyAsync(siteKey, null, cancellationToken);
+                settings[siteKey] = siteModel;
+            }
+
+            return new SettingsEntity.Model(key, siteId, siteModel, globalModel);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the specific user login name has been registered.
         /// </summary>
         /// <param name="logname">The user login name.</param>
@@ -753,13 +810,31 @@ namespace NuScien.Security
             return g.FirstOrDefault(ele => ele.OwnerId == UserId) != null;
         }
 
-        ///// <summary>
-        ///// Renews the client app key.
-        ///// </summary>
-        ///// <param name="appId">The client app identifier.</param>
-        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        ///// <returns>The client app identifier and secret key.</returns>
-        //public abstract Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Renews the client app key.
+        /// </summary>
+        /// <param name="appId">The client app identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The client app identifier and secret key.</returns>
+        public abstract Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        protected abstract Task<SettingsEntity.Model> GetSettingsModelByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        protected abstract Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Searches users.

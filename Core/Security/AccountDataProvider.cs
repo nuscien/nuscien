@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
+using NuScien.Configurations;
 using NuScien.Data;
 using NuScien.Users;
 using Trivial.Data;
@@ -228,6 +228,15 @@ namespace NuScien.Security
         public Task<ClientPermissionItemEntity> GetClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Deletes a set of token expired.
         /// </summary>
         /// <param name="userId">The user identifier of the token.</param>
@@ -321,6 +330,16 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -617,6 +636,18 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
         /// Deletes a set of token expired.
         /// </summary>
         /// <param name="userId">The user identifier of the token.</param>
@@ -744,6 +775,19 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Creates or updates the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }

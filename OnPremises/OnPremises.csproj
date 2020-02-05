@@ -41,10 +41,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Reflection\" />
-  </ItemGroup>
   
   <ItemGroup>
     <Compile Include="..\Core\Reflection\Assertion.cs">
