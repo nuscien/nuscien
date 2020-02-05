@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+
 using NuScien.Configurations;
 using NuScien.Data;
 using NuScien.Users;
@@ -85,7 +87,7 @@ namespace NuScien.Security
                     return PasswordTokenRequestBody.Parse(q.ToString());
                 }, async q =>
                 {
-                    var r = await LoginAsync(q);
+                    var r = await SignInAsync(q);
                     return (r.User, r);
                 });
                 route.Register(RefreshTokenRequestBody.RefreshTokenGrantType, q =>
@@ -93,7 +95,7 @@ namespace NuScien.Security
                     return RefreshTokenRequestBody.Parse(q.ToString());
                 }, async q =>
                 {
-                    var r = await LoginAsync(q);
+                    var r = await SignInAsync(q);
                     return (r.User, r);
                 });
                 route.Register(CodeTokenRequestBody.AuthorizationCodeGrantType, q =>
@@ -101,7 +103,7 @@ namespace NuScien.Security
                     return CodeTokenRequestBody.Parse(q.ToString());
                 }, async q =>
                 {
-                    var r = await LoginAsync(q);
+                    var r = await SignInAsync(q);
                     return (r.User, r);
                 });
                 route.Register(ClientTokenRequestBody.ClientCredentialsGrantType, q =>
@@ -109,7 +111,7 @@ namespace NuScien.Security
                     return ClientTokenRequestBody.Parse(q.ToString());
                 }, async q =>
                 {
-                    var r = await LoginAsync(q);
+                    var r = await SignInAsync(q);
                     return (null, r);
                 });
 
@@ -144,10 +146,44 @@ namespace NuScien.Security
         /// <summary>
         /// Signs in.
         /// </summary>
+        /// <param name="utf8Stream">The UTF-8 stream input.</param>
+        /// <returns>The login response.</returns>
+        public async Task<UserTokenInfo> SignInAsync(Stream utf8Stream)
+        {
+            using var reader = new StreamReader(utf8Stream, Encoding.UTF8);
+            var r = await TokenRequestRoute.SignInAsync(reader.ReadToEnd());
+            return r.ItemSelected as UserTokenInfo;
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="input">The input query data.</param>
+        /// <returns>The login response.</returns>
+        public async Task<UserTokenInfo> SignInAsync(QueryData input)
+        {
+            var r = await TokenRequestRoute.SignInAsync(input);
+            return r.ItemSelected as UserTokenInfo;
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <returns>The login response.</returns>
+        public async Task<UserTokenInfo> SignInAsync(string input)
+        {
+            var r = await TokenRequestRoute.SignInAsync(input);
+            return r.ItemSelected as UserTokenInfo;
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public abstract Task<UserTokenInfo> LoginAsync(TokenRequest<PasswordTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
+        public abstract Task<UserTokenInfo> SignInAsync(TokenRequest<PasswordTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Signs in.
@@ -156,10 +192,10 @@ namespace NuScien.Security
         /// <param name="requestBody">The token request body.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, PasswordTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInAsync(AppAccessingKey appKey, PasswordTokenRequestBody requestBody, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<PasswordTokenRequestBody>(requestBody, appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -173,7 +209,7 @@ namespace NuScien.Security
         public Task<UserTokenInfo> LoginByPasswordAsync(AppAccessingKey appKey, string logname, SecureString password, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<PasswordTokenRequestBody>(new PasswordTokenRequestBody(logname, password), appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -187,7 +223,7 @@ namespace NuScien.Security
         public Task<UserTokenInfo> LoginByPasswordAsync(AppAccessingKey appKey, string logname, string password, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<PasswordTokenRequestBody>(new PasswordTokenRequestBody(logname, password), appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -196,7 +232,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public abstract Task<UserTokenInfo> LoginAsync(TokenRequest<RefreshTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
+        public abstract Task<UserTokenInfo> SignInAsync(TokenRequest<RefreshTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Signs in.
@@ -205,10 +241,10 @@ namespace NuScien.Security
         /// <param name="requestBody">The token request body.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, RefreshTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInAsync(AppAccessingKey appKey, RefreshTokenRequestBody requestBody, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<RefreshTokenRequestBody>(requestBody, appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -221,7 +257,7 @@ namespace NuScien.Security
         public Task<UserTokenInfo> LoginByRefreshTokenAsync(AppAccessingKey appKey, string refreshToken, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<RefreshTokenRequestBody>(new RefreshTokenRequestBody(refreshToken), appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -242,7 +278,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public abstract Task<UserTokenInfo> LoginAsync(TokenRequest<CodeTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
+        public abstract Task<UserTokenInfo> SignInAsync(TokenRequest<CodeTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Signs in.
@@ -251,10 +287,10 @@ namespace NuScien.Security
         /// <param name="requestBody">The token request body.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, CodeTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInAsync(AppAccessingKey appKey, CodeTokenRequestBody requestBody, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<CodeTokenRequestBody>(requestBody, appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -269,7 +305,7 @@ namespace NuScien.Security
         {
             var req = new TokenRequest<CodeTokenRequestBody>(new CodeTokenRequestBody(code), appKey);
             req.Body.ServiceProvider = serviceProvider;
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -284,7 +320,7 @@ namespace NuScien.Security
         {
             var req = new TokenRequest<CodeTokenRequestBody>(new CodeTokenRequestBody(code), appKey);
             req.Body.CodeVerifier = verifier;
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -293,7 +329,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public abstract Task<UserTokenInfo> LoginAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
+        public abstract Task<UserTokenInfo> SignInAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Signs in.
@@ -302,10 +338,10 @@ namespace NuScien.Security
         /// <param name="requestBody">The token request body.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginAsync(AppAccessingKey appKey, ClientTokenRequestBody requestBody, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInAsync(AppAccessingKey appKey, ClientTokenRequestBody requestBody, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<ClientTokenRequestBody>(requestBody, appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -317,7 +353,7 @@ namespace NuScien.Security
         public Task<UserTokenInfo> LoginByClientAsync(AppAccessingKey appKey, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<ClientTokenRequestBody>(new ClientTokenRequestBody(), appKey);
-            return LoginAsync(req, cancellationToken);
+            return SignInAsync(req, cancellationToken);
         }
 
         /// <summary>
@@ -342,7 +378,7 @@ namespace NuScien.Security
         /// Signs out.
         /// </summary>
         /// <returns>The task.</returns>
-        public virtual Task LogoutAsync()
+        public virtual Task SignOutAsync()
         {
             return Task.Run(() =>
             {
@@ -454,7 +490,7 @@ namespace NuScien.Security
             if (siteId == null)
             {
                 if (hasGlobal) return new SettingsEntity.Model(key, globalModel);
-                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken);
+                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken) ?? new JsonObject();
                 settings[globalKey] = globalModel;
                 return new SettingsEntity.Model(key, globalModel);
             }
@@ -465,6 +501,8 @@ namespace NuScien.Security
             if (!hasSite && !hasGlobal)
             {
                 var r = await GetSettingsModelByKeyAsync(key, siteId, cancellationToken);
+                if (r.GlobalConfig == null) r.GlobalConfig = new JsonObject();
+                if (r.SiteConfig == null) r.SiteConfig = new JsonObject();
                 settings[globalKey] = r.GlobalConfig;
                 settings[siteKey] = r.SiteConfig;
                 return r;
@@ -472,13 +510,13 @@ namespace NuScien.Security
 
             if (!hasGlobal)
             {
-                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken);
+                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken) ?? new JsonObject();
                 settings[globalKey] = globalModel;
             }
 
             if (!hasSite)
             {
-                siteModel = await GetSettingsDataByKeyAsync(siteKey, null, cancellationToken);
+                siteModel = await GetSettingsDataByKeyAsync(siteKey, null, cancellationToken) ?? new JsonObject();
                 settings[siteKey] = siteModel;
             }
 
@@ -911,6 +949,16 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected abstract Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a collection of user groups joined in.

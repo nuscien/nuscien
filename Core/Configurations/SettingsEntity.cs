@@ -62,12 +62,12 @@ namespace NuScien.Configurations
             /// <summary>
             /// Gets the configuration data of the site.
             /// </summary>
-            public JsonObject SiteConfig { get; }
+            public JsonObject SiteConfig { get; internal set; }
 
             /// <summary>
             /// Gets the configuration data from global.
             /// </summary>
-            public JsonObject GlobalConfig { get; }
+            public JsonObject GlobalConfig { get; internal set; }
         }
 
         /// <summary>

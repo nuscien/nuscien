@@ -26,7 +26,7 @@ namespace NuScien.UnitTest.Security
         /// <summary>
         /// Tests user name and password login logic.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The async task.</returns>
         [TestMethod]
         public async Task TestPasswordAsync()
         {

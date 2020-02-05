@@ -87,7 +87,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public override async Task<UserTokenInfo> LoginAsync(TokenRequest<PasswordTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
+        public override async Task<UserTokenInfo> SignInAsync(TokenRequest<PasswordTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             var eui = AssertTokenRequest(tokenRequest);
             if (eui != null) return eui;
@@ -117,7 +117,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public override async Task<UserTokenInfo> LoginAsync(TokenRequest<RefreshTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
+        public override async Task<UserTokenInfo> SignInAsync(TokenRequest<RefreshTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             var eui = AssertTokenRequest(tokenRequest);
             if (eui != null) return eui;
@@ -131,7 +131,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public override async Task<UserTokenInfo> LoginAsync(TokenRequest<CodeTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
+        public override async Task<UserTokenInfo> SignInAsync(TokenRequest<CodeTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             var eui = AssertTokenRequest(tokenRequest);
             if (eui != null) return eui;
@@ -205,7 +205,7 @@ namespace NuScien.Security
         /// <param name="tokenRequest">The token request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public override async Task<UserTokenInfo> LoginAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
+        public override async Task<UserTokenInfo> SignInAsync(TokenRequest<ClientTokenRequestBody> tokenRequest, CancellationToken cancellationToken = default)
         {
             var eui = AssertTokenRequest(tokenRequest);
             if (eui != null) return eui;
@@ -318,7 +318,7 @@ namespace NuScien.Security
         /// Signs out.
         /// </summary>
         /// <returns>The task.</returns>
-        public override async Task LogoutAsync()
+        public override async Task SignOutAsync()
         {
             var t = Token;
             if (t == null || t.IsEmpty) return;
@@ -332,7 +332,7 @@ namespace NuScien.Security
             }
             finally
             {
-                await base.LogoutAsync();
+                await base.SignOutAsync();
             }
 
             if (task != null) await task;
@@ -603,6 +603,23 @@ namespace NuScien.Security
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return ChangeMethods.Invalid;
+            else key = key.Trim();
+            if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
+            else siteId = siteId.Trim();
+            return await DataProvider.SaveSettingsAsync(key, siteId, value, cancellationToken);
         }
 
         /// <summary>
