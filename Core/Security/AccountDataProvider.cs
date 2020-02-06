@@ -237,6 +237,15 @@ namespace NuScien.Security
         public Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public Task<string> GetSettingsJsonStringAsync(string key, string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Deletes a set of token expired.
         /// </summary>
         /// <param name="userId">The user identifier of the token.</param>
@@ -645,6 +654,19 @@ namespace NuScien.Security
         public Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default)
         {
             throw GetException();
+        }
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public async Task<string> GetSettingsJsonStringAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            var json = await GetSettingsAsync(key, siteId, cancellationToken);
+            return json?.ToString();
         }
 
         /// <summary>

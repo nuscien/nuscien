@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using NuScien.Data;
@@ -31,7 +32,18 @@ namespace NuScien.Configurations
             public Model(string key, JsonObject globalConfig)
             {
                 Key = key;
-                GlobalConfig = globalConfig;
+                GlobalConfigString = globalConfig?.ToString();
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the SettingsEntity.Model class.
+            /// </summary>
+            /// <param name="key">The settings key.</param>
+            /// <param name="globalConfig">The global settings configuration data.</param>
+            public Model(string key, string globalConfig)
+            {
+                Key = key;
+                GlobalConfigString = globalConfig;
             }
 
             /// <summary>
@@ -45,8 +57,23 @@ namespace NuScien.Configurations
             {
                 Key = key;
                 SiteId = siteId;
-                SiteConfig = siteConfig;
-                GlobalConfig = globalConfig;
+                SiteConfigString = siteConfig?.ToString();
+                GlobalConfigString = globalConfig?.ToString();
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the SettingsEntity.Model class.
+            /// </summary>
+            /// <param name="key">The settings key.</param>
+            /// <param name="siteId">The site identifier.</param>
+            /// <param name="siteConfig">The site settings configuration data.</param>
+            /// <param name="globalConfig">The global settings configuration data.</param>
+            public Model(string key, string siteId, string siteConfig, string globalConfig = null)
+            {
+                Key = key;
+                SiteId = siteId;
+                SiteConfigString = siteConfig;
+                GlobalConfigString = globalConfig;
             }
 
             /// <summary>
@@ -58,16 +85,66 @@ namespace NuScien.Configurations
             /// Gets the site identifier.
             /// </summary>
             public string SiteId { get; }
+            
+            /// <summary>
+            /// Gets the JSON string of the site configuration.
+            /// </summary>
+            public string SiteConfigString;
+
+            /// <summary>
+            /// Gets the JSON string of the global configuration.
+            /// </summary>
+            public string GlobalConfigString;
 
             /// <summary>
             /// Gets the configuration data of the site.
             /// </summary>
-            public JsonObject SiteConfig { get; internal set; }
+            public JsonObject GetSiteConfig()
+            {
+                return JsonObject.Parse(SiteConfigString);
+            }
 
             /// <summary>
             /// Gets the configuration data from global.
             /// </summary>
-            public JsonObject GlobalConfig { get; internal set; }
+            public JsonObject GetGlobalConfig()
+            {
+                return JsonObject.Parse(GlobalConfigString);
+            }
+
+            /// <summary>
+            /// Deserializes the configuration data of the site.
+            /// </summary>
+            public T DeserializeSiteConfig<T>()
+            {
+                return JsonSerializer.Deserialize<T>(SiteConfigString);
+            }
+
+            /// <summary>
+            /// Deserializes the configuration data of the site.
+            /// </summary>
+            /// <param name="options">The options.</param>
+            public T DeserializeSiteConfig<T>(JsonSerializerOptions options)
+            {
+                return JsonSerializer.Deserialize<T>(SiteConfigString, options);
+            }
+
+            /// <summary>
+            /// Deserializes the configuration data from global.
+            /// </summary>
+            public T DeserializeGlobalConfig<T>()
+            {
+                return JsonSerializer.Deserialize<T>(GlobalConfigString);
+            }
+
+            /// <summary>
+            /// Deserializes the configuration data from global.
+            /// </summary>
+            /// <param name="options">The options.</param>
+            public T DeserializeGlobalConfig<T>(JsonSerializerOptions options)
+            {
+                return JsonSerializer.Deserialize<T>(GlobalConfigString, options);
+            }
         }
 
         /// <summary>

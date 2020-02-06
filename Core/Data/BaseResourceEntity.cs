@@ -230,6 +230,61 @@ namespace NuScien.Data
     public abstract class ConfigurableResourceEntity : BaseResourceEntity
     {
         private string config;
+        private JsonObject json;
+
+        /// <summary>
+        /// Gets or sets the additional message.
+        /// </summary>
+        [JsonPropertyName("config")]
+        [JsonConverter(typeof(JsonObjectConverter))]
+        [NotMapped]
+        public JsonObject Config
+        {
+            get
+            {
+                var s = config;
+                if (s == null) return json;
+                try
+                {
+                    json = ParseJson(s);
+                }
+                finally
+                {
+                    config = null;
+                }
+
+                return json;
+            }
+
+            set
+            {
+                config = null;
+                json = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the additional message.
+        /// </summary>
+        [DataMember(Name = "config")]
+        [JsonIgnore]
+        [Column("config")]
+        public string ConfigString
+        {
+            get
+            {
+                return config ?? Config?.ToString() ?? string.Empty;
+            }
+
+            set
+            {
+                config = value;
+                json = null;
+            }
+        }
+
+        /*
+        private string config;
 
         /// <summary>
         /// Gets or sets the additional message.
@@ -259,26 +314,32 @@ namespace NuScien.Data
             set
             {
                 config = value;
-                try
-                {
-                    Config = JsonObject.Parse(config);
-                }
-                catch (JsonException)
-                {
-                    Config = new JsonObject();
-                }
-                catch (ArgumentException)
-                {
-                    Config = new JsonObject();
-                }
-                catch (InvalidOperationException)
-                {
-                    Config = new JsonObject();
-                }
-                catch (FormatException)
-                {
-                    Config = new JsonObject();
-                }
+                Config = ParseJson(config);
+            }
+        }
+        */
+
+        private static JsonObject ParseJson(string s)
+        {
+            try
+            {
+                return JsonObject.Parse(s);
+            }
+            catch (JsonException)
+            {
+                return new JsonObject();
+            }
+            catch (ArgumentException)
+            {
+                return new JsonObject();
+            }
+            catch (InvalidOperationException)
+            {
+                return new JsonObject();
+            }
+            catch (FormatException)
+            {
+                return new JsonObject();
             }
         }
     }

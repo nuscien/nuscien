@@ -486,6 +486,21 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        protected override Task<string> GetSettingsJsonStringByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return null;
+            if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
+            else siteId = siteId.Trim();
+            return DataProvider.GetSettingsJsonStringAsync(key, siteId, cancellationToken);
+        }
+
+        /// <summary>
         /// Searches user groups.
         /// </summary>
         /// <param name="q">The optional query request information.</param>
@@ -617,8 +632,17 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(key)) return ChangeMethods.Invalid;
             else key = key.Trim();
-            if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
-            else siteId = siteId.Trim();
+            if (string.IsNullOrWhiteSpace(siteId))
+            {
+                siteId = null;
+                if (!await IsSystemSettingsAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
+            }
+            else
+            {
+                siteId = siteId.Trim();
+                if (!await IsSystemSettingsAdminAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
+            }
+
             return await DataProvider.SaveSettingsAsync(key, siteId, value, cancellationToken);
         }
 

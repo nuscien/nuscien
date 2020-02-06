@@ -31,9 +31,19 @@ namespace NuScien.Security
         private TokenRequestRoute<UserEntity> route;
 
         /// <summary>
+        /// The system global settings.
+        /// </summary>
+        private SystemGlobalSettings globalSettings;
+
+        /// <summary>
+        /// The expiration of global settings cache.
+        /// </summary>
+        private DateTime globalSettingsExpiration = DateTime.Now;
+
+        /// <summary>
         /// The user groups.
         /// </summary>
-        private IEnumerable<UserGroupRelationshipEntity> groups;
+        private IList<UserGroupRelationshipEntity> groups;
 
         /// <summary>
         /// The permissions set.
@@ -43,9 +53,17 @@ namespace NuScien.Security
         /// <summary>
         /// The settings set.
         /// </summary>
-        private readonly DataCacheCollection<JsonObject> settings = new DataCacheCollection<JsonObject>
+        private readonly DataCacheCollection<string> settings = new DataCacheCollection<string>
         {
             Expiration = TimeSpan.FromMinutes(3)
+        };
+
+        /// <summary>
+        /// The settings set.
+        /// </summary>
+        private readonly DataCacheCollection<SystemSiteSettings> siteSettings = new DataCacheCollection<SystemSiteSettings>
+        {
+            Expiration = TimeSpan.FromMinutes(10)
         };
 
         /// <summary>
@@ -150,8 +168,30 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public async Task<UserTokenInfo> SignInAsync(Stream utf8Stream)
         {
-            using var reader = new StreamReader(utf8Stream, Encoding.UTF8);
-            var r = await TokenRequestRoute.SignInAsync(reader.ReadToEnd());
+            string input;
+            try
+            {
+                using var reader = new StreamReader(utf8Stream, Encoding.UTF8);
+                input = reader.ReadToEnd();
+            }
+            catch (ArgumentException ex)
+            {
+                return new UserTokenInfo
+                {
+                    ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                    ErrorDescription = ex.Message
+                };
+            }
+            catch (IOException ex)
+            {
+                return new UserTokenInfo
+                {
+                    ErrorCode = TokenInfo.ErrorCodeConstants.ServerError,
+                    ErrorDescription = ex.Message
+                };
+            }
+
+            var r = await TokenRequestRoute.SignInAsync(input);
             return r.ItemSelected as UserTokenInfo;
         }
 
@@ -206,7 +246,7 @@ namespace NuScien.Security
         /// <param name="password">The password.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByPasswordAsync(AppAccessingKey appKey, string logname, SecureString password, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByPasswordAsync(AppAccessingKey appKey, string logname, SecureString password, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<PasswordTokenRequestBody>(new PasswordTokenRequestBody(logname, password), appKey);
             return SignInAsync(req, cancellationToken);
@@ -220,7 +260,7 @@ namespace NuScien.Security
         /// <param name="password">The password.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByPasswordAsync(AppAccessingKey appKey, string logname, string password, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByPasswordAsync(AppAccessingKey appKey, string logname, string password, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<PasswordTokenRequestBody>(new PasswordTokenRequestBody(logname, password), appKey);
             return SignInAsync(req, cancellationToken);
@@ -254,7 +294,7 @@ namespace NuScien.Security
         /// <param name="refreshToken">The refresh token.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByRefreshTokenAsync(AppAccessingKey appKey, string refreshToken, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByRefreshTokenAsync(AppAccessingKey appKey, string refreshToken, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<RefreshTokenRequestBody>(new RefreshTokenRequestBody(refreshToken), appKey);
             return SignInAsync(req, cancellationToken);
@@ -267,9 +307,9 @@ namespace NuScien.Security
         /// <param name="refreshToken">The refresh token.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByRefreshTokenAsync(AppAccessingKey appKey, SecureString refreshToken, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByRefreshTokenAsync(AppAccessingKey appKey, SecureString refreshToken, CancellationToken cancellationToken = default)
         {
-            return LoginByRefreshTokenAsync(appKey, refreshToken.ToUnsecureString(), cancellationToken);
+            return SignInByRefreshTokenAsync(appKey, refreshToken.ToUnsecureString(), cancellationToken);
         }
 
         /// <summary>
@@ -301,7 +341,7 @@ namespace NuScien.Security
         /// <param name="serviceProvider">The service provider.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByAutherizationCodeWithProviderAsync(AppAccessingKey appKey, string code, string serviceProvider, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByAutherizationCodeWithProviderAsync(AppAccessingKey appKey, string code, string serviceProvider, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<CodeTokenRequestBody>(new CodeTokenRequestBody(code), appKey);
             req.Body.ServiceProvider = serviceProvider;
@@ -316,7 +356,7 @@ namespace NuScien.Security
         /// <param name="verifier">The code verifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByAutherizationCodeWithVerifierAsync(AppAccessingKey appKey, string code, string verifier, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByAutherizationCodeWithVerifierAsync(AppAccessingKey appKey, string code, string verifier, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<CodeTokenRequestBody>(new CodeTokenRequestBody(code), appKey);
             req.Body.CodeVerifier = verifier;
@@ -350,7 +390,7 @@ namespace NuScien.Security
         /// <param name="appKey">The app accessing key.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public Task<UserTokenInfo> LoginByClientAsync(AppAccessingKey appKey, CancellationToken cancellationToken = default)
+        public Task<UserTokenInfo> SignInByClientAsync(AppAccessingKey appKey, CancellationToken cancellationToken = default)
         {
             var req = new TokenRequest<ClientTokenRequestBody>(new ClientTokenRequestBody(), appKey);
             return SignInAsync(req, cancellationToken);
@@ -423,8 +463,14 @@ namespace NuScien.Security
 
             var users = GetUserPermissionsAsync(siteId);
             set.CacheTime = DateTime.Now;
-            set.GroupPermissions = await GetGroupPermissionsAsync(siteId);
+            var perms = await GetGroupPermissionsAsync(siteId);
             set.UserPermission = await users;
+            set.UserPermission.SetPermissionReadonly();
+            set.GroupPermissions = perms.ToList().Select(ele =>
+            {
+                ele.SetPermissionReadonly();
+                return ele;
+            });
             return set;
         }
 
@@ -474,6 +520,44 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Tests if contains the admin permissions of the system settings.
+        /// </summary>
+        /// <param name="siteId">The site identifier; or null for global.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public async Task<bool> IsSystemSettingsAdminAsync(string siteId, CancellationToken cancellationToken)
+        {
+            string groupId;
+            if (string.IsNullOrWhiteSpace(siteId))
+            {
+                var settings = await GetSystemSettingsAsync(cancellationToken);
+                if (settings == null) return true;
+                groupId = settings.GroupAdminGroupId?.Trim();
+            }
+            else
+            {
+                siteId = siteId.Trim();
+                var settings = await GetSystemSettingsAsync(siteId, cancellationToken);
+                if (settings == null) return true;
+                groupId = settings.AdminGroupId?.Trim();
+            }
+
+            if (groupId == null) return false;
+            var groups = await GetGroupsJoinedInAsync();
+            return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
+        }
+
+        /// <summary>
+        /// Tests if contains the admin permissions of the system settings.
+        /// </summary>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public Task<bool> IsSystemSettingsAdminAsync(CancellationToken cancellationToken)
+        {
+            return IsSystemSettingsAdminAsync(null, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets the settings.
         /// </summary>
         /// <param name="key">The settings key with optional namespace.</param>
@@ -490,7 +574,7 @@ namespace NuScien.Security
             if (siteId == null)
             {
                 if (hasGlobal) return new SettingsEntity.Model(key, globalModel);
-                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken) ?? new JsonObject();
+                globalModel = await GetSettingsJsonStringByKeyAsync(globalKey, null, cancellationToken);
                 settings[globalKey] = globalModel;
                 return new SettingsEntity.Model(key, globalModel);
             }
@@ -501,26 +585,70 @@ namespace NuScien.Security
             if (!hasSite && !hasGlobal)
             {
                 var r = await GetSettingsModelByKeyAsync(key, siteId, cancellationToken);
-                if (r.GlobalConfig == null) r.GlobalConfig = new JsonObject();
-                if (r.SiteConfig == null) r.SiteConfig = new JsonObject();
-                settings[globalKey] = r.GlobalConfig;
-                settings[siteKey] = r.SiteConfig;
+                settings[globalKey] = r.GlobalConfigString;
+                settings[siteKey] = r.SiteConfigString;
                 return r;
             }
 
             if (!hasGlobal)
             {
-                globalModel = await GetSettingsDataByKeyAsync(globalKey, null, cancellationToken) ?? new JsonObject();
+                globalModel = await GetSettingsJsonStringByKeyAsync(globalKey, null, cancellationToken);
                 settings[globalKey] = globalModel;
             }
 
             if (!hasSite)
             {
-                siteModel = await GetSettingsDataByKeyAsync(siteKey, null, cancellationToken) ?? new JsonObject();
+                siteModel = await GetSettingsJsonStringByKeyAsync(siteKey, null, cancellationToken);
                 settings[siteKey] = siteModel;
             }
 
             return new SettingsEntity.Model(key, siteId, siteModel, globalModel);
+        }
+
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public Task<SettingsEntity.Model> GetSettingsAsync(string key, CancellationToken cancellationToken = default)
+        {
+            return GetSettingsAsync(key, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the system settings.
+        /// </summary>
+        /// <param name="site">The owner site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public async Task<SystemSiteSettings> GetSystemSettingsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(siteId)) return null;
+            siteId = siteId.Trim();
+            if (siteSettings.TryGet(siteId, out var s)) return s;
+            var settings = await GetSettingsAsync("system", siteId, cancellationToken);
+            s = settings?.DeserializeGlobalConfig<SystemSiteSettings>();
+            s.SetReadonly();
+            siteSettings[siteId] = s;
+            return s;
+        }
+
+        /// <summary>
+        /// Gets the system settings.
+        /// </summary>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public async Task<SystemGlobalSettings> GetSystemSettingsAsync(CancellationToken cancellationToken = default)
+        {
+            var s = globalSettings;
+            if (s != null || globalSettingsExpiration > DateTime.Now) return s;
+            var settings = await GetSettingsAsync("system", null, cancellationToken);
+            s = settings?.DeserializeGlobalConfig<SystemGlobalSettings>();
+            s.SetReadonly();
+            globalSettings = s;
+            globalSettingsExpiration = DateTime.Now.AddMinutes(10);
+            return s;
         }
 
         /// <summary>
@@ -875,6 +1003,15 @@ namespace NuScien.Security
         protected abstract Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        protected abstract Task<string> GetSettingsJsonStringByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Searches users.
         /// </summary>
         /// <param name="group">The user group entity.</param>
@@ -972,7 +1109,7 @@ namespace NuScien.Security
             if (isForAll && groups != null) return groups;
             var col = await GetRelationshipsAsync(q, relationshipState);
             GroupsCacheTime = DateTime.Now;
-            if (isForAll) groups = col;
+            if (isForAll) groups = col.ToList();
             return col;
         }
 

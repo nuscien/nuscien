@@ -459,6 +459,19 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The value.</returns>
+        public async Task<string> GetSettingsJsonStringAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        {
+            var entity = await GetContext(true).Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
+            return entity?.ConfigString;
+        }
+
+        /// <summary>
         /// Deletes a set of tokens expired.
         /// </summary>
         /// <param name="userId">The user identifier of the token.</param>
