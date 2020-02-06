@@ -96,25 +96,6 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Gets a value indicating whether the permissions settings is read-only to access.
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public bool IsPermissionReadonly
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Sets the permission is read-only
-        /// </summary>
-        public void SetPermissionReadonly()
-        {
-            IsPermissionReadonly = true;
-        }
-
-        /// <summary>
         /// Gets permission list.
         /// </summary>
         /// <returns>The permission list.</returns>
@@ -131,7 +112,7 @@ namespace NuScien.Security
         /// <returns>The count of item added.</returns>
         public int AddPermission(string value, params string[] otherValues)
         {
-            if (IsPermissionReadonly) return 0;
+            if (IsPropertyReadonly) return 0;
             var c = GetPermissionListInternal();
             var count = 0;
             if (!string.IsNullOrWhiteSpace(value))
@@ -154,7 +135,7 @@ namespace NuScien.Security
         /// <returns>The count of item added.</returns>
         public int AddPermission(IEnumerable<string> values)
         {
-            if (IsPermissionReadonly) return 0;
+            if (IsPropertyReadonly) return 0;
             var c = GetPermissionListInternal();
             var col = values.Where(ele => !string.IsNullOrWhiteSpace(ele)).Select(ele => ele.Trim()).ToList();
             c.AddRange(col);
@@ -171,7 +152,7 @@ namespace NuScien.Security
         /// <returns>The count of item removed.</returns>
         public int RemovePermission(string value, params string[] otherValues)
         {
-            if (IsPermissionReadonly) return 0;
+            if (IsPropertyReadonly) return 0;
             var c = GetPermissionListInternal();
             var count = 0;
             if (!string.IsNullOrWhiteSpace(value))
@@ -198,7 +179,7 @@ namespace NuScien.Security
         /// <returns>The count of item removed.</returns>
         public int RemovePermission(IEnumerable<string> values)
         {
-            if (IsPermissionReadonly) return 0;
+            if (IsPropertyReadonly) return 0;
             var c = GetPermissionListInternal();
             var count = 0;
 

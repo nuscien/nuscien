@@ -10,6 +10,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+
+using NuScien.Reflection;
 using Trivial.Data;
 using Trivial.Reflection;
 using Trivial.Text;
@@ -46,7 +48,7 @@ namespace NuScien.Data
     /// Base entity information.
     /// </summary>
     [DataContract]
-    public abstract class BaseResourceEntity : BaseObservableProperties
+    public abstract class BaseResourceEntity : ReadonlyObservableProperties
     {
         private string id;
         private bool isRandomId;

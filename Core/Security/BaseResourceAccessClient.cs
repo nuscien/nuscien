@@ -465,10 +465,10 @@ namespace NuScien.Security
             set.CacheTime = DateTime.Now;
             var perms = await GetGroupPermissionsAsync(siteId);
             set.UserPermission = await users;
-            set.UserPermission.SetPermissionReadonly();
+            set.UserPermission.SetPropertiesReadonly();
             set.GroupPermissions = perms.ToList().Select(ele =>
             {
-                ele.SetPermissionReadonly();
+                ele.SetPropertiesReadonly();
                 return ele;
             });
             return set;
@@ -619,7 +619,7 @@ namespace NuScien.Security
         /// <summary>
         /// Gets the system settings.
         /// </summary>
-        /// <param name="site">The owner site identifier.</param>
+        /// <param name="siteId">The owner site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The value.</returns>
         public async Task<SystemSiteSettings> GetSystemSettingsAsync(string siteId, CancellationToken cancellationToken = default)
@@ -629,7 +629,7 @@ namespace NuScien.Security
             if (siteSettings.TryGet(siteId, out var s)) return s;
             var settings = await GetSettingsAsync("system", siteId, cancellationToken);
             s = settings?.DeserializeGlobalConfig<SystemSiteSettings>();
-            s.SetReadonly();
+            s.SetPropertiesReadonly();
             siteSettings[siteId] = s;
             return s;
         }
@@ -645,7 +645,7 @@ namespace NuScien.Security
             if (s != null || globalSettingsExpiration > DateTime.Now) return s;
             var settings = await GetSettingsAsync("system", null, cancellationToken);
             s = settings?.DeserializeGlobalConfig<SystemGlobalSettings>();
-            s.SetReadonly();
+            s.SetPropertiesReadonly();
             globalSettings = s;
             globalSettingsExpiration = DateTime.Now.AddMinutes(10);
             return s;
