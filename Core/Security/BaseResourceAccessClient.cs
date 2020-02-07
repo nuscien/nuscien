@@ -539,12 +539,10 @@ namespace NuScien.Security
         /// <returns>true if contains; otherwise, false.</returns>
         public async Task<bool> IsSystemSettingsAdminAsync(string siteId, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrWhiteSpace(siteId))
-                return await HasPermissionAsync(siteId.Trim(), PermissionItems.SiteAdmin);
+            if (!string.IsNullOrWhiteSpace(siteId) && await HasAnyPermissionAsync(siteId.Trim(), PermissionItems.SiteInformationManagement, PermissionItems.SiteAdmin)) return true;
             var settings = await GetSystemSettingsAsync(cancellationToken);
-            if (settings == null) return true;
-            var groupId = settings.GroupAdminGroupId?.Trim();
-            if (groupId == null) return false;
+            var groupId = settings?.CurrentSettingsAdminGroupId?.Trim();
+            if (string.IsNullOrEmpty(groupId)) return true;
             var groups = await GetGroupsJoinedInAsync();
             return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
         }
@@ -595,6 +593,7 @@ namespace NuScien.Security
             var settings = await GetSystemSettingsAsync(cancellationToken);
             var groupId = settings?.GroupAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
             if (string.IsNullOrWhiteSpace(groupId)) return true;
+            groupId = groupId.Trim();
             var groups = await GetGroupsJoinedInAsync();
             return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
         }
@@ -621,12 +620,44 @@ namespace NuScien.Security
         /// <param name="siteId">The site identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>true if contains; otherwise, false.</returns>
-        public async Task<bool> CanSetPermissionAsync(string siteId, CancellationToken cancellationToken = default)
+        public async Task<bool> IsPermissionAdminAsync(string siteId, CancellationToken cancellationToken = default)
         {
             if (await HasAnyPermissionAsync(siteId, PermissionItems.PermissionManagement, PermissionItems.SiteAdmin)) return true;
             var settings = await GetSystemSettingsAsync(cancellationToken);
             var groupId = settings?.SiteAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
             if (string.IsNullOrWhiteSpace(groupId)) return true;
+            var groups = await GetGroupsJoinedInAsync();
+            return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
+        }
+
+        /// <summary>
+        /// Tests if contains the admin permissions of user.
+        /// </summary>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public async Task<bool> IsUserAdminAsync(CancellationToken cancellationToken)
+        {
+            var settings = await GetSystemSettingsAsync(cancellationToken);
+            var groupId = settings?.UserAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
+            if (string.IsNullOrWhiteSpace(groupId)) return true;
+            groupId = groupId.Trim();
+            var groups = await GetGroupsJoinedInAsync();
+            return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
+        }
+
+        /// <summary>
+        /// Tests if contains the admin permissions of CMS.
+        /// </summary>
+        /// <param name="siteId">The site identifier; or null for global.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public async Task<bool> IsCmsAdminAsync(string siteId, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(siteId) && await HasAnyPermissionAsync(siteId.Trim(), PermissionItems.CmsAdmin, PermissionItems.SiteAdmin)) return true;
+            var settings = await GetSystemSettingsAsync(cancellationToken);
+            var groupId = settings?.UserAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
+            if (string.IsNullOrWhiteSpace(groupId)) return true;
+            groupId = groupId.Trim();
             var groups = await GetGroupsJoinedInAsync();
             return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
         }

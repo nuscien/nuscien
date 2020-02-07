@@ -553,7 +553,7 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(siteId)) return ChangeMethods.Invalid;
             siteId = siteId.Trim();
-            if (!await CanSetPermissionAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
+            if (!await IsPermissionAdminAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
             switch (targetType)
             {
                 case SecurityEntityTypes.User:
