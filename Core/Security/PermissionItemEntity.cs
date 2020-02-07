@@ -315,12 +315,27 @@ namespace NuScien.Security
     public abstract class BasePermissionItemEntity<T> : BasePermissionItemEntity
         where T : BaseSecurityEntity
     {
+        private T target;
+
         /// <summary>
         /// Gets or sets the target resource entity.
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public T Target { get; set; }
+        public T Target
+        {
+            get
+            {
+                return target;
+            }
+
+            set
+            {
+                if (value is null) target = null;
+                if (string.IsNullOrWhiteSpace(Id)) Id = value.Id;
+                target = value;
+            }
+        }
     }
 
     /// <summary>

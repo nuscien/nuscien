@@ -57,6 +57,7 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(id)) return null;
             return GetContext().Users.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
         }
 
@@ -68,6 +69,7 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<UserEntity> GetUserByLognameAsync(string loginName, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(loginName)) return null;
             return GetContext(true).Users.FirstOrDefaultAsync(ele => ele.Name == loginName, cancellationToken);
         }
 
@@ -79,7 +81,20 @@ namespace NuScien.Security
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<AccessingClientEntity> GetClientByNameAsync(string appId, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(appId)) return null;
             return GetContext(true).Clients.FirstOrDefaultAsync(ele => ele.Name == appId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a client credential by accessing client entity identifier.
+        /// </summary>
+        /// <param name="id">The client entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<AccessingClientEntity> GetClientByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return null;
+            return GetContext(true).Clients.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
         }
 
         /// <summary>

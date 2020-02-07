@@ -541,6 +541,67 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Creates or updates a user permission item entity.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="targetType">The target entity type.</param>
+        /// <param name="targetId">The target entity identifier.</param>
+        /// <param name="permissionList">The permission list.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        public override async Task<ChangeMethods> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(siteId)) return ChangeMethods.Invalid;
+            siteId = siteId.Trim();
+            if (!await CanSetPermissionAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
+            switch (targetType)
+            {
+                case SecurityEntityTypes.User:
+                    {
+                        var user = await DataProvider.GetUserByIdAsync(targetId, cancellationToken);
+                        var perm = await DataProvider.GetUserPermissionsAsync(user, siteId, cancellationToken);
+                        if (perm == null) perm = new UserPermissionItemEntity();
+                        else perm.Permissions = null;
+                        FillPermissionItemEntity(perm, siteId, user);
+                        perm.AddPermission(permissionList);
+                        return await DataProvider.SaveAsync(perm);
+                    }
+                case SecurityEntityTypes.UserGroup:
+                    {
+                        var group = await DataProvider.GetUserGroupByIdAsync(targetId, cancellationToken);
+                        var perm = await DataProvider.GetGroupPermissionsAsync(group, siteId, cancellationToken);
+                        if (perm == null) perm = new UserGroupPermissionItemEntity();
+                        else perm.Permissions = null;
+                        FillPermissionItemEntity(perm, siteId, group);
+                        perm.AddPermission(permissionList);
+                        return await DataProvider.SaveAsync(perm);
+                    }
+                case SecurityEntityTypes.ServiceClient:
+                    {
+                        var client = await DataProvider.GetClientByIdAsync(targetId, cancellationToken);
+                        var perm = await DataProvider.GetClientPermissionsAsync(client, siteId, cancellationToken);
+                        if (perm == null) perm = new ClientPermissionItemEntity();
+                        else perm.Permissions = null;
+                        FillPermissionItemEntity(perm, siteId, client);
+                        perm.AddPermission(permissionList);
+                        return await DataProvider.SaveAsync(perm);
+                    }
+                default:
+                    {
+                        return ChangeMethods.Invalid;
+                    }
+            }
+        }
+
+        private void FillPermissionItemEntity<T>(BasePermissionItemEntity<T> entity, string siteId, T target) where T : BaseSecurityEntity
+        {
+            entity.Name = target.Nickname ?? target.Nickname;
+            entity.SiteId = siteId;
+            entity.Target = target;
+            entity.State = ResourceEntityStates.Normal;
+        }
+
+        /// <summary>
         /// Searches users.
         /// </summary>
         /// <param name="group">The user group entity.</param>
@@ -653,39 +714,6 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
-        {
-            return DataProvider.SaveAsync(value, cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates or updates a user permission item entity.
-        /// </summary>
-        /// <param name="value">The user permission item entity to save.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The status of changing result.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(UserPermissionItemEntity value, CancellationToken cancellationToken = default)
-        {
-            return DataProvider.SaveAsync(value, cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates or updates a user group permission item entity.
-        /// </summary>
-        /// <param name="value">The user group permission item entity to save.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The status of changing result.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(UserGroupPermissionItemEntity value, CancellationToken cancellationToken = default)
-        {
-            return DataProvider.SaveAsync(value, cancellationToken);
-        }
-
-        /// <summary>
-        /// Creates or updates a client permission item entity.
-        /// </summary>
-        /// <param name="value">The client permission item entity to save.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The status of changing result.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(ClientPermissionItemEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
         }

@@ -134,15 +134,5 @@ namespace NuScien.Configurations
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
-
-        /// <summary>
-        /// Gets or sets the group identifier of the group administrators.
-        /// </summary>
-        [JsonPropertyName("admin")]
-        public string AdminGroupId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
     }
 }

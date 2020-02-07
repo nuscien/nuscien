@@ -48,6 +48,14 @@ namespace NuScien.Security
         public Task<AccessingClientEntity> GetClientByNameAsync(string appId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets a client credential by accessing client entity identifier.
+        /// </summary>
+        /// <param name="id">The client entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<AccessingClientEntity> GetClientByIdAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets a client credential by app identifier.
         /// </summary>
         /// <param name="provider">The provider name or url.</param>
@@ -390,6 +398,17 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user entity matched if found; otherwise, null.</returns>
         public Task<AccessingClientEntity> GetClientByNameAsync(string appId, CancellationToken cancellationToken = default)
+        {
+            throw GetException();
+        }
+
+        /// <summary>
+        /// Gets a client credential by accessing client entity identifier.
+        /// </summary>
+        /// <param name="id">The client entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user entity matched if found; otherwise, null.</returns>
+        public Task<AccessingClientEntity> GetClientByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             throw GetException();
         }

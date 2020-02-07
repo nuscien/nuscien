@@ -63,35 +63,11 @@ namespace NuScien.Users
         public override SecurityEntityTypes SecurityEntityType => SecurityEntityTypes.User;
 
         /// <summary>
-        /// Gets or sets the nickname.
-        /// </summary>
-        [DataMember(Name = "nickname")]
-        [JsonPropertyName("nickname")]
-        [Column("nickname")]
-        public string Nickname
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
         /// Gets or sets the password.
         /// </summary>
         [JsonIgnore]
         [Column("password")]
         public string PasswordEncrypted
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the avatar URL.
-        /// </summary>
-        [DataMember(Name = "avatar")]
-        [JsonPropertyName("avatar")]
-        [Column("avatar")]
-        public string Avatar
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);

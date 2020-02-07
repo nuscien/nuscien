@@ -499,6 +499,18 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="value">The permission item to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public async Task<bool> HasPermissionAsync(string siteId, string value)
+        {
+            var perms = await GetPermissionsAsync(siteId);
+            return perms != null && perms.HasPermission(value);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="value">The permission item to test.</param>
         /// <param name="otherValues">Other permission items to test.</param>
         /// <returns>true if contains; otherwise, false.</returns>
         public async Task<bool> HasAnyPermissionAsync(string siteId, string value, params string[] otherValues)
@@ -527,21 +539,11 @@ namespace NuScien.Security
         /// <returns>true if contains; otherwise, false.</returns>
         public async Task<bool> IsSystemSettingsAdminAsync(string siteId, CancellationToken cancellationToken)
         {
-            string groupId;
-            if (string.IsNullOrWhiteSpace(siteId))
-            {
-                var settings = await GetSystemSettingsAsync(cancellationToken);
-                if (settings == null) return true;
-                groupId = settings.GroupAdminGroupId?.Trim();
-            }
-            else
-            {
-                siteId = siteId.Trim();
-                var settings = await GetSystemSettingsAsync(siteId, cancellationToken);
-                if (settings == null) return false;
-                groupId = settings.AdminGroupId?.Trim();
-            }
-
+            if (!string.IsNullOrWhiteSpace(siteId))
+                return await HasPermissionAsync(siteId.Trim(), PermissionItems.SiteAdmin);
+            var settings = await GetSystemSettingsAsync(cancellationToken);
+            if (settings == null) return true;
+            var groupId = settings.GroupAdminGroupId?.Trim();
             if (groupId == null) return false;
             var groups = await GetGroupsJoinedInAsync();
             return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
@@ -591,11 +593,42 @@ namespace NuScien.Security
             if (perms != null && perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin))
                 return true;
             var settings = await GetSystemSettingsAsync(cancellationToken);
-            var groupId = settings?.GroupAdminGroupId;
+            var groupId = settings?.GroupAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
             if (string.IsNullOrWhiteSpace(groupId)) return true;
             var groups = await GetGroupsJoinedInAsync();
-            if (groups.FirstOrDefault(ele => ele?.Id == groupId) != null) return true;
-            return false;
+            return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
+        }
+
+        /// <summary>
+        /// Tests if the user has site administrator permission.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public async Task<bool> IsSiteAdminAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            if (await HasAnyPermissionAsync(siteId, PermissionItems.SiteAdmin)) return true;
+            var settings = await GetSystemSettingsAsync(cancellationToken);
+            var groupId = settings?.SiteAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
+            if (string.IsNullOrWhiteSpace(groupId)) return true;
+            var groups = await GetGroupsJoinedInAsync();
+            return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
+        }
+
+        /// <summary>
+        /// Tests if can set permission.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        public async Task<bool> CanSetPermissionAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            if (await HasAnyPermissionAsync(siteId, PermissionItems.PermissionManagement, PermissionItems.SiteAdmin)) return true;
+            var settings = await GetSystemSettingsAsync(cancellationToken);
+            var groupId = settings?.SiteAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
+            if (string.IsNullOrWhiteSpace(groupId)) return true;
+            var groups = await GetGroupsJoinedInAsync();
+            return groups.FirstOrDefault(ele => ele?.Id == groupId) != null;
         }
 
         /// <summary>
@@ -984,16 +1017,16 @@ namespace NuScien.Security
             return ChangeMethods.Unchanged;
         }
 
-        ///// <summary>
-        ///// Creates or updates a user permission item entity.
-        ///// </summary>
-        ///// <param name="siteId">The site identifier.</param>
-        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        ///// <returns>The status of changing result.</returns>
-        //public async Task<ChangeMethods> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default)
-        //{
-        //    if (string.IsNullOrWhiteSpace(siteId) || string.IsNullOrWhiteSpace(targetId)) return ChangeMethods.Invalid;
-        //}
+        /// <summary>
+        /// Creates or updates a user permission item entity.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="targetType">The target entity type.</param>
+        /// <param name="targetId">The target entity identifier.</param>
+        /// <param name="permissionList">The permission list.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        public abstract Task<ChangeMethods> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Clears cache.
@@ -1154,30 +1187,6 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Creates or updates a user permission item entity.
-        /// </summary>
-        /// <param name="value">The user permission item entity to save.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The status of changing result.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(UserPermissionItemEntity value, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Creates or updates a user group permission item entity.
-        /// </summary>
-        /// <param name="value">The user group permission item entity to save.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The status of changing result.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupPermissionItemEntity value, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Creates or updates a client permission item entity.
-        /// </summary>
-        /// <param name="value">The client permission item entity to save.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The status of changing result.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(ClientPermissionItemEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a collection of user groups joined in.

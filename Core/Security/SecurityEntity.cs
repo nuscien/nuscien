@@ -62,5 +62,29 @@ namespace NuScien.Security
             get => SecurityEntityType.ToString();
             set => _ = value;
         }
+
+        /// <summary>
+        /// Gets or sets the nickname.
+        /// </summary>
+        [DataMember(Name = "nickname")]
+        [JsonPropertyName("nickname")]
+        [Column("nickname")]
+        public string Nickname
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the avatar URL.
+        /// </summary>
+        [DataMember(Name = "avatar")]
+        [JsonPropertyName("avatar")]
+        [Column("avatar")]
+        public string Avatar
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
     }
 }

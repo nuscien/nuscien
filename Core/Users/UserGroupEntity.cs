@@ -48,30 +48,6 @@ namespace NuScien.Users
         public override SecurityEntityTypes SecurityEntityType => SecurityEntityTypes.UserGroup;
 
         /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        [DataMember(Name = "desc")]
-        [JsonPropertyName("desc")]
-        [Column("desc")]
-        public string Description
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the avatar URL.
-        /// </summary>
-        [DataMember(Name = "avatar")]
-        [JsonPropertyName("avatar")]
-        [Column("avatar")]
-        public string Avatar
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
         /// Gets or sets the owner site identifier.
         /// </summary>
         [DataMember(Name = "site")]
