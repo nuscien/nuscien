@@ -72,7 +72,7 @@ namespace NuScien.Security
         /// Registers an instance.
         /// </summary>
         /// <param name="instance">The resource access client instance.</param>
-        public static void RegisterAsync(BaseResourceAccessClient instance)
+        public static void Register(BaseResourceAccessClient instance)
         {
             SingletonResolver.Instance.Register(instance);
         }
@@ -81,7 +81,7 @@ namespace NuScien.Security
         /// Registers an instance.
         /// </summary>
         /// <param name="resolve">The resource access client resolve handler.</param>
-        public static void RegisterAsync(Func<Task<BaseResourceAccessClient>> resolve)
+        public static void Register(Func<Task<BaseResourceAccessClient>> resolve)
         {
             resolver = resolve;
         }
