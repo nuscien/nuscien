@@ -28,5 +28,30 @@ namespace NuScien.Security
         /// The site administration.
         /// </summary>
         public const string SiteAdmin = "site-admin";
+
+        /// <summary>
+        /// The CMS administration.
+        /// </summary>
+        public const string CmsAdmin = "cms-admin";
+
+        /// <summary>
+        /// The CMS insertion.
+        /// </summary>
+        public const string CmsInsertion = "cms-add";
+
+        /// <summary>
+        /// The CMS request.
+        /// </summary>
+        public const string CmsRequest = "cms-request";
+
+        /// <summary>
+        /// The CMS modification.
+        /// </summary>
+        public const string CmsModification = "cms-modify";
+
+        /// <summary>
+        /// The CMS deletion.
+        /// </summary>
+        public const string CmsDeletion = "cms-delete";
     }
 }

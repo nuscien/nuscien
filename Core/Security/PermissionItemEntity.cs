@@ -21,7 +21,7 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
-    public abstract class BasePermissionItemEntity : ConfigurableResourceEntity
+    public abstract class BasePermissionItemEntity : BaseResourceEntity
     {
         /// <summary>
         /// The split string for permission item.

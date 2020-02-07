@@ -515,6 +515,32 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Creates or updates the settings.
+        /// </summary>
+        /// <param name="key">The settings key with optional namespace.</param>
+        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public override async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return ChangeMethods.Invalid;
+            else key = key.Trim();
+            if (string.IsNullOrWhiteSpace(siteId))
+            {
+                siteId = null;
+                if (!await IsSystemSettingsAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
+            }
+            else
+            {
+                siteId = siteId.Trim();
+                if (!await IsSystemSettingsAdminAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
+            }
+
+            return await DataProvider.SaveSettingsAsync(key, siteId, value, cancellationToken);
+        }
+
+        /// <summary>
         /// Searches users.
         /// </summary>
         /// <param name="group">The user group entity.</param>
@@ -562,6 +588,17 @@ namespace NuScien.Security
         protected override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
             return DataProvider.ListGroupPermissionsAsync(User, siteId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the client permissions of the current client.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The client permission list.</returns>
+        protected override Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            return ClientVerified != null ? DataProvider.GetClientPermissionsAsync(ClientVerified, siteId, cancellationToken) : null;
         }
 
         /// <summary>
@@ -621,29 +658,36 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Creates or updates the settings.
+        /// Creates or updates a user permission item entity.
         /// </summary>
-        /// <param name="key">The settings key with optional namespace.</param>
-        /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="value">The user permission item entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
-        protected override async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        /// <returns>The status of changing result.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(UserPermissionItemEntity value, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(key)) return ChangeMethods.Invalid;
-            else key = key.Trim();
-            if (string.IsNullOrWhiteSpace(siteId))
-            {
-                siteId = null;
-                if (!await IsSystemSettingsAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
-            }
-            else
-            {
-                siteId = siteId.Trim();
-                if (!await IsSystemSettingsAdminAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
-            }
+            return DataProvider.SaveAsync(value, cancellationToken);
+        }
 
-            return await DataProvider.SaveSettingsAsync(key, siteId, value, cancellationToken);
+        /// <summary>
+        /// Creates or updates a user group permission item entity.
+        /// </summary>
+        /// <param name="value">The user group permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(UserGroupPermissionItemEntity value, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(value, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a client permission item entity.
+        /// </summary>
+        /// <param name="value">The client permission item entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(ClientPermissionItemEntity value, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(value, cancellationToken);
         }
 
         /// <summary>
@@ -725,7 +769,12 @@ namespace NuScien.Security
                 if (!string.IsNullOrWhiteSpace(token.ClientId) && tokenRequest?.ClientCredentials?.Secret != null && tokenRequest.ClientCredentials.Secret.Length > 0)
                 {
                     var clientInfo = await DataProvider.GetClientByNameAsync(token.ClientId, cancellationToken);
-                    if (clientInfo != null && clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret)) ClientVerified = clientInfo;
+                    if (clientInfo != null && clientInfo.ValidateCredentialKey(tokenRequest.ClientCredentials.Secret))
+                    {
+                        ClientVerified = clientInfo;
+                        clientInfo.SetPropertiesReadonly();
+                    }
+
                     else return new UserTokenInfo
                     {
                         User = user,

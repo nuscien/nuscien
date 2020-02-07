@@ -39,6 +39,17 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets or sets the group identifier of the administrators for this client.
+        /// </summary>
+        [JsonIgnore]
+        [Column("group")]
+        public string AdminGroupId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
         /// Renews the credential key.
         /// </summary>
         /// <returns>The app accessing key.</returns>
@@ -84,6 +95,14 @@ namespace NuScien.Security
         public bool ValidateCredentialKey(SecureString password)
         {
             return ValidateCredentialKey(password.ToUnsecureString());
+        }
+
+        /// <summary>
+        /// Sets the properties writable.
+        /// </summary>
+        internal void UnlockPropertiesReadonly()
+        {
+            IsPropertyReadonly = false;
         }
 
         /// <summary>

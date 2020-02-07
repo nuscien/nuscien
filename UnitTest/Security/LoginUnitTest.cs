@@ -33,13 +33,13 @@ namespace NuScien.UnitTest.Security
             var client = await ResourceAccessClients.OnPremisesAsync();
 
             // Error handling.
-            var resp = await client.LoginByPasswordAsync(ResourceAccessClients.AppKey, ResourceAccessClients.NameAndPassword.UserName, "Wrong Password");
+            var resp = await client.SignInByPasswordAsync(ResourceAccessClients.AppKey, ResourceAccessClients.NameAndPassword.UserName, "Wrong Password");
             Assert.IsTrue(resp.IsEmpty);
-            resp = await client.LoginByPasswordAsync(ResourceAccessClients.AppKey, "Someone", "Password");
+            resp = await client.SignInByPasswordAsync(ResourceAccessClients.AppKey, "Someone", "Password");
             Assert.IsTrue(resp.IsEmpty);
 
             // Happy path.
-            resp = await client.LoginAsync(ResourceAccessClients.AppKey, ResourceAccessClients.NameAndPassword);
+            resp = await client.SignInAsync(ResourceAccessClients.AppKey, ResourceAccessClients.NameAndPassword);
             Assert.IsFalse(resp.IsEmpty);
             Assert.IsNotNull(resp.AccessToken);
             Assert.IsNotNull(resp.User);
@@ -57,7 +57,7 @@ namespace NuScien.UnitTest.Security
 
             // Logout.
             var accessToken = resp.AccessToken;
-            await client.LogoutAsync();
+            await client.SignOutAsync();
             Assert.IsTrue(client.IsTokenNullOrEmpty);
             resp = await client.AuthorizeAsync(accessToken);
             Assert.IsTrue(resp.IsEmpty);

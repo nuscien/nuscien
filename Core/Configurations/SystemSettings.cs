@@ -91,6 +91,16 @@ namespace NuScien.Configurations
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Gets or sets the group identifier of the CMS administrators.
+        /// </summary>
+        [JsonPropertyName("admin_cms")]
+        public string CmsAdminGroupId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
     }
 
     /// <summary>
