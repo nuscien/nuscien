@@ -899,8 +899,8 @@ namespace NuScien.Security
         {
             if (user is null || user.IsNew || string.IsNullOrWhiteSpace(user.Name)) return new UserTokenInfo
             {
-                ErrorCode = InvalidPasswordCode,
-                ErrorDescription = "The login name or password is not correct."
+                ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                ErrorDescription = "The user does not exist."
             };
             return null;
         }

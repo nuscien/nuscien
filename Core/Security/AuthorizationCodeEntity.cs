@@ -108,7 +108,7 @@ namespace NuScien.Security
         {
             if (authorizationCode == null) return false;
             authorizationCode = authorizationCode.Trim();
-            return ComputeCodeHash(authorizationCode).Equals(CodeEncrypted, StringComparison.Ordinal);
+            return ComputeCodeHash(authorizationCode).Equals(CodeEncrypted?.Trim(), StringComparison.Ordinal);
         }
 
         /// <summary>

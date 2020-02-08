@@ -19,65 +19,17 @@
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
       <Items>
-        <FileNode Name="TableAuthCodes.sql">
+        <FileNode Name="TablesCreation.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>TableAuthCodes.sql</FullPath>
+          <FullPath>TablesCreation.sql</FullPath>
         </FileNode>
-        <FileNode Name="TableClientPerms.sql">
+        <FileNode Name="TablesDeletion.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>TableClientPerms.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableClients.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableClients.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableSettings.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableSettings.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableTokens.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableTokens.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableUserGroupPerms.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableUserGroupPerms.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableUserGroupRelas.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableUserGroupRelas.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableUserGroups.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableUserGroups.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableUserPerms.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableUserPerms.sql</FullPath>
-        </FileNode>
-        <FileNode Name="TableUsers.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
-          <FullPath>TableUsers.sql</FullPath>
+          <FullPath>TablesDeletion.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>

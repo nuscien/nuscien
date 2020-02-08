@@ -159,7 +159,7 @@ namespace NuScien.Users
         {
             if (password == null) return false;
             password = password.Trim();
-            return HashPassword(password).Equals(PasswordEncrypted, StringComparison.Ordinal);
+            return HashPassword(password).Equals(PasswordEncrypted?.Trim(), StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace NuScien.Users
 
         private string HashPassword(string original)
         {
-            var s = $"{original} - {Name}";
+            var s = $"{original?.Trim()} - {Name?.Trim()}";
             return HashUtility.ComputeSHA512String(s);
         }
 

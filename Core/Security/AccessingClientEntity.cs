@@ -84,7 +84,7 @@ namespace NuScien.Security
         {
             if (password == null) return false;
             password = password.Trim();
-            return ComputeCredentialKeyHash(password).Equals(CredentialKeyEncrypted, StringComparison.Ordinal);
+            return ComputeCredentialKeyHash(password).Equals(CredentialKeyEncrypted?.Trim(), StringComparison.Ordinal);
         }
 
         /// <summary>

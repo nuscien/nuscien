@@ -21,30 +21,37 @@ namespace NuScien.UnitTest.Security
             var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
             var hasCreated = context.Database.EnsureCreated();
             var provider = new AccountDbSetProvider(context);
-            if (await provider.GetClientByNameAsync(AppKey.Id) == null)
+
+            // Initialize a client app.
+            var client = await provider.GetClientByNameAsync(AppKey.Id);
+            if (client == null)
             {
-                var client = new AccessingClientEntity
+                client = new AccessingClientEntity
                 {
+                    Nickname = "Test client",
                     State = ResourceEntityStates.Normal
                 };
                 client.SetKey(AppKey);
                 await provider.SaveAsync(client);
-                var user = await provider.GetUserByLognameAsync(NameAndPassword.UserName);
-                if (user == null)
-                {
-                    user = new UserEntity
-                    {
-                        Name = NameAndPassword.UserName,
-                        Nickname = "Kingcean",
-                        Gender = Genders.Male,
-                        Birthday = new DateTime(1987, 7, 17),
-                        State = ResourceEntityStates.Normal
-                    };
-                    user.SetPassword(NameAndPassword.Password);
-                    await provider.SaveAsync(user);
-                }
             }
 
+            // Initialize a user.
+            var user = await provider.GetUserByLognameAsync(NameAndPassword.UserName);
+            if (user == null)
+            {
+                user = new UserEntity
+                {
+                    Name = NameAndPassword.UserName,
+                    Nickname = "Kingcean",
+                    Gender = Genders.Male,
+                    Birthday = new DateTime(1987, 7, 17),
+                    State = ResourceEntityStates.Normal
+                };
+                user.SetPassword(NameAndPassword.Password);
+                await provider.SaveAsync(user);
+            }
+
+            // Return result.
             return new OnPremisesResourceAccessClient(provider);
         });
 

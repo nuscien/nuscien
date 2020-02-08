@@ -527,8 +527,8 @@ namespace NuScien.Security
         {
             var context = GetContext();
             var list = await context.Tokens.Where(ele => ele.Name == accessToken).ToListAsync();
-            await context.SaveChangesAsync();
             context.Tokens.RemoveRange(list);
+            await context.SaveChangesAsync();
         }
 
         /// <summary>
