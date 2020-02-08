@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Initialization">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="ALPS:ALPS\Kingcean">
+          <Created>2020-02-08T14:21:24.6453983+08:00</Created>
+          <Type>SQL</Type>
+          <Server>ALPS</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>NuScien5</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="TableAuthCodes.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableAuthCodes.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableClientPerms.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableClientPerms.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableClients.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableClients.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableSettings.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableSettings.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableTokens.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableTokens.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableUserGroupPerms.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableUserGroupPerms.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableUserGroupRelas.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableUserGroupRelas.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableUserGroups.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableUserGroups.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableUserPerms.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableUserPerms.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TableUsers.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TableUsers.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

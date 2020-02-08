@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -1014,6 +1015,21 @@ namespace NuScien.Security
             }
 
             if (!isCurrentUser && !await HasUserNameAsync(value.Name)) return ChangeMethods.Invalid;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(value.Market))
+                {
+                    var culture = Thread.CurrentThread.CurrentUICulture ?? Thread.CurrentThread.CurrentCulture;
+                    if (culture != null) value.Market = culture.Name;
+                }
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
             return await SaveEntityAsync(value, cancellationToken);
         }
 

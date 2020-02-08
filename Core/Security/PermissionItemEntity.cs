@@ -357,7 +357,7 @@ namespace NuScien.Security
     /// The permission item entity.
     /// </summary>
     [DataContract]
-    [Table("nsgroupperms")]
+    [Table("nsusergroupperms")]
     public class UserGroupPermissionItemEntity : BasePermissionItemEntity<UserGroupEntity>
     {
         /// <summary>
