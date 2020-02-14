@@ -15,58 +15,42 @@ namespace NuScien.Reflection
     /// </summary>
     public class ReadonlyObservableProperties : BaseObservableProperties
     {
+        private bool preferThrowExceptionWhenSetPropertyFailed;
+
         /// <summary>
         /// Gets a value indicating whether the properites are read-only.
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public bool IsPropertyReadonly { get; protected set; }
+        public bool IsPropertyReadonly => PropertiesSettingPolicy != PropertySettingPolicies.Allow;
 
         /// <summary>
         /// Gets or sets a value indicating whether need throw an exception when set property failed.
         /// </summary>
         [NotMapped]
         [JsonIgnore]
-        public bool NeedThrowExceptionWhenSetPropertyFailed { get; set; }
+        public bool NeedThrowExceptionWhenSetPropertyFailed
+        {
+            get
+            {
+                if (PropertiesSettingPolicy == PropertySettingPolicies.Allow) return preferThrowExceptionWhenSetPropertyFailed;
+                return PropertiesSettingPolicy == PropertySettingPolicies.Forbidden;
+            }
+
+            set
+            {
+                preferThrowExceptionWhenSetPropertyFailed = value;
+                if (PropertiesSettingPolicy == PropertySettingPolicies.Allow) return;
+                PropertiesSettingPolicy = value ? PropertySettingPolicies.Forbidden : PropertySettingPolicies.Skip;
+            }
+        }
 
         /// <summary>
         /// Sets the properties read-only to access.
         /// </summary>
         public void SetPropertiesReadonly()
         {
-            IsPropertyReadonly = true;
-        }
-
-        /// <inheritdoc />
-        protected new bool SetCurrentProperty(object value, [CallerMemberName] string key = null)
-        {
-            if (IsPropertyReadonly)
-            {
-                if (NeedThrowExceptionWhenSetPropertyFailed)
-                    throw new InvalidOperationException("Forbidden to set property.", new ArgumentException("The property is forbidden to set.", key));
-                return false;
-            }
-
-            var r = base.SetProperty(key, value);
-            if (!r && NeedThrowExceptionWhenSetPropertyFailed)
-                throw new InvalidOperationException("Set property failed.", new ArgumentException("Set property failed.", key));
-            return r;
-        }
-
-        /// <inheritdoc />
-        protected new bool SetProperty(string key, object value)
-        {
-            if (IsPropertyReadonly)
-            {
-                if (NeedThrowExceptionWhenSetPropertyFailed)
-                    throw new InvalidOperationException("Forbidden to set property.", new ArgumentException("The property is forbidden to set.", key));
-                return false;
-            }
-
-            var r = base.SetProperty(key, value);
-            if (!r && NeedThrowExceptionWhenSetPropertyFailed)
-                throw new InvalidOperationException("Set property failed.", new ArgumentException("Set property failed.", key));
-            return r;
+            PropertiesSettingPolicy = preferThrowExceptionWhenSetPropertyFailed ? PropertySettingPolicies.Forbidden : PropertySettingPolicies.Skip;
         }
     }
 }

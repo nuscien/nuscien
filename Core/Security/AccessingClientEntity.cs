@@ -102,7 +102,7 @@ namespace NuScien.Security
         /// </summary>
         internal void UnlockPropertiesReadonly()
         {
-            IsPropertyReadonly = false;
+            PropertiesSettingPolicy = Trivial.Reflection.PropertySettingPolicies.Allow;
         }
 
         /// <summary>
