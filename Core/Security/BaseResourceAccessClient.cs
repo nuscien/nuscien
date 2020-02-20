@@ -169,11 +169,10 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public async Task<UserTokenInfo> SignInAsync(Stream utf8Stream)
         {
-            string input;
             try
             {
-                using var reader = new StreamReader(utf8Stream, Encoding.UTF8);
-                input = reader.ReadToEnd();
+                var r = await TokenRequestRoute.SignInAsync(utf8Stream);
+                return r.ItemSelected as UserTokenInfo;
             }
             catch (ArgumentException ex)
             {
@@ -192,8 +191,6 @@ namespace NuScien.Security
                 };
             }
 
-            var r = await TokenRequestRoute.SignInAsync(input);
-            return r.ItemSelected as UserTokenInfo;
         }
 
         /// <summary>
@@ -404,6 +401,28 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
         public abstract Task<UserTokenInfo> AuthorizeAsync(string accessToken, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public async Task<UserTokenInfo> AuthorizeAsync<T>(IDictionary<string, T> header, CancellationToken cancellationToken = default) where T : IEnumerable<string>
+        {
+            if (header is null || !header.TryGetValue("Authorization", out var col)) return new UserTokenInfo
+            {
+                ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                ErrorDescription = "No authorization information."
+            };
+            var token = col.FirstOrDefault(ele => !string.IsNullOrWhiteSpace(ele));
+            if (string.IsNullOrWhiteSpace(token)) return new UserTokenInfo
+            {
+                ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                ErrorDescription = "No authorization information."
+            };
+            return await AuthorizeAsync(token, cancellationToken);
+        }
 
         /// <summary>
         /// Sets a new authorization code.

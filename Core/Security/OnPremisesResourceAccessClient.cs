@@ -45,7 +45,7 @@ namespace NuScien.Security
         /// <param name="provider">The account data provider.</param>
         public OnPremisesResourceAccessClient(IAccountDataProvider provider)
         {
-            DataProvider = provider ?? new FakeAccountDbSetProvider();
+            DataProvider = provider ?? new MemoryAccountDbSetProvider();
         }
 
         /// <summary>
