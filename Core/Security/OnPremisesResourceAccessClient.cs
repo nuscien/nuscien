@@ -93,7 +93,7 @@ namespace NuScien.Security
             if (eui != null) return eui;
             if (tokenRequest.Body.Password.Length < 1) return new UserTokenInfo
             {
-                ErrorCode = "invalid_password",
+                ErrorCode = InvalidPasswordCode,
                 ErrorDescription = "The password should not be null."
             };
             var provider = ldapProviders.TryGetProvider(tokenRequest.Body.Ldap);

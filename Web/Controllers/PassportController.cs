@@ -37,6 +37,7 @@ namespace NuScien.Web.Controllers
         /// <returns>The user token information.</returns>
         [HttpPost]
         [Route("api/passport/login")]
+        [Route("nuscien5/passport/login")]
         public async Task<UserTokenInfo> LoginAsync()
         {
             var instance = await ResourceAccessClients.ResolveAsync();
@@ -49,10 +50,25 @@ namespace NuScien.Web.Controllers
         /// <returns>The user token information.</returns>
         [HttpGet]
         [Route("api/passport/login")]
+        [Route("nuscien5/passport/login")]
         public async Task<UserTokenInfo> TestTokenAsync()
         {
             var instance = await ResourceAccessClients.ResolveAsync();
             return await instance.AuthorizeAsync(Request.Headers);
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <returns>The user token information.</returns>
+        [HttpPost]
+        [Route("api/passport/logout")]
+        [Route("nuscien5/passport/logout")]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            var instance = await ResourceAccessClients.ResolveAsync();
+            await instance.SignOutAsync();
+            return Ok();
         }
     }
 }

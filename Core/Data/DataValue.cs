@@ -10,7 +10,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace NuScien.Data
 {
@@ -211,5 +213,35 @@ namespace NuScien.Data
         /// Gets or sets a value indicating whether the source is only an appending parameter.
         /// </summary>
         public bool IsAppendParameter { get; set; }
+    }
+
+    /// <summary>
+    /// The change method result.
+    /// </summary>
+    [DataContract]
+    public class ChangeMethodResult
+    {
+        /// <summary>
+        /// Gets or sets the change method result.
+        /// </summary>
+        [DataMember(Name = "state")]
+        [JsonPropertyName("state")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public Trivial.Data.ChangeMethods State { get; set; }
+    }
+
+    /// <summary>
+    /// The change method result.
+    /// </summary>
+    [DataContract]
+    public class BooleanResult
+    {
+        /// <summary>
+        /// Gets or sets the change method result.
+        /// </summary>
+        [DataMember(Name = "value")]
+        [JsonPropertyName("value")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public bool Value { get; set; }
     }
 }
