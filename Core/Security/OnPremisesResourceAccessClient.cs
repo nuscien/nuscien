@@ -428,6 +428,20 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <param name="q">The optional query request information.</param>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        public override async Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, CancellationToken cancellationToken = default)
+        {
+            var perms = await GetPermissionsAsync(siteId);
+            var onlyPublic = perms == null || !perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin);
+            return await DataProvider.ListGroupsAsync(q, siteId, onlyPublic, cancellationToken);
+        }
+
+        /// <summary>
         /// Renews the client app key.
         /// </summary>
         /// <param name="appId">The client app identifier.</param>
@@ -498,20 +512,6 @@ namespace NuScien.Security
             if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
             else siteId = siteId.Trim();
             return DataProvider.GetSettingsJsonStringAsync(key, siteId, cancellationToken);
-        }
-
-        /// <summary>
-        /// Searches user groups.
-        /// </summary>
-        /// <param name="q">The optional query request information.</param>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The token entity matched if found; otherwise, null.</returns>
-        public override async Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, CancellationToken cancellationToken = default)
-        {
-            var perms = await GetPermissionsAsync(siteId);
-            var onlyPublic = perms == null || !perms.HasAnyPermission(PermissionItems.GroupManagement, PermissionItems.SiteAdmin);
-            return await DataProvider.ListGroupsAsync(q, siteId, onlyPublic, cancellationToken);
         }
 
         /// <summary>
@@ -618,12 +618,12 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Gets user groups.
+        /// Gets a collection of user groups joined in.
         /// </summary>
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The login response.</returns>
+        /// <returns>The user group relationships.</returns>
         protected override Task<IEnumerable<UserGroupRelationshipEntity>> GetRelationshipsAsync(string q, ResourceEntityStates relationshipState, CancellationToken cancellationToken = default)
         {
             return DataProvider.ListUserGroupsAsync(User, q, relationshipState, cancellationToken);

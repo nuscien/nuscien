@@ -1210,7 +1210,7 @@ namespace NuScien.Security
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The login response.</returns>
+        /// <returns>The user group relationships.</returns>
         protected abstract Task<IEnumerable<UserGroupRelationshipEntity>> GetRelationshipsAsync(string q, ResourceEntityStates relationshipState, CancellationToken cancellationToken = default);
 
         /// <summary>

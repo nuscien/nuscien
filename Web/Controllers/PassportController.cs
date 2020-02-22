@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NuScien.Data;
 using NuScien.Security;
+using Trivial.Net;
 using Trivial.Security;
 
 namespace NuScien.Web.Controllers
@@ -16,6 +18,8 @@ namespace NuScien.Web.Controllers
     /// The passport controller.
     /// </summary>
     [ApiController]
+    [Route("api")]
+    [Route("nuscien5")]
     public class PassportController : ControllerBase
     {
         #pragma warning disable IDE0052
@@ -36,8 +40,7 @@ namespace NuScien.Web.Controllers
         /// </summary>
         /// <returns>The user token information.</returns>
         [HttpPost]
-        [Route("api/passport/login")]
-        [Route("nuscien5/passport/login")]
+        [Route("passport/login")]
         public async Task<UserTokenInfo> LoginAsync()
         {
             var instance = await ResourceAccessClients.ResolveAsync();
@@ -49,8 +52,7 @@ namespace NuScien.Web.Controllers
         /// </summary>
         /// <returns>The user token information.</returns>
         [HttpGet]
-        [Route("api/passport/login")]
-        [Route("nuscien5/passport/login")]
+        [Route("passport/login")]
         public async Task<UserTokenInfo> TestTokenAsync()
         {
             var instance = await ResourceAccessClients.ResolveAsync();
@@ -62,13 +64,35 @@ namespace NuScien.Web.Controllers
         /// </summary>
         /// <returns>The user token information.</returns>
         [HttpPost]
-        [Route("api/passport/logout")]
-        [Route("nuscien5/passport/logout")]
+        [Route("passport/logout")]
         public async Task<IActionResult> LogoutAsync()
         {
             var instance = await ResourceAccessClients.ResolveAsync();
             await instance.SignOutAsync();
             return Ok();
+        }
+
+        /// <summary>
+        /// Signs in.
+        /// </summary>
+        /// <returns>The user token information.</returns>
+        [HttpPost]
+        [Route("passport/users/exist")]
+        public async Task<IActionResult> IsUserExistedAsync()
+        {
+            var key = Request.Form["key"].FirstOrDefault();
+            var value = Request.Form["value"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value)) return BadRequest();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            switch (key)
+            {
+                case "logname":
+                case "name":
+                    if (await instance.HasUserNameAsync(value)) return Ok();
+                    return NotFound();
+                default:
+                    return StatusCode(501);
+            }
         }
     }
 }

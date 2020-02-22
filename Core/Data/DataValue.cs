@@ -231,17 +231,25 @@ namespace NuScien.Data
     }
 
     /// <summary>
-    /// The change method result.
+    /// The collection result.
     /// </summary>
     [DataContract]
-    public class BooleanResult
+    public class CollectionResult<T>
     {
         /// <summary>
-        /// Gets or sets the change method result.
+        /// Gets or sets the offset of the result.
         /// </summary>
-        [DataMember(Name = "value")]
-        [JsonPropertyName("value")]
+        [DataMember(Name = "offset")]
+        [JsonPropertyName("offset")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public bool Value { get; set; }
+        public int? Offset { get; set; }
+
+        /// <summary>
+        /// Gets or sets the result collection.
+        /// </summary>
+        [DataMember(Name = "col")]
+        [JsonPropertyName("col")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public IEnumerable<T> Value { get; set; }
     }
 }

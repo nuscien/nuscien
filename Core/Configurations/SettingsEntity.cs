@@ -89,12 +89,12 @@ namespace NuScien.Configurations
             /// <summary>
             /// Gets the JSON string of the site configuration.
             /// </summary>
-            public string SiteConfigString;
+            public string SiteConfigString { get; }
 
             /// <summary>
             /// Gets the JSON string of the global configuration.
             /// </summary>
-            public string GlobalConfigString;
+            public string GlobalConfigString { get; }
 
             /// <summary>
             /// Gets the configuration data of the site.
