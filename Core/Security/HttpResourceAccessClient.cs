@@ -42,21 +42,20 @@ namespace NuScien.Security
         /// <param name="host">The host URI.</param>
         public HttpResourceAccessClient(AppAccessingKey appKey, Uri host)
         {
+            this.appKey = appKey ?? new AppAccessingKey();
             if (host == null)
             {
                 Host = new Uri("http://localhost");
-            }
-            else
-            {
-                Host = host ?? new Uri("http://localhost");
-                var url = host.OriginalString;
-                var i = url.IndexOf('?');
-                if (i >= 0) url = url.Substring(0, i);
-                i = url.IndexOf('#');
-                if (i >= 0) url = url.Substring(0, i);
+                return;
             }
 
-            this.appKey = appKey ?? new AppAccessingKey();
+            var url = host.OriginalString;
+            var i = url.IndexOf('?');
+            if (i >= 0) url = url.Substring(0, i);
+            i = url.IndexOf('#');
+            if (i >= 0) url = url.Substring(0, i);
+            if (url != host.OriginalString) Host = new Uri(url);
+            IsLongCacheDuration = true;
         }
 
         /// <summary>

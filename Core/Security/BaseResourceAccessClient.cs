@@ -27,6 +27,11 @@ namespace NuScien.Security
     public abstract class BaseResourceAccessClient : TokenContainer
     {
         /// <summary>
+        /// The flag to use long cache duration
+        /// </summary>
+        private bool isLongCacheDuration;
+
+        /// <summary>
         /// The token request route instance.
         /// </summary>
         private TokenRequestRoute<UserEntity> route;
@@ -66,6 +71,25 @@ namespace NuScien.Security
         {
             Expiration = TimeSpan.FromMinutes(10)
         };
+
+        /// <summary>
+        /// Gets or sets a value indicating whether use long cache duration
+        /// </summary>
+        protected bool IsLongCacheDuration
+        {
+            get
+            {
+                return isLongCacheDuration;
+            }
+
+            set
+            {
+                if (isLongCacheDuration == value) return;
+                isLongCacheDuration = value;
+                settings.Expiration = value ? TimeSpan.FromHours(2) : TimeSpan.FromMinutes(3);
+                siteSettings.Expiration = value ? TimeSpan.FromHours(2) : TimeSpan.FromMinutes(10);
+            }
+        }
 
         /// <summary>
         /// Gets the cache date time of groups.
@@ -473,7 +497,8 @@ namespace NuScien.Security
             if (string.IsNullOrWhiteSpace(siteId)) return null;
             if (permissions.TryGetValue(siteId, out var set))
             {
-                if (DateTime.Now - set.CacheTime < TimeSpan.FromMinutes(2)) return set;
+                if ((DateTime.Now - set.CacheTime) < (isLongCacheDuration ? TimeSpan.FromHours(2) : TimeSpan.FromMinutes(3)))
+                    return set;
             }
             else
             {
