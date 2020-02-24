@@ -10,9 +10,11 @@ using Microsoft.Extensions.Logging;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Users;
+using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
 using Trivial.Text;
+using Trivial.Web;
 
 namespace NuScien.Web.Controllers
 {
@@ -176,8 +178,81 @@ namespace NuScien.Web.Controllers
             if (string.IsNullOrWhiteSpace(appId)) return BadRequest();
             var instance = await ResourceAccessClients.ResolveAsync();
             var result = await instance.RenewAppClientKeyAsync(appId);
-            if (result != null) return new JsonResult(result);
-            return NotFound();
+            if (result == null) return this.EmptyEntity();
+            return new JsonResult(result);
+        }
+
+        /// <summary>
+        /// Searches users.
+        /// </summary>
+        /// <param name="id">The user group identifier.</param>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        [HttpGet]
+        [Route("passport/users/group/{id}")]
+        protected async Task<IActionResult> ListUsersByGroupAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return BadRequest();
+            var query = Request.Query.GetQueryArgs();
+            var roleIndex = Request.Query.TryGetInt32Value("role");
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var group = await instance.GetUserGroupByIdAsync(id);
+            var result = roleIndex.HasValue ? await instance.ListUsersAsync(group, (UserGroupRelationshipEntity.Roles)roleIndex.Value, query) : await instance.ListUsersAsync(group, query);
+            if (result == null) result = new List<UserEntity>();
+            return new JsonResult(new CollectionResult<UserEntity>(result));
+        }
+
+        /// <summary>
+        /// Creates or updates an entity.
+        /// </summary>
+        /// <param name="entity">The entity to save.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("passport/user")]
+        protected async Task<IActionResult> SaveUserAsync([FromBody] UserEntity entity)
+        {
+            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var result = await instance.SaveAsync(entity);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Creates or updates an entity.
+        /// </summary>
+        /// <param name="entity">The entity to save.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("passport/group")]
+        protected async Task<IActionResult> SaveGroupAsync([FromBody] UserGroupEntity entity)
+        {
+            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var result = await instance.SaveAsync(entity);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Creates or updates an entity.
+        /// </summary>
+        /// <param name="entity">The entity to save.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("passport/rela")]
+        protected async Task<IActionResult> SaveUserAsync([FromBody] UserGroupRelationshipEntity entity)
+        {
+            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            if (entity.OwnerId == instance.UserId)
+            {
+                var group = await instance.GetUserGroupByIdAsync(entity.OwnerId);
+                var joinInResult = await instance.JoinAsync(group);
+                return joinInResult.ToActionResult();
+            }
+
+            var groupTask = instance.GetUserGroupByIdAsync(entity.OwnerId);
+            var user = await instance.GetUserByIdAsync(entity.TargetId);
+            var result = await instance.InviteAsync(await groupTask, user);
+            return result.ToActionResult();
         }
     }
 }

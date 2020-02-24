@@ -289,6 +289,20 @@ namespace NuScien.Data
     }
 
     /// <summary>
+    /// The permission request arguments.
+    /// </summary>
+    [DataContract]
+    public class PermissionRequestArgs
+    {
+        /// <summary>
+        /// Gets or sets the offset of the result.
+        /// </summary>
+        [DataMember(Name = "permissions")]
+        [JsonPropertyName("permissions")]
+        public IEnumerable<string> Permissions { get; set; }
+    }
+
+    /// <summary>
     /// The collection result.
     /// </summary>
     [DataContract]

@@ -603,9 +603,9 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(siteId)) return Task.FromResult(ChangeMethods.Invalid);
             siteId = siteId.Trim();
-            var content = new JsonObject
+            var content = new PermissionRequestArgs
             {
-                { "permissions", permissionList }
+                Permissions = permissionList
             };
             return targetType switch
             {

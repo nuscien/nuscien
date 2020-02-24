@@ -238,5 +238,20 @@ namespace NuScien.Web.Controllers
             if (state.HasValue) q.State = (ResourceEntityStates)state.Value;
             return q;
         }
+
+        internal static ActionResult EmptyEntity(this ControllerBase controller)
+        {
+            return controller.NotFound();
+        }
+
+        internal static ContentResult JsonStringResult(string json)
+        {
+            return new ContentResult
+            {
+                StatusCode = 200,
+                ContentType = WebFormat.JsonMIME,
+                Content = json
+            };
+        }
     }
 }
