@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json.Serialization;
+using Trivial.Security;
 
 namespace NuScien.Data
 {
@@ -222,6 +223,22 @@ namespace NuScien.Data
     public class ChangeMethodResult
     {
         /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
+        public ChangeMethodResult()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
+        /// <param name="state">The change method result.</param>
+        public ChangeMethodResult(Trivial.Data.ChangeMethods state)
+        {
+            State = state;
+        }
+
+        /// <summary>
         /// Gets or sets the change method result.
         /// </summary>
         [DataMember(Name = "state")]
@@ -237,6 +254,24 @@ namespace NuScien.Data
     public class CollectionResult<T>
     {
         /// <summary>
+        /// Initializes a new instance of the CollectionResult class.
+        /// </summary>
+        public CollectionResult()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the CollectionResult class.
+        /// </summary>
+        /// <param name="col">The result collection.</param>
+        /// <param name="offset">The offset of the result.</param>
+        public CollectionResult(IEnumerable<T> col, int? offset = null)
+        {
+            Value = col;
+            Offset = offset;
+        }
+
+        /// <summary>
         /// Gets or sets the offset of the result.
         /// </summary>
         [DataMember(Name = "offset")]
@@ -251,5 +286,125 @@ namespace NuScien.Data
         [JsonPropertyName("col")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public IEnumerable<T> Value { get; set; }
+    }
+
+    /// <summary>
+    /// The collection result.
+    /// </summary>
+    [DataContract]
+    public class MessageResult
+    {
+        /// <summary>
+        /// Initializes a new instance of the MessageResult class.
+        /// </summary>
+        public MessageResult()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the MessageResult class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public MessageResult(string message)
+        {
+            Message = message;
+        }
+
+        /// <summary>
+        /// Gets or sets the offset of the result.
+        /// </summary>
+        [DataMember(Name = "message")]
+        [JsonPropertyName("message")]
+        public string Message { get; set; }
+    }
+
+    /// <summary>
+    /// The collection result.
+    /// </summary>
+    [DataContract]
+    public class ErrorMessageResult : MessageResult
+    {
+        /// <summary>
+        /// Initializes a new instance of the ErrorMessageResult class.
+        /// </summary>
+        public ErrorMessageResult()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ErrorMessageResult class.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        public ErrorMessageResult(Exception ex) : this(ex, ex?.GetType()?.Name)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ErrorMessageResult class.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        /// <param name="errorCode">The error code.</param>
+        public ErrorMessageResult(Exception ex, string errorCode) : base(ex?.Message)
+        {
+            ErrorCode = errorCode;
+            if (ex == null) return;
+            var innerEx = ex?.InnerException;
+            if (ex is AggregateException aggEx && aggEx.InnerExceptions != null)
+            {
+                if (aggEx.InnerExceptions.Count == 1)
+                {
+                    innerEx = aggEx.InnerExceptions[0];
+                }
+                else
+                {
+                    Details = aggEx.InnerExceptions.Select(ele => ele?.Message).Where(ele => ele != null).ToList();
+                    return;
+                }
+            }
+
+            if (innerEx == null) return;
+            Details = new List<string>
+            {
+                innerEx.Message
+            };
+            var msg = innerEx.InnerException?.Message;
+            if (string.IsNullOrWhiteSpace(msg)) return;
+            Details.Add(msg);
+            msg = innerEx.InnerException.InnerException?.Message;
+            if (string.IsNullOrWhiteSpace(msg)) return;
+            Details.Add(msg);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ErrorMessageResult class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public ErrorMessageResult(string message) : base(message)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ErrorMessageResult class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="errorCode">The error code.</param>
+        public ErrorMessageResult(string message, string errorCode) : base(message)
+        {
+            ErrorCode = errorCode;
+        }
+
+        /// <summary>
+        /// Gets or sets the offset of the result.
+        /// </summary>
+        [DataMember(Name = TokenInfo.ErrorCodeProperty)]
+        [JsonPropertyName(TokenInfo.ErrorCodeProperty)]
+        public string ErrorCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the offset of the result.
+        /// </summary>
+        [DataMember(Name = "details")]
+        [JsonPropertyName("details")]
+        public List<string> Details { get; set; }
     }
 }

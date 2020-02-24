@@ -341,7 +341,7 @@ namespace NuScien.Security
         {
             var uri = GetUri("passport/login");
             var client = CreateTokenResolveHttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            using var request = new HttpRequestMessage(HttpMethod.Post, uri);
             WriteAuthenticationHeaderValue(request.Headers);
             return await client.SendAsync(request, cancellationToken);
         }
@@ -432,7 +432,6 @@ namespace NuScien.Security
         {
             return SendChangeAsync(HttpMethod.Put, "passport/authcode/" + serviceProvider, new JsonObject
             {
-                { CodeTokenRequestBody.ServiceProviderProperty, serviceProvider },
                 { CodeTokenRequestBody.CodeProperty, code },
                 { "insert", insertNewOne }
             }, cancellationToken);

@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NuScien.Data;
 using NuScien.Security;
+using NuScien.Users;
 using Trivial.Net;
 using Trivial.Security;
+using Trivial.Text;
 
 namespace NuScien.Web.Controllers
 {
@@ -44,18 +46,16 @@ namespace NuScien.Web.Controllers
         public async Task<UserTokenInfo> LoginAsync()
         {
             var instance = await ResourceAccessClients.ResolveAsync();
-            return await instance.SignInAsync(Request.Body);
-        }
+            var login = false;
+            try
+            {
+                login = Request.Body != null && Request.Body.Length > 0;
+            }
+            catch (NotSupportedException)
+            {
+            }
 
-        /// <summary>
-        /// Signs in.
-        /// </summary>
-        /// <returns>The user token information.</returns>
-        [HttpGet]
-        [Route("passport/login")]
-        public async Task<UserTokenInfo> TestTokenAsync()
-        {
-            var instance = await ResourceAccessClients.ResolveAsync();
+            if (login) return await instance.SignInAsync(Request.Body);
             return await instance.AuthorizeAsync(Request.Headers);
         }
 
@@ -80,12 +80,15 @@ namespace NuScien.Web.Controllers
         [Route("passport/users/exist")]
         public async Task<IActionResult> IsUserExistedAsync()
         {
-            var key = Request.Form["key"].FirstOrDefault();
-            var value = Request.Form["value"].FirstOrDefault();
+            var q = await Request.ReadBodyAsQueryDataAsync();
+            var key = q.GetFirstValue("key", true);
+            var value = q.GetFirstValue("value", true);
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value)) return BadRequest();
             var instance = await ResourceAccessClients.ResolveAsync();
             switch (key)
             {
+                case "is":
+                    return Ok();
                 case "logname":
                 case "name":
                     if (await instance.HasUserNameAsync(value)) return Ok();
@@ -93,6 +96,88 @@ namespace NuScien.Web.Controllers
                 default:
                     return StatusCode(501);
             }
+        }
+
+        /// <summary>
+        /// Sets a new authorization code.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("passport/authcode/{serviceProvider}")]
+        public async Task<IActionResult> SetAuthorizationCodeAsync(string serviceProvider)
+        {
+            if (string.IsNullOrWhiteSpace(serviceProvider)) return BadRequest();
+            var q = await Request.ReadBodyAsQueryDataAsync();
+            var code = q.GetFirstValue(CodeTokenRequestBody.CodeProperty, true);
+            if (string.IsNullOrWhiteSpace(code)) return BadRequest();
+            var isInserting = q.GetFirstValue("insert", true) == JsonBoolean.TrueString;
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var result = await instance.SetAuthorizationCodeAsync(serviceProvider, code, isInserting);
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Gets a user entity by given identifier.
+        /// </summary>
+        /// <param name="id">The user identifier.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        [HttpGet]
+        [Route("passport/user/{id}")]
+        public async Task<IActionResult> GetUserByIdAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return BadRequest();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var result = await instance.GetUserByIdAsync(id);
+            return this.ResourceEntityResult(result);
+        }
+
+        /// <summary>
+        /// Gets a user group entity by given identifier.
+        /// </summary>
+        /// <param name="id">The user group identifier.</param>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        [HttpGet]
+        [Route("passport/group/{id}")]
+        public async Task<IActionResult> GetUserGroupByIdAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return BadRequest();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var result = await instance.GetUserGroupByIdAsync(id);
+            return this.ResourceEntityResult(result);
+        }
+
+        /// <summary>
+        /// Searches user groups.
+        /// </summary>
+        /// <returns>The token entity matched if found; otherwise, null.</returns>
+        [HttpGet]
+        [Route("passport/groups")]
+        public async Task<CollectionResult<UserGroupEntity>> ListGroupsAsync()
+        {
+            var q = Request.Query.GetQueryArgs();
+            var siteId = Request.Query.GetFirstStringValue("site");
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var col = string.IsNullOrWhiteSpace(siteId)
+                ? await instance.ListGroupsAsync(q)
+                : await instance.ListGroupsAsync(q, siteId);
+            return new CollectionResult<UserGroupEntity>(col, q.Offset);
+        }
+
+        /// <summary>
+        /// Renews the client app key.
+        /// </summary>
+        /// <param name="appId">The client app identifier.</param>
+        /// <returns>The client app identifier and secret key.</returns>
+        [HttpPost]
+        [Route("passport/credential/client/{appId}/renew")]
+        public async Task<IActionResult> RenewAppClientKeyAsync(string appId)
+        {
+            if (string.IsNullOrWhiteSpace(appId)) return BadRequest();
+            var instance = await ResourceAccessClients.ResolveAsync();
+            var result = await instance.RenewAppClientKeyAsync(appId);
+            if (result != null) return new JsonResult(result);
+            return NotFound();
         }
     }
 }

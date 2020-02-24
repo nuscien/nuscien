@@ -455,7 +455,7 @@ namespace NuScien.Security
         /// <param name="code">The authorization code.</param>
         /// <param name="insertNewOne">true if need add a new one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The login response.</returns>
+        /// <returns>The status of changing result.</returns>
         public abstract Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default);
 
         /// <summary>
