@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>NuScien</AssemblyName>
     <RootNamespace>NuScien</RootNamespace>
     <PackageId>NuScien</PackageId>
@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Trivial" Version="3.4.0" />
+    <PackageReference Include="Trivial" Version="3.6.0" />
   </ItemGroup>
   
 </Project>
