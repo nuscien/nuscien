@@ -335,7 +335,7 @@ namespace NuScien.Data
             var startOffset = ldap.IndexOf("://");
             if (ldap.StartsWith("//")) startOffset = 2;
             else if (startOffset >= 0) startOffset += 3;
-            var host = startOffset > 0 ? ldap.Substring(startOffset) : ldap;
+            var host = startOffset > 0 ? ldap[startOffset..] : ldap;
             if (host.EndsWith("/")) host = host[0..^1];
             return providers.TryGetValue(host, out var provider) ? provider : null;
         }

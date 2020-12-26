@@ -1,17 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
-    <AssemblyName>NuScien.Web</AssemblyName>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>NuScien.SampleSite</AssemblyName>
     <RootNamespace>NuScien</RootNamespace>
-    <PackageId>NuScien.Web</PackageId>
+    <PackageId>NuScien.SampleSite</PackageId>
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
     <Version>0.1.0</Version>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
-    <Description>A web library of NuScien framework.</Description>
+    <Description>A sample site of NuScien framework.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
@@ -32,18 +32,14 @@
     <OutputPath>..\bin\Release\</OutputPath>
     <DocumentationFile>..\bin\Release\netcoreapp3.1\NuScien.xml</DocumentationFile>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  
+
   <ItemGroup>
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OnPremises\OnPremises.csproj" />
+    <ProjectReference Include="..\Web\Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

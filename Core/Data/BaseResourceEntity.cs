@@ -29,7 +29,7 @@ namespace NuScien.Data
         Deleted = 0,
 
         /// <summary>
-        /// The entity is applying for to approval.
+        /// The entity is a draft.
         /// </summary>
         Draft = 1,
 

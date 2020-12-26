@@ -16,13 +16,29 @@ using Trivial.Security;
 using Trivial.Text;
 using Trivial.Web;
 
-namespace NuScien.Web
+namespace NuScien.Web.Controllers
 {
     /// <summary>
-    /// The passport and settings controller.
+    /// The passport controller.
     /// </summary>
-    public partial class AccessController : ControllerBase
+    [ApiController]
+    [Route("api")]
+    [Route("nuscien5")]
+    public class PassportController : ControllerBase
     {
+        #pragma warning disable IDE0052
+        private readonly ILogger<PassportController> _logger;
+        #pragma warning restore IDE0052
+
+        /// <summary>
+        /// Initializes a new instance of the PassportController class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public PassportController(ILogger<PassportController> logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Signs in.
         /// </summary>

@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Trivial.Security;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 
 namespace NuScien.Security
 {

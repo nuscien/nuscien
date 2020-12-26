@@ -13,7 +13,7 @@ using Trivial.Net;
 using Trivial.Text;
 using Trivial.Web;
 
-namespace NuScien.Web
+namespace NuScien.Web.Controllers
 {
     /// <summary>
     /// The controller extensions.
