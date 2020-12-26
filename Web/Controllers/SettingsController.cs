@@ -32,9 +32,9 @@ namespace NuScien.Web
         public async Task<IActionResult> GetSettingsDataByKeyAsync(string key)
         {
             if (string.IsNullOrWhiteSpace(key)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var m = await instance.GetSettingsAsync(key);
-            if (m == null) this.EmptyEntity();
+            if (m == null) return this.EmptyEntity();
             return ControllerExtensions.JsonStringResult(m.GlobalConfigString);
         }
 
@@ -49,10 +49,10 @@ namespace NuScien.Web
         public async Task<IActionResult> GetSettingsJsonStringByKeyAsync(string key, string siteId)
         {
             if (string.IsNullOrWhiteSpace(key)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var isGlobal = string.IsNullOrWhiteSpace(siteId);
             var m = isGlobal ? await instance.GetSettingsAsync(key): await instance.GetSettingsAsync(key, siteId);
-            if (m == null) this.EmptyEntity();
+            if (m == null) return this.EmptyEntity();
             return ControllerExtensions.JsonStringResult(isGlobal ? m.GlobalConfigString : m.SiteConfigString);
         }
 
@@ -69,7 +69,7 @@ namespace NuScien.Web
         public async Task<IActionResult> SavePermissionsAsync(string siteId, string targetType, string targetId, [FromBody] PermissionRequestArgs permissions)
         {
             if (string.IsNullOrWhiteSpace(siteId) || string.IsNullOrWhiteSpace(targetType) || string.IsNullOrWhiteSpace(targetId)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var targetTypeValue = targetType.ToLowerInvariant() switch
             {
                 "user" => SecurityEntityTypes.User,

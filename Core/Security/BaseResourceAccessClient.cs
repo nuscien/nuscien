@@ -950,7 +950,7 @@ namespace NuScien.Security
         {
             if (group == null || group.IsNew || user == null) return ChangeMethods.Invalid;
             var userId = user.Id;
-            if (!IsTokenNullOrEmpty && UserId == userId) return await JoinAsync(group, role);
+            if (!IsTokenNullOrEmpty && UserId == userId) return await JoinAsync(group, role, cancellationToken);
             var rela = await GetGroupRelationshipAsync(group);
             var isAdmin = false;
             if (rela == null)
@@ -1054,11 +1054,11 @@ namespace NuScien.Security
                     return ChangeMethods.Invalid;
                 }
 
-                var u = await GetUserByIdAsync(value.Id);
+                var u = await GetUserByIdAsync(value.Id, cancellationToken);
                 value.PasswordEncrypted = u.PasswordEncrypted;
             }
 
-            if (!isCurrentUser && !await HasUserNameAsync(value.Name)) return ChangeMethods.Invalid;
+            if (!isCurrentUser && !await HasUserNameAsync(value.Name, cancellationToken)) return ChangeMethods.Invalid;
             try
             {
                 if (string.IsNullOrWhiteSpace(value.Market))

@@ -31,7 +31,7 @@ namespace NuScien.Web
         [Route("passport/login")]
         public async Task<UserTokenInfo> LoginAsync()
         {
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var login = false;
             try
             {
@@ -53,7 +53,7 @@ namespace NuScien.Web
         [Route("passport/logout")]
         public async Task<IActionResult> LogoutAsync()
         {
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             await instance.SignOutAsync();
             return Ok();
         }
@@ -70,7 +70,7 @@ namespace NuScien.Web
             var key = q.GetFirstValue("key", true);
             var value = q.GetFirstValue("value", true);
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             switch (key)
             {
                 case "is":
@@ -98,7 +98,7 @@ namespace NuScien.Web
             var code = q.GetFirstValue(CodeTokenRequestBody.CodeProperty, true);
             if (string.IsNullOrWhiteSpace(code)) return BadRequest();
             var isInserting = q.GetFirstValue("insert", true) == JsonBoolean.TrueString;
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SetAuthorizationCodeAsync(serviceProvider, code, isInserting);
             return result.ToActionResult();
         }
@@ -113,7 +113,7 @@ namespace NuScien.Web
         public async Task<IActionResult> GetUserByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.GetUserByIdAsync(id);
             return this.ResourceEntityResult(result);
         }
@@ -128,7 +128,7 @@ namespace NuScien.Web
         public async Task<IActionResult> GetUserGroupByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.GetUserGroupByIdAsync(id);
             return this.ResourceEntityResult(result);
         }
@@ -143,7 +143,7 @@ namespace NuScien.Web
         {
             var q = Request.Query.GetQueryArgs();
             var siteId = Request.Query.GetFirstStringValue("site");
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var col = string.IsNullOrWhiteSpace(siteId)
                 ? await instance.ListGroupsAsync(q)
                 : await instance.ListGroupsAsync(q, siteId);
@@ -160,7 +160,7 @@ namespace NuScien.Web
         public async Task<IActionResult> RenewAppClientKeyAsync(string appId)
         {
             if (string.IsNullOrWhiteSpace(appId)) return BadRequest();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.RenewAppClientKeyAsync(appId);
             if (result == null) return this.EmptyEntity();
             return new JsonResult(result);
@@ -178,7 +178,7 @@ namespace NuScien.Web
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var query = Request.Query.GetQueryArgs();
             var roleIndex = Request.Query.TryGetInt32Value("role");
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var group = await instance.GetUserGroupByIdAsync(id);
             var result = roleIndex.HasValue ? await instance.ListUsersAsync(group, (UserGroupRelationshipEntity.Roles)roleIndex.Value, query) : await instance.ListUsersAsync(group, query);
             if (result == null) result = new List<UserEntity>();
@@ -195,7 +195,7 @@ namespace NuScien.Web
         protected async Task<IActionResult> SaveUserAsync([FromBody] UserEntity entity)
         {
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
             return result.ToActionResult();
         }
@@ -210,7 +210,7 @@ namespace NuScien.Web
         protected async Task<IActionResult> SaveGroupAsync([FromBody] UserGroupEntity entity)
         {
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
             return result.ToActionResult();
         }
@@ -225,7 +225,7 @@ namespace NuScien.Web
         protected async Task<IActionResult> SaveUserAsync([FromBody] UserGroupRelationshipEntity entity)
         {
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
-            var instance = await ResourceAccessClients.ResolveAsync();
+            var instance = await this.GetResourceAccessClientAsync();
             if (entity.OwnerId == instance.UserId)
             {
                 var group = await instance.GetUserGroupByIdAsync(entity.OwnerId);

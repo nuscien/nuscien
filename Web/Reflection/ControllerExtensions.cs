@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NuScien.Data;
+using NuScien.Security;
 using Trivial.Data;
 using Trivial.Net;
+using Trivial.Security;
 using Trivial.Text;
 using Trivial.Web;
 
@@ -239,6 +243,50 @@ namespace NuScien.Web
             return q;
         }
 
+        /// <summary>
+        /// Gets the resource access client.
+        /// </summary>
+        /// <param name="controller">The controller.</param>
+        /// <returns>A resource access client.</returns>
+        public static Task<BaseResourceAccessClient> GetResourceAccessClientAsync(this ControllerBase controller)
+        {
+            return GetResourceAccessClientAsync(controller.Request);
+        }
+
+        /// <summary>
+        /// Gets the resource access client.
+        /// </summary>
+        /// <param name="request">The HTTP request.</param>
+        /// <returns>A resource access client.</returns>
+        internal static async Task<BaseResourceAccessClient> GetResourceAccessClientAsync(HttpRequest request)
+        {
+            var client = await ResourceAccessClients.ResolveAsync();
+            var bearerToken = TryGetStringValue(request.Headers, "Authorization");
+            if (!string.IsNullOrWhiteSpace(bearerToken))
+            {
+                if (bearerToken.ToLowerInvariant().StartsWith("bearer "))
+                {
+                    var bearerTokenString = bearerToken[7..].Trim();
+                    await client.AuthorizeAsync(bearerTokenString);
+                    return client;
+                }
+                else if (bearerToken.ToLowerInvariant().StartsWith("basic "))
+                {
+                    var basicStr = bearerToken[6..].Trim();
+                    var basicBytes = Convert.FromBase64String(basicStr);
+                    var basicArr = Encoding.UTF8.GetString(basicBytes)?.Split(':');
+                    if (basicArr != null && basicArr.Length == 2)
+                    {
+                        await client.SignInByPasswordAsync(new AppAccessingKey(), basicArr[0], basicArr[1]);
+                        return client;
+                    }
+                }
+            }
+
+            // await client.SignInAsync(request.Body);
+            return client;
+        }
+
         internal static ActionResult EmptyEntity(this ControllerBase controller)
         {
             return controller.NotFound();
@@ -252,6 +300,18 @@ namespace NuScien.Web
                 ContentType = WebFormat.JsonMIME,
                 Content = json
             };
+        }
+
+        /// <summary>
+        /// Tries to get the string value.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        /// <param name="key">The header key.</param>
+        /// <returns>The string value; or null, if non-exist.</returns>
+        private static string TryGetStringValue(IHeaderDictionary header, string key)
+        {
+            if (!header.TryGetValue(key, out var col)) return null;
+            return col.FirstOrDefault(ele => !string.IsNullOrWhiteSpace(ele));
         }
     }
 }
