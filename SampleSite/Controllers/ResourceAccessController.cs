@@ -24,13 +24,13 @@ namespace NuScien.Web.Controllers
     [ApiController]
     [Route("api")]
     [Route("nuscien5")]
-    public class AccessController : NuScien.Web.AccessController
+    public class ResourceAccessController : NuScien.Web.ResourceAccessController
     {
         /// <summary>
-        /// Initializes a new instance of the AccessController class.
+        /// Initializes a new instance of the ResourceAccessController class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public AccessController(ILogger<AccessController> logger) : base(logger)
+        public ResourceAccessController(ILogger<ResourceAccessController> logger) : base(logger)
         {
         }
     }

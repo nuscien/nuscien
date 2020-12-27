@@ -43,6 +43,11 @@ namespace NuScien.Users
         Asexual = 5,
 
         /// <summary>
+        /// Machine.
+        /// </summary>
+        Machine = 6,
+
+        /// <summary>
         /// Other.
         /// </summary>
         Other = 7

@@ -22,13 +22,13 @@ namespace NuScien.Web
     /// The passport and settings controller.
     /// </summary>
     [Route("nuscien5")]
-    public partial class AccessController : ControllerBase
+    public partial class ResourceAccessController : ControllerBase
     {
         /// <summary>
-        /// Initializes a new instance of the AccessController class.
+        /// Initializes a new instance of the ResourceAccessController class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public AccessController(ILogger<AccessController> logger)
+        public ResourceAccessController(ILogger<ResourceAccessController> logger)
         {
             Logger = logger;
         }
@@ -36,6 +36,6 @@ namespace NuScien.Web
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
-        protected ILogger<AccessController> Logger { get; set; }
+        protected ILogger<ResourceAccessController> Logger { get; set; }
     }
 }

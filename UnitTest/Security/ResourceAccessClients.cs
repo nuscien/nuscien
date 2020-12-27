@@ -16,44 +16,15 @@ namespace NuScien.UnitTest.Security
     /// </summary>
     internal static class ResourceAccessClients
     {
-        private readonly static SingletonKeeper<OnPremisesResourceAccessClient> onPremises = new SingletonKeeper<OnPremisesResourceAccessClient>(async () =>
+        static ResourceAccessClients()
         {
-            var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
-            var hasCreated = context.Database.EnsureCreated();
-            var provider = new AccountDbSetProvider(context);
-
-            // Initialize a client app.
-            var client = await provider.GetClientByNameAsync(AppKey.Id);
-            if (client == null)
+            NuScien.Security.ResourceAccessClients.Setup(async () =>
             {
-                client = new AccessingClientEntity
-                {
-                    Nickname = "Test client",
-                    State = ResourceEntityStates.Normal
-                };
-                client.SetKey(AppKey);
-                await provider.SaveAsync(client);
-            }
-
-            // Initialize a user.
-            var user = await provider.GetUserByLognameAsync(NameAndPassword.UserName);
-            if (user == null)
-            {
-                user = new UserEntity
-                {
-                    Name = NameAndPassword.UserName,
-                    Nickname = "Kingcean",
-                    Gender = Genders.Male,
-                    Birthday = new DateTime(1987, 7, 17),
-                    State = ResourceEntityStates.Normal
-                };
-                user.SetPassword(NameAndPassword.Password);
-                await provider.SaveAsync(user);
-            }
-
-            // Return result.
-            return new OnPremisesResourceAccessClient(provider);
-        });
+                var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
+                var hasCreated = await context.Database.EnsureCreatedAsync();
+                return new AccountDbSetProvider(context);
+            }, AppKey, null, NameAndPassword, null);
+        }
 
         /// <summary>
         /// The mock app accessing key.
@@ -68,7 +39,11 @@ namespace NuScien.UnitTest.Security
         /// <summary>
         /// Gets the instance of the on-premises resource access client instance.
         /// </summary>
-        public static Task<OnPremisesResourceAccessClient> OnPremisesAsync() => onPremises.GetAsync();
+        public static async Task<OnPremisesResourceAccessClient> OnPremisesAsync()
+        {
+            var r = await NuScien.Security.ResourceAccessClients.CreateAsync();
+            return r as OnPremisesResourceAccessClient;
+        }
 
         private static DbContextOptionsBuilder UseSqlServer(DbContextOptionsBuilder builder, string conn) => SqlServerDbContextOptionsExtensions.UseSqlServer(builder, conn);
     }

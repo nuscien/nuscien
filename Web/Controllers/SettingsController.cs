@@ -20,7 +20,7 @@ namespace NuScien.Web
     /// <summary>
     /// The passport and settings controller.
     /// </summary>
-    public partial class AccessController : ControllerBase
+    public partial class ResourceAccessController : ControllerBase
     {
         /// <summary>
         /// Gets the settings.

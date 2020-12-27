@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NuScien.Security;
+using Trivial.Security;
 
 namespace NuScien.Web
 {
@@ -25,6 +29,10 @@ namespace NuScien.Web
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
+            // Setup database and resource access client.
+            var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
+            ResourceAccessClients.Setup(new AccountDbSetProvider(context));
         }
 
         /// <summary>
@@ -64,5 +72,7 @@ namespace NuScien.Web
                 endpoints.MapControllers();
             });
         }
+
+        private static DbContextOptionsBuilder UseSqlServer(DbContextOptionsBuilder builder, string conn) => SqlServerDbContextOptionsExtensions.UseSqlServer(builder, conn);
     }
 }

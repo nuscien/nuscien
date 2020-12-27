@@ -260,7 +260,7 @@ namespace NuScien.Web
         /// <returns>A resource access client.</returns>
         internal static async Task<BaseResourceAccessClient> GetResourceAccessClientAsync(HttpRequest request)
         {
-            var client = await ResourceAccessClients.ResolveAsync();
+            var client = await ResourceAccessClients.CreateAsync();
             var bearerToken = TryGetStringValue(request.Headers, "Authorization");
             if (!string.IsNullOrWhiteSpace(bearerToken))
             {
