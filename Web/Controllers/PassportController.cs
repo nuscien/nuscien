@@ -35,14 +35,18 @@ namespace NuScien.Web
             var login = false;
             try
             {
-                login = Request.Body != null && Request.Body.Length > 0;
+                login = Request?.Body != null && Request.Body.Length > 0;
             }
             catch (NotSupportedException)
             {
             }
 
-            if (login) return await instance.SignInAsync(Request.Body);
-            return await instance.AuthorizeAsync(Request.Headers);
+            var user = login
+                ? await instance.SignInAsync(Request.Body)
+                : await instance.AuthorizeAsync(Request.Headers);
+            if (user is null) Logger?.LogInformation(new EventId(17001001, "passport"), "User tried to login but failed.");
+            else Logger?.LogInformation(new EventId(17001001, "Login"), "User {0} logged in.", user.User?.Name ?? user.UserId);
+            return user;
         }
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace NuScien.Web
         {
             var instance = await this.GetResourceAccessClientAsync();
             await instance.SignOutAsync();
+            Logger?.LogInformation(new EventId(17001002, "Logout"), "The user logged out.");
             return Ok();
         }
 
@@ -100,6 +105,7 @@ namespace NuScien.Web
             var isInserting = q.GetFirstValue("insert", true) == JsonBoolean.TrueString;
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SetAuthorizationCodeAsync(serviceProvider, code, isInserting);
+            Logger?.LogInformation(new EventId(17001005, "AuthCode"), "Set auth code of {0} for user {1}.", serviceProvider, instance?.User?.Name ?? instance?.UserId);
             return result.ToActionResult();
         }
 
@@ -163,6 +169,7 @@ namespace NuScien.Web
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.RenewAppClientKeyAsync(appId);
             if (result == null) return this.EmptyEntity();
+            Logger?.LogInformation(new EventId(17001007, "RenewAppKey"), "Renew app client key {0}.", appId);
             return new JsonResult(result);
         }
 
@@ -197,6 +204,7 @@ namespace NuScien.Web
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
+            Logger?.LogInformation(new EventId(17001011, "SaveUserInfo"), "Save user information {0}.", entity.Name ?? entity.Id);
             return result.ToActionResult();
         }
 
@@ -212,6 +220,7 @@ namespace NuScien.Web
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
+            Logger?.LogInformation(new EventId(17001012, "SaveUserGroupInfo"), "Save user group information {0}.", entity.Name ?? entity.Id);
             return result.ToActionResult();
         }
 
@@ -236,6 +245,7 @@ namespace NuScien.Web
             var groupTask = instance.GetUserGroupByIdAsync(entity.OwnerId);
             var user = await instance.GetUserByIdAsync(entity.TargetId);
             var result = await instance.InviteAsync(await groupTask, user);
+            Logger?.LogInformation(new EventId(17001016, "SaveUserGroupRela"), "Save user group relationship {0}, owner {1}, target {2}.", entity.Id, entity.OwnerId, entity.TargetId);
             return result.ToActionResult();
         }
     }

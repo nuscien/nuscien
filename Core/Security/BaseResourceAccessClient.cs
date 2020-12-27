@@ -1045,20 +1045,27 @@ namespace NuScien.Security
         public async Task<ChangeMethods> SaveAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
             var isCurrentUser = value.Id == UserId;
-            if (!value.IsNew && !isCurrentUser) return ChangeMethods.Invalid;
-            if (string.IsNullOrWhiteSpace(value.PasswordEncrypted))
+            if (string.IsNullOrWhiteSpace(value.PasswordEncrypted) && value.ExtensionSerializationData != null && value.ExtensionSerializationData.TryGetValue("password", out var password) == true && password.ValueKind == System.Text.Json.JsonValueKind.String)
             {
-                if (value.IsNew)
-                {
-                    if (isCurrentUser) value.IsNew = false;
-                    return ChangeMethods.Invalid;
-                }
-
-                var u = await GetUserByIdAsync(value.Id, cancellationToken);
-                value.PasswordEncrypted = u.PasswordEncrypted;
+                var pswdStr = password.GetString() ?? string.Empty;
+                if (pswdStr.Length > 5) value.SetPassword(pswdStr);
             }
 
-            if (!isCurrentUser && !await HasUserNameAsync(value.Name, cancellationToken)) return ChangeMethods.Invalid;
+            if (value.IsNew)
+            {
+                // Register.
+                if (await HasUserNameAsync(value.Name, cancellationToken)) return ChangeMethods.Invalid;
+            }
+            else
+            {
+                if (!isCurrentUser) return ChangeMethods.Invalid;   // Update other user.
+                if (string.IsNullOrWhiteSpace(value.PasswordEncrypted))
+                {
+                    var u = await GetUserByIdAsync(value.Id, cancellationToken);
+                    if (u != null) value.PasswordEncrypted = u.PasswordEncrypted;
+                }
+            }
+
             try
             {
                 if (string.IsNullOrWhiteSpace(value.Market))

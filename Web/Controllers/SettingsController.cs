@@ -79,6 +79,7 @@ namespace NuScien.Web
             };
             if (targetTypeValue == SecurityEntityTypes.Unknown) return BadRequest();
             var result = await instance.SavePermissionAsync(siteId, targetTypeValue, targetId, permissions.Permissions);
+            Logger?.LogInformation(new EventId(17001101, "SavePerm"), "Save permission for {0} {1} of site {2}.", targetType, targetId, siteId);
             return result.ToActionResult();
         }
     }

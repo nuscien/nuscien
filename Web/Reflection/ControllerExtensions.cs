@@ -247,46 +247,57 @@ namespace NuScien.Web
         /// Gets the resource access client.
         /// </summary>
         /// <param name="controller">The controller.</param>
+        /// <param name="doNotWrite">true if do not fill header and write cookie in response automatically; otherwise, false.</param>
         /// <returns>A resource access client.</returns>
-        public static async Task<BaseResourceAccessClient> GetResourceAccessClientAsync(this ControllerBase controller)
+        public static async Task<BaseResourceAccessClient> GetResourceAccessClientAsync(this ControllerBase controller, bool doNotWrite = false)
         {
-            var r = await GetResourceAccessClientAsync(controller.Request);
-            if (controller.Request.Cookies.TryGetValue("ns_t", out var cookie) && !string.IsNullOrWhiteSpace(cookie))
+            var r = controller.User is OnPremisesPrincipal principal && principal?.ResourceAccessClient != null
+                ? principal.ResourceAccessClient
+                : await GetResourceAccessClientAsync(controller.Request);
+            if (doNotWrite) return r;
+
+            // Fill header.
+            controller.Response.Headers.Remove("X-Auth-Token");
+            var token = r?.Token?.AccessToken;
+            if (!string.IsNullOrWhiteSpace(token))
+                controller.Response.Headers.Add("X-Auth-Token", new Microsoft.Extensions.Primitives.StringValues(r.Token.ToString()));
+            
+            // Write cookie.
+            if (!controller.Request.Cookies.TryGetValue("ns_t", out var cookie) || string.IsNullOrWhiteSpace(cookie))
+                cookie = string.Empty;
+            try
             {
-                try
+                var data = QueryData.Parse(cookie) ?? new QueryData();
+                var bearerTokenString = data["t"]?.Trim();
+                if (string.IsNullOrWhiteSpace(token))
                 {
-                    var data = QueryData.Parse(cookie);
-                    var bearerTokenString = data["t"]?.Trim();
-                    var token = r.Token?.AccessToken;
-                    if (string.IsNullOrWhiteSpace(token))
+                    controller.Response.Cookies.Delete("ns_t");
+                }
+                else if (bearerTokenString != token)
+                {
+                    data["t"] = token;
+                    var options = new CookieOptions
                     {
-                        controller.Response.Cookies.Delete("ns_t");
-                    }
-                    else if (bearerTokenString != token)
-                    {
-                        data["t"] = token;
-                        var options = new CookieOptions
-                        {
-                            HttpOnly = true
-                        };
-                        if (r.Token != null && r.Token.ExpiredAfter.HasValue) options.MaxAge = r.Token?.ExpiredAfter;
-                        controller.Response.Cookies.Append("ns_t", data.ToString(), options);
-                    }
-                }
-                catch (FormatException)
-                {
-                }
-                catch (ArgumentException)
-                {
-                }
-                catch (InvalidOperationException)
-                {
-                }
-                catch (NotSupportedException)
-                {
+                        HttpOnly = true
+                    };
+                    if (r.Token != null && r.Token.ExpiredAfter.HasValue) options.MaxAge = r.Token?.ExpiredAfter;
+                    controller.Response.Cookies.Append("ns_t", data.ToString(), options);
                 }
             }
+            catch (FormatException)
+            {
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (NotSupportedException)
+            {
+            }
 
+            // Return result.
             return r;
         }
 
@@ -297,7 +308,7 @@ namespace NuScien.Web
         /// <returns>A resource access client.</returns>
         internal static async Task<BaseResourceAccessClient> GetResourceAccessClientAsync(HttpRequest request)
         {
-            var client = await ResourceAccessClients.CreateAsync();
+            var client = await ResourceAccessClients.CreateAsync() ?? ResourceAccessClients.MemoryInstance;
             var bearerToken = TryGetStringValue(request.Headers, "Authorization");
             if (!string.IsNullOrWhiteSpace(bearerToken))
             {

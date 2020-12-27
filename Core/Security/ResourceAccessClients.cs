@@ -95,45 +95,6 @@ namespace NuScien.Security
         /// Sets up the resource access client factory.
         /// </summary>
         /// <param name="dataProvider">The account data provider.</param>
-        /// <param name="appKey">The first accessing client identifier and secret key to initialize.</param>
-        /// <param name="clientInit">Other actions for the accessing client to initialize.</param>
-        /// <param name="nameAndPassword">The first user credential to initialize.</param>
-        /// <param name="userInit">Other actions for the user to initialize.</param>
-        /// <param name="rest">The additional rest actions.</param>
-        public static void Setup(IAccountDataProvider dataProvider, AppAccessingKey appKey, Action<AccessingClientEntity> clientInit, PasswordTokenRequestBody nameAndPassword, Action<UserEntity> userInit, Func<IAccountDataProvider, Task> rest = null)
-        {
-            if (dataProvider == null) return;
-            Setup(async () =>
-            {
-                await InitAsync(dataProvider, appKey, clientInit, nameAndPassword, userInit, rest);
-                return dataProvider;
-            }, d => new OnPremisesResourceAccessClient(d));
-        }
-
-        /// <summary>
-        /// Sets up the resource access client factory.
-        /// </summary>
-        /// <param name="dataProvider">The account data provider maker.</param>
-        /// <param name="appKey">The first accessing client identifier and secret key to initialize.</param>
-        /// <param name="clientInit">Other actions for the accessing client to initialize.</param>
-        /// <param name="nameAndPassword">The first user credential to initialize.</param>
-        /// <param name="userInit">Other actions for the user to initialize.</param>
-        /// <param name="rest">The additional rest actions.</param>
-        public static void Setup(Func<Task<IAccountDataProvider>> dataProvider, AppAccessingKey appKey, Action<AccessingClientEntity> clientInit, PasswordTokenRequestBody nameAndPassword, Action<UserEntity> userInit, Func<IAccountDataProvider, Task> rest = null)
-        {
-            if (dataProvider == null) return;
-            Setup(async () =>
-            {
-                var provider = await dataProvider();
-                await InitAsync(provider, appKey, clientInit, nameAndPassword, userInit, rest);
-                return provider;
-            }, d => new OnPremisesResourceAccessClient(d));
-        }
-
-        /// <summary>
-        /// Sets up the resource access client factory.
-        /// </summary>
-        /// <param name="dataProvider">The account data provider.</param>
         public static void Setup(Task<IAccountDataProvider> dataProvider)
         {
             if (dataProvider == null) return;
@@ -167,9 +128,11 @@ namespace NuScien.Security
         /// Creates a new resource access client.
         /// </summary>
         /// <returns>A resource access client.</returns>
-        public static Task<BaseResourceAccessClient> CreateAsync()
+        public static async Task<BaseResourceAccessClient> CreateAsync()
         {
-            return h?.Invoke() ?? Task.FromResult<BaseResourceAccessClient>(MemoryInstance);
+            var factory = h;
+            if (factory is null) return MemoryInstance;
+            return await factory() ?? MemoryInstance;
         }
 
         /// <summary>
@@ -181,7 +144,7 @@ namespace NuScien.Security
         /// <param name="nameAndPassword">The first user credential to initialize.</param>
         /// <param name="userInit">Other actions for the user to initialize.</param>
         /// <param name="rest">The additional rest actions.</param>
-        private static async Task InitAsync(IAccountDataProvider dataProvider, AppAccessingKey appKey, Action<AccessingClientEntity> clientInit, PasswordTokenRequestBody nameAndPassword, Action<UserEntity> userInit, Func<IAccountDataProvider, Task> rest = null)
+        public static async Task InitAsync(IAccountDataProvider dataProvider, AppAccessingKey appKey, Action<AccessingClientEntity> clientInit, PasswordTokenRequestBody nameAndPassword, Action<UserEntity> userInit, Func<IAccountDataProvider, Task> rest = null)
         {
             AccessingClientEntity client = null;
             UserEntity user = null;

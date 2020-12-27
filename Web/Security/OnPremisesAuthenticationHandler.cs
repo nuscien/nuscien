@@ -17,6 +17,27 @@ using Trivial.Security;
 namespace NuScien.Security
 {
     /// <summary>
+    /// The on-premises principal.
+    /// </summary>
+    public class OnPremisesPrincipal : ClaimsPrincipal
+    {
+        /// <summary>
+        /// Initializes a new instance of the OnPremisesPrincipal class.
+        /// </summary>
+        /// <param name="client">The resource access client.</param>
+        internal OnPremisesPrincipal(BaseResourceAccessClient client)
+            : base ((ClaimsIdentity)client?.User)
+        {
+            ResourceAccessClient = client;
+        }
+
+        /// <summary>
+        /// Gets the resource access client.
+        /// </summary>
+        public BaseResourceAccessClient ResourceAccessClient { get; }
+    }
+
+    /// <summary>
     /// The authentication options.
     /// </summary>
     public class OnPremisesAuthenticationOptions : AuthenticationSchemeOptions
@@ -47,9 +68,8 @@ namespace NuScien.Security
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var client = await ControllerExtensions.GetResourceAccessClientAsync(Request);
-            var tokenInfo = client?.Token;
-            if (tokenInfo.IsEmpty || tokenInfo.User == null) return AuthenticateResult.Fail(new UnauthorizedAccessException(tokenInfo.ErrorDescription));
-            var principal = new ClaimsPrincipal((ClaimsIdentity)tokenInfo.User);
+            if (!client.IsUserSignedIn) return AuthenticateResult.Fail(new UnauthorizedAccessException(client.Token?.ErrorDescription ?? "No content to login or invalid access token."));
+            var principal = new OnPremisesPrincipal(client);
             return AuthenticateResult.Success(new AuthenticationTicket(principal, "bearer"));
         }
     }

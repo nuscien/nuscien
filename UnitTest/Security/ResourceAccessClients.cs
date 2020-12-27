@@ -22,8 +22,10 @@ namespace NuScien.UnitTest.Security
             {
                 var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
                 var hasCreated = await context.Database.EnsureCreatedAsync();
-                return new AccountDbSetProvider(context);
-            }, AppKey, null, NameAndPassword, null);
+                var provider = new AccountDbSetProvider(context);
+                await NuScien.Security.ResourceAccessClients.InitAsync(provider, AppKey, null, NameAndPassword, null);
+                return provider;
+            });
         }
 
         /// <summary>

@@ -185,6 +185,13 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Gets or sets the extension data for JSON serialization.
+        /// </summary>
+        [JsonExtensionData]
+        [NotMapped]
+        public Dictionary<string, JsonElement> ExtensionSerializationData { get; set; }
+
+        /// <summary>
         /// Prepares for saving.
         /// </summary>
         public void PrepareForSaving()
