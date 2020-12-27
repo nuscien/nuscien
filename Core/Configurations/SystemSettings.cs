@@ -101,6 +101,16 @@ namespace NuScien.Configurations
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether need forbid user register.
+        /// </summary>
+        [JsonPropertyName("user_reg_forbid")]
+        public bool ForbidUserRegister
+        {
+            get => GetCurrentProperty<bool>();
+            set => SetCurrentProperty(value);
+        }
     }
 
     /// <summary>

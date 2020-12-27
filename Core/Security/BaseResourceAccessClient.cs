@@ -680,7 +680,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>true if contains; otherwise, false.</returns>
-        public async Task<bool> IsUserAdminAsync(CancellationToken cancellationToken)
+        public async Task<bool> IsUserAdminAsync(CancellationToken cancellationToken = default)
         {
             var settings = await GetSystemSettingsAsync(cancellationToken);
             var groupId = settings?.UserAdminGroupId ?? settings?.CurrentSettingsAdminGroupId;
@@ -696,7 +696,7 @@ namespace NuScien.Security
         /// <param name="siteId">The site identifier; or null for global.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>true if contains; otherwise, false.</returns>
-        public async Task<bool> IsCmsAdminAsync(string siteId, CancellationToken cancellationToken)
+        public async Task<bool> IsCmsAdminAsync(string siteId, CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrWhiteSpace(siteId) && await HasAnyPermissionAsync(siteId.Trim(), PermissionItems.CmsAdmin, PermissionItems.SiteAdmin)) return true;
             var settings = await GetSystemSettingsAsync(cancellationToken);
@@ -1053,12 +1053,13 @@ namespace NuScien.Security
 
             if (value.IsNew)
             {
-                // Register.
+                var settings = await GetSystemSettingsAsync(cancellationToken);
+                if (settings.ForbidUserRegister && !await IsUserAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
                 if (await HasUserNameAsync(value.Name, cancellationToken)) return ChangeMethods.Invalid;
             }
             else
             {
-                if (!isCurrentUser) return ChangeMethods.Invalid;   // Update other user.
+                if (!isCurrentUser && !await IsUserAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
                 if (string.IsNullOrWhiteSpace(value.PasswordEncrypted))
                 {
                     var u = await GetUserByIdAsync(value.Id, cancellationToken);
