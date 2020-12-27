@@ -248,9 +248,46 @@ namespace NuScien.Web
         /// </summary>
         /// <param name="controller">The controller.</param>
         /// <returns>A resource access client.</returns>
-        public static Task<BaseResourceAccessClient> GetResourceAccessClientAsync(this ControllerBase controller)
+        public static async Task<BaseResourceAccessClient> GetResourceAccessClientAsync(this ControllerBase controller)
         {
-            return GetResourceAccessClientAsync(controller.Request);
+            var r = await GetResourceAccessClientAsync(controller.Request);
+            if (controller.Request.Cookies.TryGetValue("ns_t", out var cookie) && !string.IsNullOrWhiteSpace(cookie))
+            {
+                try
+                {
+                    var data = QueryData.Parse(cookie);
+                    var bearerTokenString = data["t"]?.Trim();
+                    var token = r.Token?.AccessToken;
+                    if (string.IsNullOrWhiteSpace(token))
+                    {
+                        controller.Response.Cookies.Delete("ns_t");
+                    }
+                    else if (bearerTokenString != token)
+                    {
+                        data["t"] = token;
+                        var options = new CookieOptions
+                        {
+                            HttpOnly = true
+                        };
+                        if (r.Token != null && r.Token.ExpiredAfter.HasValue) options.MaxAge = r.Token?.ExpiredAfter;
+                        controller.Response.Cookies.Append("ns_t", data.ToString(), options);
+                    }
+                }
+                catch (FormatException)
+                {
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (NotSupportedException)
+                {
+                }
+            }
+
+            return r;
         }
 
         /// <summary>
@@ -280,6 +317,29 @@ namespace NuScien.Web
                         await client.SignInByPasswordAsync(new AppAccessingKey(), basicArr[0], basicArr[1]);
                         return client;
                     }
+                }
+            }
+
+            if (request.Cookies.TryGetValue("ns_t", out var cookie) && !string.IsNullOrWhiteSpace(cookie))
+            {
+                try
+                {
+                    var data = QueryData.Parse(cookie);
+                    var bearerTokenString = data["t"]?.Trim();
+                    if (!string.IsNullOrWhiteSpace(bearerToken)) await client.AuthorizeAsync(bearerTokenString);
+                    return client;
+                }
+                catch (FormatException)
+                {
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (NotSupportedException)
+                {
                 }
             }
 
