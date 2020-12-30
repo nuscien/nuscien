@@ -274,10 +274,10 @@ namespace NuScien.Security
             if (!q.NameExactly)
                 return await ListUsers(group, role, q.NameQuery, q.State).ToListAsync(q, cancellationToken);
             var context = GetContext(true);
-            var user = await context.Users.FirstOrDefaultAsync(ele => ele.Nickname == q.NameQuery && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            var user = await context.Users.FirstOrDefaultAsync(ele => ele.Nickname == q.NameQuery && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
             var col = new List<UserGroupRelationshipEntity>();
             if (user == null) return col;
-            var rela = await context.Relationships.FirstOrDefaultAsync(ele => ele.OwnerId == group.Id && ele.TargetId == user.Id);
+            var rela = await context.Relationships.FirstOrDefaultAsync(ele => ele.OwnerId == group.Id && ele.TargetId == user.Id, cancellationToken);
             if (rela == null) return col;
             col.Add(rela);
             rela.Owner = group;

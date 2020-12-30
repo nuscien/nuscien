@@ -31,8 +31,13 @@ namespace NuScien.Web
             Configuration = configuration;
 
             // Setup database and resource access client.
-            var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
-            ResourceAccessClients.Setup(new AccountDbSetProvider(context));
+            ResourceAccessClients.Setup(() =>
+            {
+                var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
+                var readonlyContext = context;
+                var provider = new AccountDbSetProvider(context, readonlyContext);
+                return provider;
+            });
         }
 
         /// <summary>

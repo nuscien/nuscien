@@ -95,11 +95,11 @@ namespace NuScien.Security
         /// <summary>
         /// Sets up the resource access client factory.
         /// </summary>
-        /// <param name="dataProvider">The account data provider.</param>
-        public static void Setup(Task<IAccountDataProvider> dataProvider)
+        /// <param name="dataProvider">The account data provider maker.</param>
+        public static void Setup(Func<IAccountDataProvider> dataProvider)
         {
             if (dataProvider == null) return;
-            Setup(() => dataProvider, d => new OnPremisesResourceAccessClient(d));
+            Setup(() => Task.FromResult(dataProvider()), d => new OnPremisesResourceAccessClient(d));
         }
 
         /// <summary>

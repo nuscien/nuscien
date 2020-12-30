@@ -24,7 +24,7 @@ namespace NuScien.Security
     /// <summary>
     /// The account database set context.
     /// </summary>
-    public interface IAccountDbContext
+    public interface IAccountDbContext : IDisposable
     {
         /// <summary>
         /// Gets the user database set.
