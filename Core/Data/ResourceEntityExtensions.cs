@@ -108,6 +108,24 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Filters a sequence of resource entities based on a predicate.
+        /// </summary>
+        /// <typeparam name="T">The type of the resource entity.</typeparam>
+        /// <param name="source">A queryable resource entity collection to filter.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
+        /// <exception cref="ArgumentNullException">source was null.</exception>
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q) where T : BaseResourceEntity
+        {
+            if (q == null) return source;
+            InternalAssertion.IsNotNull(source);
+            if (!string.IsNullOrEmpty(q.NameQuery))
+            source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
+            if (q.Offset > 0) source = source.Skip(q.Offset);
+            return source.Take(q.Count);
+        }
+
+        /// <summary>
         /// Gets a resource entity by identifier.
         /// </summary>
         /// <typeparam name="T">The type of the resource entity.</typeparam>
