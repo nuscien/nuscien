@@ -113,14 +113,36 @@ namespace NuScien.Data
         /// <typeparam name="T">The type of the resource entity.</typeparam>
         /// <param name="source">A queryable resource entity collection to filter.</param>
         /// <param name="q">The query arguments.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
         /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
         /// <exception cref="ArgumentNullException">source was null.</exception>
-        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q) where T : BaseResourceEntity
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, bool>> predicate = null) where T : BaseResourceEntity
+        {
+            if (q == null) return source;
+            InternalAssertion.IsNotNull(source);
+            if (!string.IsNullOrEmpty(q.NameQuery))
+                source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
+            if (predicate != null) source = source.Where(predicate);
+            if (q.Offset > 0) source = source.Skip(q.Offset);
+            return source.Take(q.Count);
+        }
+
+        /// <summary>
+        /// Filters a sequence of resource entities based on a predicate.
+        /// </summary>
+        /// <typeparam name="T">The type of the resource entity.</typeparam>
+        /// <param name="source">A queryable resource entity collection to filter.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
+        /// <exception cref="ArgumentNullException">source was null.</exception>
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, int, bool>> predicate) where T : BaseResourceEntity
         {
             if (q == null) return source;
             InternalAssertion.IsNotNull(source);
             if (!string.IsNullOrEmpty(q.NameQuery))
             source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
+            if (predicate != null) source = source.Where(predicate);
             if (q.Offset > 0) source = source.Skip(q.Offset);
             return source.Take(q.Count);
         }
