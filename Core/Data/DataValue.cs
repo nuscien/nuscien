@@ -264,20 +264,36 @@ namespace NuScien.Data
         /// Initializes a new instance of the CollectionResult class.
         /// </summary>
         /// <param name="col">The result collection.</param>
-        /// <param name="offset">The offset of the result.</param>
-        public CollectionResult(IEnumerable<T> col, int? offset = null)
+        /// <param name="offset">The optional offset of the result.</param>
+        /// <param name="count">The optional total count.</param>
+        public CollectionResult(IEnumerable<T> col, int? offset = null, int? count = null)
         {
             Value = col;
             Offset = offset;
+            Count = count;
         }
 
         /// <summary>
         /// Gets or sets the offset of the result.
         /// </summary>
         [DataMember(Name = "offset")]
+#if !NETCOREAPP3_1
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+#endif
         [JsonPropertyName("offset")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public int? Offset { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total count.
+        /// </summary>
+        [DataMember(Name = "count")]
+#if !NETCOREAPP3_1
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+#endif
+        [JsonPropertyName("count")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public int? Count { get; set; }
 
         /// <summary>
         /// Gets or sets the result collection.

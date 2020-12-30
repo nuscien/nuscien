@@ -225,6 +225,19 @@ namespace NuScien.Web
         }
 
         /// <summary>
+        /// Convert to an action result.
+        /// </summary>
+        /// <param name="controller">The controller.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="offset">The optional offset.</param>
+        /// <returns>The action result.</returns>
+        public static ActionResult ResourceEntityResult<T>(this ControllerBase controller, IEnumerable<T> value, int? offset = null) where T : BaseResourceEntity
+        {
+            if (value != null) return new JsonResult(new CollectionResult<T>(value.ToList(), offset));
+            return controller.NotFound();
+        }
+
+        /// <summary>
         /// Gets the query arguments instance.
         /// </summary>
         /// <param name="request">The request.</param>
