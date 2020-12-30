@@ -33,7 +33,7 @@ namespace NuScien.Security
         /// <summary>
         /// Gets the security entity type.
         /// </summary>
-        [NotMapped]
+        [Column("site")]
         [DataMember(Name = "site")]
         [JsonPropertyName("site")]
         public string SiteId

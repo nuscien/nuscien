@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Trivial.Reflection;
 using Trivial.Security;
+using Trivial.Text;
 
 namespace NuScien.Security
 {
@@ -146,13 +147,12 @@ namespace NuScien.Security
         /// <param name="rest">The additional rest actions.</param>
         public static async Task InitAsync(IAccountDataProvider dataProvider, AppAccessingKey appKey, Action<AccessingClientEntity> clientInit, PasswordTokenRequestBody nameAndPassword, Action<UserEntity> userInit, Func<IAccountDataProvider, Task> rest = null)
         {
-            AccessingClientEntity client = null;
-            UserEntity user = null;
+            if (dataProvider == null) return;
 
             // Initialize a client app.
             if (appKey != null && !string.IsNullOrWhiteSpace(appKey.Id))
             {
-                client = await dataProvider.GetClientByNameAsync(appKey.Id);
+                var client = await dataProvider.GetClientByNameAsync(appKey.Id);
                 if (client == null)
                 {
                     client = new AccessingClientEntity
@@ -169,7 +169,7 @@ namespace NuScien.Security
             // Initialize a user.
             if (nameAndPassword != null && !string.IsNullOrWhiteSpace(nameAndPassword.UserName))
             {
-                user = await dataProvider.GetUserByLognameAsync(nameAndPassword.UserName);
+                var user = await dataProvider.GetUserByLognameAsync(nameAndPassword.UserName);
                 if (user == null)
                 {
                     user = new UserEntity
@@ -183,6 +183,39 @@ namespace NuScien.Security
                     user.SetPassword(nameAndPassword.Password);
                     userInit?.Invoke(user);
                     await dataProvider.SaveAsync(user);
+                }
+
+                var settings = await dataProvider.GetSettingsAsync("system", null) ?? new JsonObject();
+                var groupId = settings.TryGetStringValue("admin_current");
+                if (string.IsNullOrWhiteSpace(groupId))
+                {
+                    var group = new UserGroupEntity
+                    {
+                        Name = "Administrators",
+                        Nickname = "General Admin Group",
+                        MembershipPolicy = UserGroupMembershipPolicies.Forbidden,
+                        Visibility = UserGroupVisibilities.MembersHidden,
+                        State = ResourceEntityStates.Normal
+                    };
+                    await dataProvider.SaveAsync(group);
+                    groupId = group.Id;
+                    settings.SetValue("admin_current", groupId);
+                    await dataProvider.SaveSettingsAsync("system", null, settings);
+                }
+
+                var rela = await dataProvider.GetRelationshipByIdAsync(groupId, user.Id);
+                if (rela == null)
+                {
+                    rela = new UserGroupRelationshipEntity
+                    {
+                        Name = "Initialize admin",
+                        OwnerId = groupId,
+                        Target = user,
+                        TargetId = user.Id,
+                        Role = UserGroupRelationshipEntity.Roles.Owner,
+                        State = ResourceEntityStates.Normal
+                    };
+                    await dataProvider.SaveAsync(rela);
                 }
             }
 

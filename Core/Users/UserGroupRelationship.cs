@@ -133,7 +133,6 @@ namespace NuScien.Users
         public UserGroupRelationshipEntity(OwnerResourceEntity<UserGroupEntity, UserEntity> copy, UserGroupEntity owner, UserEntity target)
             : base(copy, owner, target)
         {
-            if (!string.IsNullOrWhiteSpace(target?.Name)) Name = target.Name;
         }
 
         /// <summary>

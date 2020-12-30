@@ -154,6 +154,7 @@ CREATE TABLE [dbo].[nsclientperms](
 	[creation] [datetime2](7) NOT NULL,
 	[update] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
+	[site] [nvarchar](80) NULL,
 	[target] [varchar](80) NOT NULL,
 	[permissions] [nvarchar](max) NULL,
  CONSTRAINT [PK_nsclientperms] PRIMARY KEY CLUSTERED 
@@ -171,6 +172,7 @@ CREATE TABLE [dbo].[nsuserperms](
 	[creation] [datetime2](7) NOT NULL,
 	[update] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
+	[site] [nvarchar](80) NULL,
 	[target] [varchar](80) NOT NULL,
 	[permissions] [nvarchar](max) NULL,
  CONSTRAINT [PK_nsuserperms] PRIMARY KEY CLUSTERED 
@@ -188,6 +190,7 @@ CREATE TABLE [dbo].[nsusergroupperms](
 	[creation] [datetime2](7) NOT NULL,
 	[update] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
+	[site] [nvarchar](80) NULL,
 	[target] [varchar](80) NOT NULL,
 	[permissions] [nvarchar](max) NULL,
  CONSTRAINT [PK_nsusergroupperms] PRIMARY KEY CLUSTERED 
