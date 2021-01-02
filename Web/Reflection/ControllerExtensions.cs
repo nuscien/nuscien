@@ -220,8 +220,9 @@ namespace NuScien.Web
         /// <returns>The action result.</returns>
         public static ActionResult ResourceEntityResult<T>(this ControllerBase controller, T value) where T : BaseResourceEntity
         {
-            if (value != null) return new JsonResult(value);
-            return controller.NotFound();
+            if (value == null) return controller.NotFound();
+            if (!controller.Response.Headers.ContainsKey("Etag")) controller.Response.Headers.Add("Etag", new Microsoft.Extensions.Primitives.StringValues($"{value.Id}-{value.Revision}"));
+            return new JsonResult(value);
         }
 
         /// <summary>
@@ -230,11 +231,12 @@ namespace NuScien.Web
         /// <param name="controller">The controller.</param>
         /// <param name="value">The value.</param>
         /// <param name="offset">The optional offset.</param>
+        /// <param name="count">The optional total count.</param>
         /// <returns>The action result.</returns>
-        public static ActionResult ResourceEntityResult<T>(this ControllerBase controller, IEnumerable<T> value, int? offset = null) where T : BaseResourceEntity
+        public static ActionResult ResourceEntityResult<T>(this ControllerBase controller, IEnumerable<T> value, int? offset = null, int? count = null) where T : BaseResourceEntity
         {
-            if (value != null) return new JsonResult(new CollectionResult<T>(value.ToList(), offset));
-            return controller.NotFound();
+            if (value == null) return controller.NotFound();
+            return new JsonResult(new CollectionResult<T>(value?.ToList(), offset, count));
         }
 
         /// <summary>
