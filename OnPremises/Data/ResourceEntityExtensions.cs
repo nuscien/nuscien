@@ -124,11 +124,11 @@ namespace NuScien.Data
             if (q != null)
             {
                 if (q.Offset > 0) col = col.Skip(q.Offset);
-                col = col.Take(q.Count);
+                col = col.Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize);
             }
             else
             {
-                col = col.Take(100);
+                col = col.Take(ResourceEntityExtensions.PageSize);
             }
 
             return col.ToListAsync(cancellationToken);

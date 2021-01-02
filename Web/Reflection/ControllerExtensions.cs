@@ -250,7 +250,7 @@ namespace NuScien.Web
             {
                 NameQuery = GetFirstStringValue(request, "q"),
                 NameExactly = GetFirstStringValue(request, "eq_name")?.ToLowerInvariant() == JsonBoolean.TrueString,
-                Count = TryGetInt32Value(request, "count") ?? 100,
+                Count = TryGetInt32Value(request, "count") ?? ResourceEntityExtensions.PageSize,
                 Offset = TryGetInt32Value(request, "offset") ?? 0,
             };
             var state = TryGetInt32Value(request, "state");

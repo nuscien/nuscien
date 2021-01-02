@@ -260,7 +260,7 @@ namespace NuScien.Security
                 else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
             }
 
-            return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count), cancellationToken);
+            return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize), cancellationToken);
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace NuScien.Security
                 else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
             }
 
-            return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count), cancellationToken);
+            return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize), cancellationToken);
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace NuScien.Security
                 else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
             }
 
-            return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count), cancellationToken);
+            return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize), cancellationToken);
         }
 
         /// <summary>

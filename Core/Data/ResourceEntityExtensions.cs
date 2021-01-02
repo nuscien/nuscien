@@ -22,10 +22,21 @@ namespace NuScien.Data
     /// </summary>
     public static class ResourceEntityExtensions
     {
+        private static int pageSize = 100;
+
         /// <summary>
         /// The normal state code.
         /// </summary>
         public static readonly int NormalStateCode = (int)ResourceEntityStates.Normal;
+
+        /// <summary>
+        /// Gets or sets the default page size.
+        /// </summary>
+        public static int PageSize
+        {
+            get => pageSize;
+            set => pageSize = value > 0 ? value : 20;
+        }
 
         /// <summary>
         /// Filters a sequence of normal resource entities based on a predicate.
@@ -130,7 +141,7 @@ namespace NuScien.Data
                 source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
             if (predicate != null) source = source.Where(predicate);
             if (q.Offset > 0) source = source.Skip(q.Offset);
-            return source.Take(q.Count);
+            return q.Count > 0 ? source.Take(q.Count) : source;
         }
 
         /// <summary>
@@ -156,7 +167,7 @@ namespace NuScien.Data
             source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
             if (predicate != null) source = source.Where(predicate);
             if (q.Offset > 0) source = source.Skip(q.Offset);
-            return source.Take(q.Count);
+            return q.Count > 0 ? source.Take(q.Count) : source;
         }
 
         /// <summary>
