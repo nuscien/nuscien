@@ -118,7 +118,13 @@ namespace NuScien.Data
         /// <exception cref="ArgumentNullException">source was null.</exception>
         public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, bool>> predicate = null) where T : BaseResourceEntity
         {
-            if (q == null) return source;
+            if (q == null)
+            {
+                if (predicate == null) return source;
+                InternalAssertion.IsNotNull(source);
+                return source.Where(predicate);
+            }
+
             InternalAssertion.IsNotNull(source);
             if (!string.IsNullOrEmpty(q.NameQuery))
                 source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
@@ -138,7 +144,13 @@ namespace NuScien.Data
         /// <exception cref="ArgumentNullException">source was null.</exception>
         public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, int, bool>> predicate) where T : BaseResourceEntity
         {
-            if (q == null) return source;
+            if (q == null)
+            {
+                if (predicate == null) return source;
+                InternalAssertion.IsNotNull(source);
+                return source.Where(predicate);
+            }
+
             InternalAssertion.IsNotNull(source);
             if (!string.IsNullOrEmpty(q.NameQuery))
             source = q.NameExactly ? source.Where(ele => ele.Name == q.NameQuery && ele.StateCode == (int)q.State) : source.Where(ele => ele.Name.Contains(q.NameQuery) && ele.StateCode == (int)q.State);
