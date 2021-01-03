@@ -624,6 +624,11 @@ namespace NuScien.Security
         /// <returns>A URI.</returns>
         public Uri GetUri(string path, QueryData query = null)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                return query == null ? Host : new Uri(query.ToString(Host.OriginalString));
+            }
+
             if (path.Contains("://"))
             {
                 if (query != null) path = query.ToString(path);

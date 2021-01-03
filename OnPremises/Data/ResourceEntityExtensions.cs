@@ -133,5 +133,10 @@ namespace NuScien.Data
 
             return col.ToListAsync(cancellationToken);
         }
+
+        internal static Task<int> SaveChangesFailureAsync(CancellationToken cancellationToken)
+        {
+            throw new DbUpdateException("No implementation for save handler.", new NotImplementedException("Cannot find SaveChangesAsync method."));
+        }
     }
 }

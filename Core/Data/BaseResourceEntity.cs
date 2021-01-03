@@ -91,7 +91,7 @@ namespace NuScien.Data
         public bool IsNew
         {
             get => string.IsNullOrWhiteSpace(id) || isRandomId;
-            set => isRandomId = true;
+            internal set => isRandomId = value;
         }
 
         /// <summary>
