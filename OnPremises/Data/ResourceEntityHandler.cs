@@ -94,6 +94,21 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Searches.
+        /// </summary>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>A collection of entity.</returns>
+        public virtual async Task<CollectionResult<T>> SearchAsync(QueryData q, CancellationToken cancellationToken = default)
+        {
+            if (q == null) return new CollectionResult<T>(await Set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
+            QueryArgs args = q;
+            var col = Filter(Set.ListEntities(args), q);
+            if (col is null) return new CollectionResult<T>(null, args.Offset);
+            return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
+        }
+
+        /// <summary>
         /// Saves.
         /// </summary>
         /// <param name="value">The entity to add or update.</param>
@@ -108,6 +123,14 @@ namespace NuScien.Data
             Saved?.Invoke(this, new ChangeEventArgs<T>(isNew ? null : value, value, change));
             return new ChangeMethodResult(change);
         }
+
+        /// <summary>
+        /// Searches.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="q">The full query data.</param>
+        /// <returns>The result.</returns>
+        protected abstract IQueryable<T> Filter(IQueryable<T> source, QueryData q);
 
         /// <summary>
         /// Tests if the new entity is valid.

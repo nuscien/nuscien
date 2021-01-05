@@ -39,6 +39,34 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Sets a query arguments into a query data instance.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <returns>The count of items changed.</returns>
+        public static int AddRange(this Trivial.Net.QueryData source, QueryArgs q)
+        {
+            if (source == null || q == null) return 0;
+            var count = 3;
+            if (!string.IsNullOrEmpty(q.NameQuery))
+            {
+                source["q"] = q.NameQuery;
+                count++;
+            }
+
+            source.Add("eq_name", q.NameExactly, true);
+            if (q.Offset > 0)
+            {
+                source.Add("offset", q.Offset, true);
+                count++;
+            }
+
+            source.Add("count", q.Count, true);
+            source.Add("state", (int)q.State, true);
+            return count;
+        }
+
+        /// <summary>
         /// Filters a sequence of normal resource entities based on a predicate.
         /// </summary>
         /// <typeparam name="T">The type of the resource entity.</typeparam>

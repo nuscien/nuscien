@@ -116,7 +116,7 @@ namespace NuScien.Data
         public async Task<T> GetAsync(string id, bool includeAllStates = false, CancellationToken cancellationToken = default)
         {
             var client = CreateHttp<T>();
-            var entity = await client.GetAsync(GetUri(id));
+            var entity = await client.GetAsync(GetUri(id), cancellationToken);
             return entity;
         }
 
@@ -129,7 +129,20 @@ namespace NuScien.Data
         public async Task<CollectionResult<T>> SearchAsync(QueryArgs q, CancellationToken cancellationToken = default)
         {
             var client = CreateHttp<CollectionResult<T>>();
-            var col = await client.GetAsync(GetUri());
+            var col = await client.GetAsync(GetUri((QueryData)q), cancellationToken);
+            return col;
+        }
+
+        /// <summary>
+        /// Searches.
+        /// </summary>
+        /// <param name="q">The query data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>A collection of entity.</returns>
+        public async Task<CollectionResult<T>> SearchAsync(QueryData q, CancellationToken cancellationToken = default)
+        {
+            var client = CreateHttp<CollectionResult<T>>();
+            var col = await client.GetAsync(GetUri(q), cancellationToken);
             return col;
         }
 
@@ -142,7 +155,7 @@ namespace NuScien.Data
         public async Task<ChangeMethodResult> SaveAsync(T value, CancellationToken cancellationToken = default)
         {
             var client = CreateHttp<ChangeMethodResult>();
-            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value);
+            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken);
             return change;
         }
 
