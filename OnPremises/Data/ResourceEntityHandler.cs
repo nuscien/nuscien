@@ -32,7 +32,7 @@ namespace NuScien.Data
         /// <param name="save">The entity save handler.</param>
         public OnPremisesResourceEntityHandler(OnPremisesResourceAccessClient client, DbSet<T> set, Func<CancellationToken, Task<int>> save)
         {
-            Client = client;
+            CoreResources = client;
             Set = set;
             saveHandler = save ?? DbResourceEntityExtensions.SaveChangesFailureAsync;
         }
@@ -45,7 +45,7 @@ namespace NuScien.Data
         /// <param name="save">The entity save handler.</param>
         public OnPremisesResourceEntityHandler(IAccountDataProvider dataProvider, DbSet<T> set, Func<CancellationToken, Task<int>> save)
         {
-            Client = new OnPremisesResourceAccessClient(dataProvider);
+            CoreResources = new OnPremisesResourceAccessClient(dataProvider);
             Set = set;
             saveHandler = save ?? DbResourceEntityExtensions.SaveChangesFailureAsync;
         }
@@ -63,12 +63,27 @@ namespace NuScien.Data
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        protected OnPremisesResourceAccessClient Client { get; }
+        protected OnPremisesResourceAccessClient CoreResources { get; }
+
+        /// <summary>
+        /// Gets the current user information.
+        /// </summary>
+        protected Users.UserEntity User => CoreResources.User;
+
+        /// <summary>
+        /// Gets the current client identifier.
+        /// </summary>
+        protected string ClientId => CoreResources.ClientId;
+
+        /// <summary>
+        /// Gets a value indicating whether the access token is null, empty or consists only of white-space characters.
+        /// </summary>
+        protected bool IsTokenNullOrEmpty => CoreResources.IsTokenNullOrEmpty;
 
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        BaseResourceAccessClient IResourceEntityHandler<T>.Client => Client;
+        BaseResourceAccessClient IResourceEntityHandler<T>.CoreResources => CoreResources;
 
         /// <summary>
         /// Gets by a specific entity identifier.
@@ -103,7 +118,7 @@ namespace NuScien.Data
         {
             if (q == null) return new CollectionResult<T>(await Set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
             QueryArgs args = q;
-            var col = Filter(Set.ListEntities(args), q);
+            var col = Set.ListEntities(args, l => Filter(l, q));
             if (col is null) return new CollectionResult<T>(null, args.Offset);
             return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
         }

@@ -24,7 +24,7 @@ namespace NuScien.Data
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        protected BaseResourceAccessClient Client { get; }
+        protected BaseResourceAccessClient CoreResources { get; }
 
         /// <summary>
         /// Gets by a specific entity identifier.
@@ -65,7 +65,7 @@ namespace NuScien.Data
         /// <param name="relativePath">The relative path.</param>
         public HttpResourceEntityHandler(HttpResourceAccessClient client, string relativePath)
         {
-            Client = client ?? new HttpResourceAccessClient(null, null);
+            CoreResources = client ?? new HttpResourceAccessClient(null, null);
             RelativePath = relativePath;
         }
 
@@ -77,29 +77,39 @@ namespace NuScien.Data
         /// <param name="relativePath">The relative path.</param>
         public HttpResourceEntityHandler(AppAccessingKey appKey, Uri host, string relativePath)
         {
-            Client = new HttpResourceAccessClient(appKey, host);
+            CoreResources = new HttpResourceAccessClient(appKey, host);
             RelativePath = relativePath;
         }
 
         /// <summary>
+        /// Adds or removes the event handler on save.
+        /// </summary>
+        public event ChangeEventHandler<T> Saved;
+
+        /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        protected HttpResourceAccessClient Client { get; }
+        protected HttpResourceAccessClient CoreResources { get; }
 
         /// <summary>
         /// Gets the current user information.
         /// </summary>
-        protected Users.UserEntity User => Client.User;
+        protected Users.UserEntity User => CoreResources.User;
 
         /// <summary>
         /// Gets the current client identifier.
         /// </summary>
-        protected string ClientId => Client.ClientId;
+        protected string ClientId => CoreResources.ClientId;
+
+        /// <summary>
+        /// Gets a value indicating whether the access token is null, empty or consists only of white-space characters.
+        /// </summary>
+        protected bool IsTokenNullOrEmpty => CoreResources.IsTokenNullOrEmpty;
 
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        BaseResourceAccessClient IResourceEntityHandler<T>.Client => Client;
+        BaseResourceAccessClient IResourceEntityHandler<T>.CoreResources => CoreResources;
 
         /// <summary>
         /// Gets the relative path.
@@ -155,7 +165,8 @@ namespace NuScien.Data
         public async Task<ChangeMethodResult> SaveAsync(T value, CancellationToken cancellationToken = default)
         {
             var client = CreateHttp<ChangeMethodResult>();
-            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken);
+            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken) ?? new ChangeMethodResult(ChangeMethods.Invalid);
+            Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
             return change;
         }
 
@@ -167,11 +178,11 @@ namespace NuScien.Data
         /// <returns>A URI.</returns>
         public Uri GetUri(string path, QueryData query = null)
         {
-            if (string.IsNullOrWhiteSpace(path)) return Client.GetUri(RelativePath, query);
-            if (string.IsNullOrWhiteSpace(RelativePath)) return Client.GetUri(path, query);
+            if (string.IsNullOrWhiteSpace(path)) return CoreResources.GetUri(RelativePath, query);
+            if (string.IsNullOrWhiteSpace(RelativePath)) return CoreResources.GetUri(path, query);
             var a = RelativePath + (RelativePath[^1] == '/' ? string.Empty : "/");
             var b = path[0] == '/' ? path[0..^1] : path;
-            return Client.GetUri(a + b, query);
+            return CoreResources.GetUri(a + b, query);
         }
 
         /// <summary>
@@ -179,7 +190,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="query">The optional query data.</param>
         /// <returns>A URI.</returns>
-        public Uri GetUri(QueryData query = null) => Client.GetUri(RelativePath, query);
+        public Uri GetUri(QueryData query = null) => CoreResources.GetUri(RelativePath, query);
 
         /// <summary>
         /// Creates a JSON HTTP client.
@@ -187,6 +198,6 @@ namespace NuScien.Data
         /// <typeparam name="TResult">The type of response.</typeparam>
         /// <param name="callback">An optional callback raised on data received.</param>
         /// <returns>A new JSON HTTP client.</returns>
-        public virtual JsonHttpClient<TResult> CreateHttp<TResult>(Action<ReceivedEventArgs<TResult>> callback = null) => Client.Create(callback);
+        public virtual JsonHttpClient<TResult> CreateHttp<TResult>(Action<ReceivedEventArgs<TResult>> callback = null) => CoreResources.Create(callback);
     }
 }
