@@ -19,7 +19,7 @@ namespace NuScien.Data
     /// The base resource entity accessing service.
     /// </summary>
     /// <typeparam name="T">The type of the resouce entity.</typeparam>
-    public interface IResourceEntityHandler<T> where T : BaseResourceEntity
+    public interface IResourceEntityProvider<T> where T : BaseResourceEntity
     {
         /// <summary>
         /// Gets the resource access client.
@@ -56,26 +56,26 @@ namespace NuScien.Data
     /// The base resource entity accessing service.
     /// </summary>
     /// <typeparam name="T">The type of the resouce entity.</typeparam>
-    public abstract class HttpResourceEntityHandler<T> : IResourceEntityHandler<T> where T : BaseResourceEntity
+    public abstract class HttpResourceEntityProvider<T> : IResourceEntityProvider<T> where T : BaseResourceEntity
     {
         /// <summary>
-        /// Initializes a new instance of the HttpResourceEntityHandler class.
+        /// Initializes a new instance of the HttpResourceEntityProvider class.
         /// </summary>
         /// <param name="client">The resource access client.</param>
         /// <param name="relativePath">The relative path.</param>
-        public HttpResourceEntityHandler(HttpResourceAccessClient client, string relativePath)
+        public HttpResourceEntityProvider(HttpResourceAccessClient client, string relativePath)
         {
             CoreResources = client ?? new HttpResourceAccessClient(null, null);
             RelativePath = relativePath;
         }
 
         /// <summary>
-        /// Initializes a new instance of the HttpResourceEntityHandler class.
+        /// Initializes a new instance of the HttpResourceEntityProvider class.
         /// </summary>
         /// <param name="appKey">The app secret key for accessing API.</param>
         /// <param name="host">The host URI.</param>
         /// <param name="relativePath">The relative path.</param>
-        public HttpResourceEntityHandler(AppAccessingKey appKey, Uri host, string relativePath)
+        public HttpResourceEntityProvider(AppAccessingKey appKey, Uri host, string relativePath)
         {
             CoreResources = new HttpResourceAccessClient(appKey, host);
             RelativePath = relativePath;
@@ -109,7 +109,7 @@ namespace NuScien.Data
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        BaseResourceAccessClient IResourceEntityHandler<T>.CoreResources => CoreResources;
+        BaseResourceAccessClient IResourceEntityProvider<T>.CoreResources => CoreResources;
 
         /// <summary>
         /// Gets the relative path.

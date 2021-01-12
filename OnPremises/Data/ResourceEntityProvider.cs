@@ -20,30 +20,30 @@ namespace NuScien.Data
     /// The base resource entity accessing service.
     /// </summary>
     /// <typeparam name="T">The type of the resouce entity.</typeparam>
-    public abstract class OnPremisesResourceEntityHandler<T> : IResourceEntityHandler<T> where T : BaseResourceEntity
+    public abstract class OnPremisesResourceEntityProvider<T> : IResourceEntityProvider<T> where T : BaseResourceEntity
     {
         private readonly Func<CancellationToken, Task<int>> saveHandler;
 
         /// <summary>
-        /// Initializes a new instance of the OnPremisesResourceEntityHandler class.
+        /// Initializes a new instance of the OnPremisesResourceEntityProvider class.
         /// </summary>
         /// <param name="client">The resource access client.</param>
         /// <param name="set">The database set.</param>
         /// <param name="save">The entity save handler.</param>
-        public OnPremisesResourceEntityHandler(OnPremisesResourceAccessClient client, DbSet<T> set, Func<CancellationToken, Task<int>> save)
+        public OnPremisesResourceEntityProvider(OnPremisesResourceAccessClient client, DbSet<T> set, Func<CancellationToken, Task<int>> save)
         {
-            CoreResources = client;
+            CoreResources = client ?? new OnPremisesResourceAccessClient(null);
             Set = set;
             saveHandler = save ?? DbResourceEntityExtensions.SaveChangesFailureAsync;
         }
 
         /// <summary>
-        /// Initializes a new instance of the OnPremisesResourceEntityHandler class.
+        /// Initializes a new instance of the OnPremisesResourceEntityProvider class.
         /// </summary>
         /// <param name="dataProvider">The resource data provider.</param>
         /// <param name="set">The database set.</param>
         /// <param name="save">The entity save handler.</param>
-        public OnPremisesResourceEntityHandler(IAccountDataProvider dataProvider, DbSet<T> set, Func<CancellationToken, Task<int>> save)
+        public OnPremisesResourceEntityProvider(IAccountDataProvider dataProvider, DbSet<T> set, Func<CancellationToken, Task<int>> save)
         {
             CoreResources = new OnPremisesResourceAccessClient(dataProvider);
             Set = set;
@@ -83,7 +83,7 @@ namespace NuScien.Data
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        BaseResourceAccessClient IResourceEntityHandler<T>.CoreResources => CoreResources;
+        BaseResourceAccessClient IResourceEntityProvider<T>.CoreResources => CoreResources;
 
         /// <summary>
         /// Gets by a specific entity identifier.

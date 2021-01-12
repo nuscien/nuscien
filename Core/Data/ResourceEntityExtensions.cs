@@ -481,7 +481,7 @@ namespace NuScien.Data
         /// <param name="state">The state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>A collection.</returns>
-        public static Task<CollectionResult<T>> SearchAsync<T>(this IResourceEntityHandler<T> h, string name, bool like = false, ResourceEntityStates state = ResourceEntityStates.Normal, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        public static Task<CollectionResult<T>> SearchAsync<T>(this IResourceEntityProvider<T> h, string name, bool like = false, ResourceEntityStates state = ResourceEntityStates.Normal, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             if (h == null) return Task.FromResult<CollectionResult<T>>(null);
             return h.SearchAsync(new QueryArgs { NameQuery = name, NameExactly = !like, State = state }, cancellationToken);
@@ -496,7 +496,7 @@ namespace NuScien.Data
         /// <param name="like">true if search by like; otherwise, false, to equals to.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>A collection.</returns>
-        public static Task<CollectionResult<T>> SearchAsync<T>(this IResourceEntityHandler<T> h, string name, bool like, CancellationToken cancellationToken) where T : BaseResourceEntity
+        public static Task<CollectionResult<T>> SearchAsync<T>(this IResourceEntityProvider<T> h, string name, bool like, CancellationToken cancellationToken) where T : BaseResourceEntity
         {
             if (h == null) return Task.FromResult<CollectionResult<T>>(null);
             return h.SearchAsync(new QueryArgs { NameQuery = name, NameExactly = !like }, cancellationToken);
@@ -510,7 +510,7 @@ namespace NuScien.Data
         /// <param name="name">The name to search.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>A collection.</returns>
-        public static Task<CollectionResult<T>> SearchAsync<T>(this IResourceEntityHandler<T> h, string name, CancellationToken cancellationToken) where T : BaseResourceEntity
+        public static Task<CollectionResult<T>> SearchAsync<T>(this IResourceEntityProvider<T> h, string name, CancellationToken cancellationToken) where T : BaseResourceEntity
         {
             if (h == null) return Task.FromResult<CollectionResult<T>>(null);
             return h.SearchAsync(new QueryArgs { NameQuery = name }, cancellationToken);
@@ -524,7 +524,7 @@ namespace NuScien.Data
         /// <param name="id">The identifier of the entity to get.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An entity instance.</returns>
-        public static Task<T> GetAsync<T>(this IResourceEntityHandler<T> h, string id, CancellationToken cancellationToken) where T : BaseResourceEntity
+        public static Task<T> GetAsync<T>(this IResourceEntityProvider<T> h, string id, CancellationToken cancellationToken) where T : BaseResourceEntity
         {
             if (h == null) return Task.FromResult<T>(null);
             return h.GetAsync(id, false, cancellationToken);

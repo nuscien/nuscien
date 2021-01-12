@@ -32,8 +32,9 @@ namespace NuScien.Data
         /// <param name="dbContext">The database context.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, DbContext dbContext)
         {
-            CoreResources = client;
+            CoreResources = client ?? new OnPremisesResourceAccessClient(null);
             db = dbContext;
+            FillProperties();
         }
 
         /// <summary>
@@ -125,9 +126,42 @@ namespace NuScien.Data
         public OnPremisesResourceAccessClient CoreResources { get; }
 
         /// <summary>
+        /// Gets the current user information.
+        /// </summary>
+        public Users.UserEntity User => CoreResources.User;
+
+        /// <summary>
+        /// Gets the current client identifier.
+        /// </summary>
+        public string ClientId => CoreResources.ClientId;
+
+        /// <summary>
+        /// Gets a value indicating whether the access token is null, empty or consists only of white-space characters.
+        /// </summary>
+        public bool IsTokenNullOrEmpty => CoreResources.IsTokenNullOrEmpty;
+
+        /// <summary>
+        /// Provides access to information and operations for entity instances this context is tracking.
+        /// </summary>
+        protected Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker ChangeTracker => db.ChangeTracker;
+
+        /// <summary>
         /// Gets the database related information and operations for this context.
         /// </summary>
         protected Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade Database => db.Database;
+
+        /// <summary>
+        /// The metadata about the shape of entities, the relationships between them, and how they map to the database.
+        /// </summary>
+        protected Microsoft.EntityFrameworkCore.Metadata.IModel DbModel => db.Model;
+
+        /// <summary>
+        /// Gets the unique identifier for the context instance and pool lease, if any.
+        /// This identifier is primarily intended as a correlation ID for logging and debugging
+        /// such that it is easy to identify that multiple events are using the same or different
+        /// context instances.
+        /// </summary>
+        protected DbContextId DbContextId => db.ContextId;
 
         /// <summary>
         /// Creates a DbSet that can be used to query and save instances of TEntity.
@@ -145,12 +179,12 @@ namespace NuScien.Data
         protected DbSet<TEntity> Set<TEntity>(string name) where TEntity : BaseResourceEntity => db.Set<TEntity>(name);
 
         /// <summary>
-        /// Creates a resource entity handler.
+        /// Creates a resource entity provider.
         /// </summary>
-        /// <typeparam name="THandler">The type of the resource entity handler for which a set should be returned.</typeparam>
+        /// <typeparam name="THandler">The type of the resource entity provider for which a set should be returned.</typeparam>
         /// <typeparam name="TEntity">The type of entity.</typeparam>
-        /// <returns>The resource entity handler</returns>
-        protected THandler Set<THandler, TEntity>() where THandler : OnPremisesResourceEntityHandler<TEntity> where TEntity : BaseResourceEntity
+        /// <returns>The resource entity provider</returns>
+        protected THandler Provider<THandler, TEntity>() where THandler : OnPremisesResourceEntityProvider<TEntity> where TEntity : BaseResourceEntity
         {
             var type = typeof(THandler);
             if (type.IsAbstract) return null;
@@ -158,6 +192,52 @@ namespace NuScien.Data
             var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), typeof(DbSet<TEntity>), typeof(Func<CancellationToken, Task<int>>) });
             if (c == null) return null;
             return c.Invoke(new object[] { CoreResources, Set<TEntity>(), h }) as THandler;
+        }
+
+        /// <summary>
+        /// Fills properties automatically.
+        /// </summary>
+        /// <returns>The count of property filled.</returns>
+        protected virtual int FillProperties()
+        {
+            var i = 0;
+            var properties = GetType().GetProperties();
+            foreach (var prop in properties)
+            {
+                var type = prop.PropertyType;
+                if (type.IsAbstract || !prop.CanWrite || !prop.CanRead) continue;
+                var cType = type;
+                while (cType != null && cType != typeof(OnPremisesResourceEntityProvider<>)) cType = cType.BaseType;
+                try
+                {
+                    if (cType == null || cType.GenericTypeArguments.Length < 1) continue;
+                    var gta = type.GenericTypeArguments[0];
+                    if (gta == null || !gta.IsSubclassOf(typeof(BaseResourceEntity)) || prop.GetValue(this) != null) continue;
+                    var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), typeof(DbSet<>), typeof(Func<CancellationToken, Task<int>>) });
+                    if (c == null) continue;
+                    Func<CancellationToken, Task<int>> h = SaveChangesAsync;
+                    var m = GetType().GetMethod("Set", 1, Type.EmptyTypes);
+                    m = m.MakeGenericMethod(gta);
+                    var e = m.Invoke(this, new object[] { gta });
+                    var v = c.Invoke(new object[] { CoreResources, e, h });
+                    prop.SetValue(this, v);
+                    i++;
+                }
+                catch (NullReferenceException)
+                {
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (MemberAccessException)
+                {
+                }
+                catch (System.Reflection.TargetException)
+                {
+                }
+            }
+
+            return i;
         }
 
         /// <summary>
@@ -172,6 +252,20 @@ namespace NuScien.Data
         /// <param name="cancellationToken">An optional cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>The number of state entries written to the database.</returns>
         protected Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => db.SaveChangesAsync(cancellationToken);
+
+        /// <summary>
+        /// Saves all changes made in this context to the database.
+        /// This method will automatically call Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.DetectChanges
+        /// to discover any changes to entity instances before saving to the underlying database.
+        /// This can be disabled via Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AutoDetectChangesEnabled.
+        /// Multiple active operations on the same context instance are not supported. Use
+        /// 'await' to ensure that any asynchronous operations have completed before calling
+        /// another method on this context.
+        /// </summary>
+        /// <param name="acceptAllChangesOnSuccess">Indicates whether Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AcceptAllChanges is called after the changes have been sent successfully to the database.</param>
+        /// <param name="cancellationToken">An optional cancellation token to observe while waiting for the task to complete.</param>
+        /// <returns>The number of state entries written to the database.</returns>
+        protected Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) => db.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
         /// <summary>
         /// Asynchronously ensures that the database for the context exists. If it exists,
