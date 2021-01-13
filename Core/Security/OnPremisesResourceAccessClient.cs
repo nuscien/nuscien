@@ -145,7 +145,7 @@ namespace NuScien.Security
             AuthorizationCodeEntity code;
             try
             {
-                code = await DataProvider.GetAuthorizationCodeByCodeAsync(tokenRequest.Body.ServiceProvider, tokenRequest.Body.Code);
+                code = await DataProvider.GetAuthorizationCodeByCodeAsync(tokenRequest.Body.ServiceProvider, tokenRequest.Body.Code, cancellationToken);
             }
             catch (ArgumentException ex)
             {
@@ -211,7 +211,7 @@ namespace NuScien.Security
             if (eui != null) return eui;
             try
             {
-                var client = await DataProvider.GetClientByNameAsync(tokenRequest.ClientId);
+                var client = await DataProvider.GetClientByNameAsync(tokenRequest.ClientId, cancellationToken);
                 if (client == null) return new UserTokenInfo
                 {
                     ErrorCode = TokenInfo.ErrorCodeConstants.UnauthorizedClient,
@@ -564,7 +564,7 @@ namespace NuScien.Security
                         else perm.Permissions = null;
                         FillPermissionItemEntity(perm, siteId, user);
                         perm.AddPermission(permissionList);
-                        return await DataProvider.SaveAsync(perm);
+                        return await DataProvider.SaveAsync(perm, cancellationToken);
                     }
                 case SecurityEntityTypes.UserGroup:
                     {
@@ -574,7 +574,7 @@ namespace NuScien.Security
                         else perm.Permissions = null;
                         FillPermissionItemEntity(perm, siteId, group);
                         perm.AddPermission(permissionList);
-                        return await DataProvider.SaveAsync(perm);
+                        return await DataProvider.SaveAsync(perm, cancellationToken);
                     }
                 case SecurityEntityTypes.ServiceClient:
                     {
@@ -584,7 +584,7 @@ namespace NuScien.Security
                         else perm.Permissions = null;
                         FillPermissionItemEntity(perm, siteId, client);
                         perm.AddPermission(permissionList);
-                        return await DataProvider.SaveAsync(perm);
+                        return await DataProvider.SaveAsync(perm, cancellationToken);
                     }
                 default:
                     {
@@ -593,7 +593,7 @@ namespace NuScien.Security
             }
         }
 
-        private void FillPermissionItemEntity<T>(BasePermissionItemEntity<T> entity, string siteId, T target) where T : BaseSecurityEntity
+        private static void FillPermissionItemEntity<T>(BasePermissionItemEntity<T> entity, string siteId, T target) where T : BaseSecurityEntity
         {
             entity.Name = target.Nickname ?? target.Nickname;
             entity.SiteId = siteId;
@@ -895,7 +895,7 @@ namespace NuScien.Security
             return await CreateTokenAsync(user, tokenRequest, cancellationToken);
         }
 
-        private UserTokenInfo CheckUser(UserEntity user)
+        private static UserTokenInfo CheckUser(UserEntity user)
         {
             if (user is null || user.IsNew || string.IsNullOrWhiteSpace(user.Name)) return new UserTokenInfo
             {

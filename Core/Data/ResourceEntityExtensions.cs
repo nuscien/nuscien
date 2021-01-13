@@ -339,7 +339,7 @@ namespace NuScien.Data
         /// <param name="save">The save action handler.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>An async task result.</returns>
+        /// <returns>The state of changing result.</returns>
         public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(Func<TEntity, TResult> add, Func<TEntity, TResult> update, Func<CancellationToken, Task<int>> save, TEntity entity, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
         {
             if (entity is null) return ChangeMethods.Invalid;

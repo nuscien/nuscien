@@ -28,13 +28,35 @@ namespace NuScien.Data
         /// <summary>
         /// Initializes a new instance of the OnPremisesResourceAccessContext class.
         /// </summary>
+        /// <param name="dataProvider">The account data provider.</param>
+        /// <param name="dbContext">The database context.</param>
+        public OnPremisesResourceAccessContext(IAccountDataProvider dataProvider, DbContext dbContext)
+        {
+            CoreResources = new OnPremisesResourceAccessClient(dataProvider);
+            db = dbContext;
+            FillProviderProperties();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the OnPremisesResourceAccessContext class.
+        /// </summary>
+        /// <param name="dataProvider">The account data provider.</param>
+        /// <param name="options">The options for this context.</param>
+        public OnPremisesResourceAccessContext(IAccountDataProvider dataProvider, DbContextOptions options)
+            : this(new OnPremisesResourceAccessClient(dataProvider), new DbContext(options))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the OnPremisesResourceAccessContext class.
+        /// </summary>
         /// <param name="client">The resource access client.</param>
         /// <param name="dbContext">The database context.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, DbContext dbContext)
         {
             CoreResources = client ?? new OnPremisesResourceAccessClient(null);
             db = dbContext;
-            FillProperties();
+            FillProviderProperties();
         }
 
         /// <summary>
@@ -195,10 +217,10 @@ namespace NuScien.Data
         }
 
         /// <summary>
-        /// Fills properties automatically.
+        /// Fills provider properties automatically.
         /// </summary>
         /// <returns>The count of property filled.</returns>
-        protected virtual int FillProperties()
+        protected virtual int FillProviderProperties()
         {
             var i = 0;
             var properties = GetType().GetProperties();

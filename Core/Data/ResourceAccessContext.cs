@@ -28,7 +28,7 @@ namespace NuScien.Data
         public HttpResourceAccessContext(HttpResourceAccessClient client)
         {
             CoreResources = client ?? new HttpResourceAccessClient(null, null);
-            FillProperties();
+            FillProviderProperties();
         }
 
         /// <summary>
@@ -92,15 +92,17 @@ namespace NuScien.Data
             var type = typeof(THandler);
             if (type.IsAbstract) return null;
             var c = type.GetConstructor(new Type[] { typeof(HttpResourceAccessClient) });
-            if (c == null) return null;
-            return c.Invoke(new object[] { CoreResources }) as THandler;
+            if (c != null) return c.Invoke(new object[] { CoreResources }) as THandler;
+            c = type.GetConstructor(new Type[] { typeof(HttpResourceAccessClient), typeof(string) });
+            if (c != null) return c.Invoke(new object[] { CoreResources, null }) as THandler;
+            return null;
         }
 
         /// <summary>
-        /// Fills properties automatically.
+        /// Fills provider properties automatically.
         /// </summary>
         /// <returns>The count of property filled.</returns>
-        protected virtual int FillProperties()
+        protected virtual int FillProviderProperties()
         {
             var i = 0;
             if (CoreResources == null) return i;
@@ -117,8 +119,18 @@ namespace NuScien.Data
                     var gta = type.GenericTypeArguments[0];
                     if (gta == null || !gta.IsSubclassOf(typeof(BaseResourceEntity)) || prop.GetValue(this) != null) continue;
                     var c = type.GetConstructor(new Type[] { typeof(HttpResourceAccessClient) });
-                    if (c == null) continue;
-                    var v = c.Invoke(new object[] { CoreResources });
+                    object v;
+                    if (c == null)
+                    {
+                        c = type.GetConstructor(new Type[] { typeof(HttpResourceAccessClient), typeof(string) });
+                        if (c == null) continue;
+                        v = c.Invoke(new object[] { CoreResources, null });
+                    }
+                    else
+                    {
+                        v = c.Invoke(new object[] { CoreResources });
+                    }
+
                     prop.SetValue(this, v);
                     i++;
                 }
