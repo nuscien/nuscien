@@ -23,6 +23,35 @@ namespace NuScien.Data
     /// </summary>
     public class OnPremisesResourceAccessContext : IDisposable
     {
+        internal class InternalDbContext : DbContext
+        {
+            private readonly List<Type> types = new List<Type>();
+            private ModelBuilder mb;
+
+            public InternalDbContext(DbContextOptions options) : base(options)
+            {
+            }
+
+            internal ModelBuilder ModelBuilder { get; private set; }
+
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                foreach (var item in types)
+                {
+                    modelBuilder.Entity(item);
+                }
+
+                types.Clear();
+                mb = modelBuilder;
+            }
+
+            public void RegisterEntityType(Type type)
+            {
+                if (mb == null) types.Add(type);
+                else mb.Entity(type);
+            }
+        }
+
         private bool disposedValue;
         private readonly DbContext db;
 
@@ -44,7 +73,7 @@ namespace NuScien.Data
         /// <param name="dataProvider">The account data provider.</param>
         /// <param name="options">The options for this context.</param>
         public OnPremisesResourceAccessContext(IAccountDataProvider dataProvider, DbContextOptions options)
-            : this(new OnPremisesResourceAccessClient(dataProvider), new DbContext(options))
+            : this(new OnPremisesResourceAccessClient(dataProvider), new InternalDbContext(options))
         {
         }
 
@@ -66,7 +95,7 @@ namespace NuScien.Data
         /// <param name="client">The resource access client.</param>
         /// <param name="options">The options for this context.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, DbContextOptions options)
-            : this(client, new DbContext(options))
+            : this(client, new InternalDbContext(options))
         {
         }
 
@@ -77,7 +106,7 @@ namespace NuScien.Data
         /// <param name="configureConnection">The method to configure context options with connection string.</param>
         /// <param name="connection">The database connection.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, Func<DbContextOptionsBuilder, DbConnection, DbContextOptionsBuilder> configureConnection, DbConnection connection)
-            : this(client, new DbContext(DbResourceEntityExtensions.CreateDbContextOptions<DbContext>(configureConnection, connection)))
+            : this(client, new InternalDbContext(DbResourceEntityExtensions.CreateDbContextOptions<DbContext>(configureConnection, connection)))
         {
         }
 
@@ -88,7 +117,7 @@ namespace NuScien.Data
         /// <param name="configureConnection">The method to configure context options with connection string.</param>
         /// <param name="connection">The connection string.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, Func<DbContextOptionsBuilder, string, DbContextOptionsBuilder> configureConnection, string connection)
-            : this(client, new DbContext(DbResourceEntityExtensions.CreateDbContextOptions<DbContext>(configureConnection, connection)))
+            : this(client, new InternalDbContext(DbResourceEntityExtensions.CreateDbContextOptions<DbContext>(configureConnection, connection)))
         {
         }
 
@@ -100,7 +129,7 @@ namespace NuScien.Data
         /// <param name="connection">The database connection.</param>
         /// <param name="optionsAction">The additional options action.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, Func<DbContextOptionsBuilder<DbContext>, DbConnection, Action<DbContextOptionsBuilder<DbContext>>, DbContextOptionsBuilder<DbContext>> configureConnection, DbConnection connection, Action<DbContextOptionsBuilder<DbContext>> optionsAction)
-            : this(client, new DbContext(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction)))
+            : this(client, new InternalDbContext(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction)))
         {
         }
 
@@ -112,7 +141,7 @@ namespace NuScien.Data
         /// <param name="connection">The connection string.</param>
         /// <param name="optionsAction">The additional options action.</param>
         public OnPremisesResourceAccessContext(OnPremisesResourceAccessClient client, Func<DbContextOptionsBuilder<DbContext>, string, Action<DbContextOptionsBuilder<DbContext>>, DbContextOptionsBuilder<DbContext>> configureConnection, string connection, Action<DbContextOptionsBuilder<DbContext>> optionsAction)
-            : this(client, new DbContext(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction)))
+            : this(client, new InternalDbContext(DbResourceEntityExtensions.CreateDbContextOptions(configureConnection, connection, optionsAction)))
         {
         }
 
@@ -214,6 +243,7 @@ namespace NuScien.Data
             Func<CancellationToken, Task<int>> h = SaveChangesAsync;
             var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), typeof(DbSet<TEntity>), typeof(Func<CancellationToken, Task<int>>) });
             if (c == null) return null;
+            if (db is InternalDbContext dbContext) dbContext.RegisterEntityType(typeof(TEntity));
             return c.Invoke(new object[] { CoreResources, Set<TEntity>(), h }) as THandler;
         }
 
@@ -242,6 +272,7 @@ namespace NuScien.Data
                     Func<CancellationToken, Task<int>> h = SaveChangesAsync;
                     var m = GetType().GetMethod("Set", 1, BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
                     m = m.MakeGenericMethod(gta);
+                    if (db is InternalDbContext dbContext) dbContext.RegisterEntityType(gta);
                     var e = m.Invoke(this, null);
                     var v = c.Invoke(new object[] { CoreResources, e, h });
                     prop.SetValue(this, v);
