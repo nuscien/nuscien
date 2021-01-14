@@ -30,7 +30,7 @@ namespace NuScien.UnitTest.Security
         [TestMethod]
         public async Task TestPasswordAsync()
         {
-            var client = await ResourceAccessClients.OnPremisesAsync();
+            var client = await ResourceAccessClients.CreateAsync();
 
             // Error handling.
             var resp = await client.SignInByPasswordAsync(ResourceAccessClients.AppKey, ResourceAccessClients.NameAndPassword.UserName, "Wrong Password");

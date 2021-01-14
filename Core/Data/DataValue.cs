@@ -270,7 +270,7 @@ namespace NuScien.Data
         {
             Value = col;
             Offset = offset;
-            Count = count;
+            TotalCount = count;
         }
 
         /// <summary>
@@ -293,7 +293,13 @@ namespace NuScien.Data
 #endif
         [JsonPropertyName("count")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public int? Count { get; set; }
+        public int? TotalCount { get; set; }
+
+        /// <summary>
+        /// Gets the count of current result.
+        /// </summary>
+        [JsonIgnore]
+        public int CurrentCount => Value?.Count() ?? 0;
 
         /// <summary>
         /// Gets or sets the result collection.
@@ -302,6 +308,122 @@ namespace NuScien.Data
         [JsonPropertyName("col")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public IEnumerable<T> Value { get; set; }
+
+        /// <summary>
+        /// Tries to get the specific one.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="startFromOffset">true if the index is based on offset; otherwise, false.</param>
+        /// <returns>The item.</returns>
+        public T TryGet(int index, bool startFromOffset = false)
+        {
+            return TryGet(index, startFromOffset, out var result) ? result : default;
+        }
+
+        /// <summary>
+        /// Tries to get the specific one.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="startFromOffset">true if the index is based on offset; otherwise, false.</param>
+        /// <param name="result">The item to get.</param>
+        /// <returns>true if has; otherwise, false.</returns>
+        public bool TryGet(int index, bool startFromOffset, out T result)
+        {
+            if (startFromOffset)
+            {
+                try
+                {
+                    if (Offset.HasValue) index -= Offset.Value;
+                }
+                catch (NullReferenceException)
+                {
+                }
+            }
+
+            if (index < 0 || Value == null)
+            {
+                result = default;
+                return false;
+            }
+
+            var col = Value?.ToList();
+            try
+            {
+                if (index < col.Count)
+                {
+                    result = col[index];
+                    return true;
+                }
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (NullReferenceException)
+            {
+            }
+
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the specific one.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="result">The item to get.</param>
+        /// <returns>true if has; otherwise, false.</returns>
+        public bool TryGet(int index, out T result)
+        {
+            return TryGet(index, false, out result);
+        }
+
+        /// <summary>
+        /// Returns the first element of the sequence that satisfies a condition or a default value if no such element is found.
+        /// </summary>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <returns>default(T) if source is empty or if no element passes the test specified by predicate; otherwise, the first element in source that passes the test specified by predicate.</returns>
+        public T FirstOrDefault(Func<T, bool> predicate)
+        {
+            var col = Value;
+            if (col == null) return default;
+            return predicate != null ? col.FirstOrDefault(predicate) : col.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Returns the last element of the sequence that satisfies a condition or a default value if no such element is found.
+        /// </summary>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <returns>default(T) if source is empty or if no element passes the test specified by predicate; otherwise, the last element in source that passes the test specified by predicate.</returns>
+        public T LastOrDefault(Func<T, bool> predicate)
+        {
+            var col = Value;
+            if (col == null) return default;
+            return predicate != null ? col.LastOrDefault(predicate) : col.LastOrDefault();
+        }
+
+        /// <summary>
+        /// Filters a sequence of values based on a predicate.
+        /// </summary>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <returns>An collection that contains elements from the input sequence that satisfy the condition.</returns>
+        public IEnumerable<T> Where(Func<T, bool> predicate)
+        {
+            var col = Value;
+            if (col == null) return new List<T>();
+            return col.Where(predicate);
+        }
+
+        /// <summary>
+        /// Filters a sequence of values based on a predicate.
+        /// </summary>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <returns>An collection that contains elements from the input sequence that satisfy the condition.</returns>
+        public IEnumerable<T> Where(Func<T, int, bool> predicate)
+        {
+            var col = Value;
+            if (col == null) return new List<T>();
+            return col.Where(predicate);
+        }
     }
 
     /// <summary>

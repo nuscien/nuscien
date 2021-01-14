@@ -140,7 +140,7 @@ namespace NuScien.Data
         {
             var client = CreateHttp<CollectionResult<T>>();
             var col = await client.GetAsync(GetUri((QueryData)q), cancellationToken);
-            return col;
+            return col ?? new CollectionResult<T>(null, q.Offset);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace NuScien.Data
         {
             var client = CreateHttp<CollectionResult<T>>();
             var col = await client.GetAsync(GetUri(q), cancellationToken);
-            return col;
+            return col ?? new CollectionResult<T>();
         }
 
         /// <summary>

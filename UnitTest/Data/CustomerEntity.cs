@@ -10,20 +10,23 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Trivial.Data;
-using Trivial.Reflection;
-using Trivial.Text;
-using Trivial.Net;
+using Microsoft.EntityFrameworkCore;
 using NuScien.Data;
 using NuScien.Security;
+using Trivial.Data;
+using Trivial.Reflection;
 using Trivial.Security;
-using Microsoft.EntityFrameworkCore;
+using Trivial.Text;
+using Trivial.Net;
 
-namespace NuScien.Sample
+using TestResourceAccessClients = NuScien.UnitTest.Security.ResourceAccessClients;
+
+namespace NuScien.UnitTest.Data
 {
     /// <summary>
     /// The customer entity.
     /// </summary>
+    [Table("testcustomer")]
     public class CustomerEntity : BaseResourceEntity
     {
         #region Constructors
@@ -124,6 +127,8 @@ namespace NuScien.Sample
             if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.SiteId == s);
             s = q["addr"];
             if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.Address != null && ele.Address.Contains(s));
+            s = q["phone"];
+            if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.PhoneNumber == s);
             return source;
         }
     }
@@ -133,6 +138,19 @@ namespace NuScien.Sample
     /// </summary>
     public class TestBusinessContext : OnPremisesResourceAccessContext
     {
+        /// <summary>
+        /// Gets an instance.
+        /// </summary>
+        /// <returns>An instance.</returns>
+        public static async Task<TestBusinessContext> CreateAsync()
+        {
+            var c = await TestResourceAccessClients.CreateAsync();
+            var options = TestResourceAccessClients.CreateDbContextOptions();
+            var result = new TestBusinessContext(c, options);
+            await result.EnsureDbCreatedAsync();
+            return result;
+        }
+
         /// <summary>
         /// Gets or sets customer entity provider.
         /// </summary>
@@ -145,6 +163,16 @@ namespace NuScien.Sample
         /// <param name="dbContext">The database context.</param>
         public TestBusinessContext(OnPremisesResourceAccessClient client, DbContext dbContext)
             : base(client, dbContext)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the TestBusinessContext class.
+        /// </summary>
+        /// <param name="client">The resource access client.</param>
+        /// <param name="options">The options for this context.</param>
+        public TestBusinessContext(OnPremisesResourceAccessClient client, DbContextOptions options)
+            : base(client, options)
         {
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -229,18 +230,19 @@ namespace NuScien.Data
                 var type = prop.PropertyType;
                 if (type.IsAbstract || !prop.CanWrite || !prop.CanRead) continue;
                 var cType = type;
-                while (cType != null && cType != typeof(OnPremisesResourceEntityProvider<>)) cType = cType.BaseType;
+                while (cType != null && !IsOnPremisesResourceEntityProvider(cType)) cType = cType.BaseType;
                 try
                 {
                     if (cType == null || cType.GenericTypeArguments.Length < 1) continue;
-                    var gta = type.GenericTypeArguments[0];
+                    var gta = cType.GenericTypeArguments[0];
                     if (gta == null || !gta.IsSubclassOf(typeof(BaseResourceEntity)) || prop.GetValue(this) != null) continue;
-                    var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), typeof(DbSet<>), typeof(Func<CancellationToken, Task<int>>) });
+                    var setType = typeof(DbSet<>).MakeGenericType(gta);
+                    var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), setType, typeof(Func<CancellationToken, Task<int>>) });
                     if (c == null) continue;
                     Func<CancellationToken, Task<int>> h = SaveChangesAsync;
-                    var m = GetType().GetMethod("Set", 1, Type.EmptyTypes);
+                    var m = GetType().GetMethod("Set", 1, BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
                     m = m.MakeGenericMethod(gta);
-                    var e = m.Invoke(this, new object[] { gta });
+                    var e = m.Invoke(this, null);
                     var v = c.Invoke(new object[] { CoreResources, e, h });
                     prop.SetValue(this, v);
                     i++;
@@ -254,7 +256,13 @@ namespace NuScien.Data
                 catch (MemberAccessException)
                 {
                 }
-                catch (System.Reflection.TargetException)
+                catch (TargetException)
+                {
+                }
+                catch (TargetInvocationException)
+                {
+                }
+                catch (TargetParameterCountException)
                 {
                 }
             }
@@ -325,6 +333,19 @@ namespace NuScien.Data
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private static bool IsOnPremisesResourceEntityProvider(Type type)
+        {
+            try
+            {
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(OnPremisesResourceEntityProvider<>);
+            }
+            catch (NotSupportedException)
+            {
+            }
+
+            return false;
         }
     }
 }

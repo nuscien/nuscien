@@ -16,11 +16,13 @@ namespace NuScien.UnitTest.Security
     /// </summary>
     internal static class ResourceAccessClients
     {
+        private const string dbConn = "Server=.;Database=NuScien5;Integrated Security=True;";
+
         static ResourceAccessClients()
         {
             NuScien.Security.ResourceAccessClients.Setup(async () =>
             {
-                var context = new AccountDbContext(UseSqlServer, "Server=.;Database=NuScien5;Integrated Security=True;");
+                var context = new AccountDbContext(UseSqlServer, dbConn);
                 var hasCreated = await context.Database.EnsureCreatedAsync();
                 var provider = new AccountDbSetProvider(context);
                 await NuScien.Security.ResourceAccessClients.InitAsync(provider, AppKey, null, NameAndPassword, null);
@@ -41,10 +43,22 @@ namespace NuScien.UnitTest.Security
         /// <summary>
         /// Gets the instance of the on-premises resource access client instance.
         /// </summary>
-        public static async Task<OnPremisesResourceAccessClient> OnPremisesAsync()
+        public static async Task<OnPremisesResourceAccessClient> CreateAsync()
         {
             var r = await NuScien.Security.ResourceAccessClients.CreateAsync();
             return r as OnPremisesResourceAccessClient;
+        }
+
+        public static DbContextOptions CreateDbContextOptions()
+        {
+            var b = new DbContextOptionsBuilder();
+            UseSqlServer(b, dbConn);
+            return b.Options;
+        }
+
+        public static DbContextOptions CreateDbContextOptions<T>() where T : DbContext
+        {
+            return DbResourceEntityExtensions.CreateDbContextOptions<T>(UseSqlServer, dbConn);
         }
 
         private static DbContextOptionsBuilder UseSqlServer(DbContextOptionsBuilder builder, string conn) => SqlServerDbContextOptionsExtensions.UseSqlServer(builder, conn);
