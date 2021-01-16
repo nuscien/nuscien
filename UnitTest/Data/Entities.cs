@@ -26,7 +26,7 @@ namespace NuScien.UnitTest.Data
     /// <summary>
     /// The customer entity.
     /// </summary>
-    [Table("testcustomer")]
+    [Table("testcustomers")]
     public class CustomerEntity : BaseResourceEntity
     {
         #region Constructors
@@ -56,6 +56,40 @@ namespace NuScien.UnitTest.Data
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Gets or sets the identifier of the owner site.
+        /// </summary>
+        [JsonPropertyName("site")]
+        [Column("site")]
+        public string SiteId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        #endregion
+
+        #region Member methods
+
+        #endregion
+
+        #region Static methods
+
+        #endregion
+    }
+
+    /// <summary>
+    /// The customer entity.
+    /// </summary>
+    [Table("testgoods")]
+    public class GoodEntity : BaseResourceEntity
+    {
+        #region Constructors
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the identifier of the owner site.
@@ -134,6 +168,42 @@ namespace NuScien.UnitTest.Data
     }
 
     /// <summary>
+    /// The data provider for goods.
+    /// </summary>
+    public class GoodEntityProvider : OnPremisesResourceEntityProvider<GoodEntity>
+    {
+        /// <summary>
+        /// Initializes a new instance of the GoodEntityProvider class.
+        /// </summary>
+        /// <param name="client">The resource access client.</param>
+        /// <param name="set">The database set.</param>
+        /// <param name="save">The entity save handler.</param>
+        public GoodEntityProvider(OnPremisesResourceAccessClient client, DbSet<GoodEntity> set, Func<CancellationToken, Task<int>> save)
+            : base(client, set, save)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the GoodEntityProvider class.
+        /// </summary>
+        /// <param name="dataProvider">The resource data provider.</param>
+        /// <param name="set">The database set.</param>
+        /// <param name="save">The entity save handler.</param>
+        public GoodEntityProvider(IAccountDataProvider dataProvider, DbSet<GoodEntity> set, Func<CancellationToken, Task<int>> save)
+            : base(dataProvider, set, save)
+        {
+        }
+
+        /// <inheritdoc />
+        protected override IQueryable<GoodEntity> Filter(IQueryable<GoodEntity> source, QueryData q)
+        {
+            var s = q["site"];
+            if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.SiteId == s);
+            return source;
+        }
+    }
+
+    /// <summary>
     /// Test business context.
     /// </summary>
     public class TestBusinessContext : OnPremisesResourceAccessContext
@@ -155,6 +225,11 @@ namespace NuScien.UnitTest.Data
         /// Gets or sets customer entity provider.
         /// </summary>
         public CustomerEntityProvider Customers { get; set;}
+
+        /// <summary>
+        /// Gets or sets good entity provider.
+        /// </summary>
+        public GoodEntityProvider Goods { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the TestBusinessContext class.

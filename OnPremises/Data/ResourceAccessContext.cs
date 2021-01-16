@@ -23,17 +23,22 @@ namespace NuScien.Data
     /// </summary>
     public class OnPremisesResourceAccessContext : IDisposable
     {
+        /// <summary>
+        /// The internal database context.
+        /// </summary>
         internal class InternalDbContext : DbContext
         {
             private readonly List<Type> types = new List<Type>();
-            private ModelBuilder mb;
 
+            /// <summary>
+            /// Initializes a new instance of the InternalDbContext class.
+            /// </summary>
+            /// <param name="options"></param>
             public InternalDbContext(DbContextOptions options) : base(options)
             {
             }
 
-            internal ModelBuilder ModelBuilder { get; private set; }
-
+            /// <inheritdoc />
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                 foreach (var item in types)
@@ -42,14 +47,13 @@ namespace NuScien.Data
                 }
 
                 types.Clear();
-                mb = modelBuilder;
             }
 
-            public void RegisterEntityType(Type type)
-            {
-                if (mb == null) types.Add(type);
-                else mb.Entity(type);
-            }
+            /// <summary>
+            /// Registers an entity type.
+            /// </summary>
+            /// <param name="type">The type of the entity to register.</param>
+            public void RegisterEntityType(Type type) => types.Add(type);
         }
 
         private bool disposedValue;
@@ -255,6 +259,9 @@ namespace NuScien.Data
         {
             var i = 0;
             var properties = GetType().GetProperties();
+            Action<Type> initDbContext = db is InternalDbContext dbContext ? type => dbContext.RegisterEntityType(type) : type => { };
+            var fill = new List<Action>();
+            Func<CancellationToken, Task<int>> h = SaveChangesAsync;
             foreach (var prop in properties)
             {
                 var type = prop.PropertyType;
@@ -266,16 +273,44 @@ namespace NuScien.Data
                     if (cType == null || cType.GenericTypeArguments.Length < 1) continue;
                     var gta = cType.GenericTypeArguments[0];
                     if (gta == null || !gta.IsSubclassOf(typeof(BaseResourceEntity)) || prop.GetValue(this) != null) continue;
+                    initDbContext(gta);
                     var setType = typeof(DbSet<>).MakeGenericType(gta);
                     var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), setType, typeof(Func<CancellationToken, Task<int>>) });
                     if (c == null) continue;
-                    Func<CancellationToken, Task<int>> h = SaveChangesAsync;
                     var m = GetType().GetMethod("Set", 1, BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
                     m = m.MakeGenericMethod(gta);
-                    if (db is InternalDbContext dbContext) dbContext.RegisterEntityType(gta);
-                    var e = m.Invoke(this, null);
-                    var v = c.Invoke(new object[] { CoreResources, e, h });
-                    prop.SetValue(this, v);
+                    fill.Add(() =>
+                    {
+                        var e = m.Invoke(this, null);
+                        var v = c.Invoke(new object[] { CoreResources, e, h });
+                        prop.SetValue(this, v);
+                    });
+                }
+                catch (NullReferenceException)
+                {
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (MemberAccessException)
+                {
+                }
+                catch (TargetException)
+                {
+                }
+                catch (TargetInvocationException)
+                {
+                }
+                catch (TargetParameterCountException)
+                {
+                }
+            }
+
+            foreach (var a in fill)
+            {
+                try
+                {
+                    a();
                     i++;
                 }
                 catch (NullReferenceException)

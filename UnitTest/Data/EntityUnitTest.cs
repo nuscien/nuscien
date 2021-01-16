@@ -22,7 +22,7 @@ namespace NuScien.UnitTest.Data
     /// The unit test for entity.
     /// </summary>
     [TestClass]
-    public class CustomerUnitTest
+    public class EntityUnitTest
     {
         /// <summary>
         /// Tests user name and password login logic.
@@ -33,9 +33,10 @@ namespace NuScien.UnitTest.Data
         {
             var context = await TestBusinessContext.CreateAsync();
 
+            // Customers.
             var col = await context.Customers.SearchAsync("Test");
             CustomerEntity entity;
-            if (col.TotalCount == 0)
+            if (col.CurrentCount == 0)
             {
                 entity = new CustomerEntity
                 {
@@ -58,6 +59,10 @@ namespace NuScien.UnitTest.Data
             });
             Assert.IsTrue(col.CurrentCount >= 1);
             Assert.AreEqual(PhoneNumber, col.TryGet(0).PhoneNumber);
+
+            // Goods.
+            var goods = await context.Goods.SearchAsync("Test");
+            Assert.AreEqual(0, goods.CurrentCount);
         }
     }
 }
