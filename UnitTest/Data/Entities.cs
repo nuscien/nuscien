@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Collection;
 using NuScien.Data;
 using NuScien.Security;
 using Trivial.Data;
@@ -155,15 +156,11 @@ namespace NuScien.UnitTest.Data
         }
 
         /// <inheritdoc />
-        protected override IQueryable<CustomerEntity> Filter(IQueryable<CustomerEntity> source, QueryData q)
+        protected override void MapQuery(QueryPredication<CustomerEntity> source)
         {
-            var s = q["site"];
-            if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.SiteId == s);
-            s = q["addr"];
-            if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.Address != null && ele.Address.Contains(s));
-            s = q["phone"];
-            if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.PhoneNumber == s);
-            return source;
+            source.AddForString("site", info => info.Source.Where(ele => ele.SiteId == info.Value), true);
+            source.AddForString("addr", info => info.Source.Where(ele => ele.Address != null && ele.Address.Contains(info.Value)), true);
+            source.AddForString("phone", info => info.Source.Where(ele => ele.PhoneNumber == info.Value), true);
         }
     }
 
@@ -195,11 +192,9 @@ namespace NuScien.UnitTest.Data
         }
 
         /// <inheritdoc />
-        protected override IQueryable<GoodEntity> Filter(IQueryable<GoodEntity> source, QueryData q)
+        protected override void MapQuery(QueryPredication<GoodEntity> source)
         {
-            var s = q["site"];
-            if (!string.IsNullOrWhiteSpace(s)) source = source.Where(ele => ele.SiteId == s);
-            return source;
+            source.AddForString("site", info => info.Source.Where(ele => ele.SiteId == info.Value), true);
         }
     }
 

@@ -247,7 +247,6 @@ namespace NuScien.Data
             Func<CancellationToken, Task<int>> h = SaveChangesAsync;
             var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), typeof(DbSet<TEntity>), typeof(Func<CancellationToken, Task<int>>) });
             if (c == null) return null;
-            if (db is InternalDbContext dbContext) dbContext.RegisterEntityType(typeof(TEntity));
             return c.Invoke(new object[] { CoreResources, Set<TEntity>(), h }) as THandler;
         }
 
@@ -255,9 +254,8 @@ namespace NuScien.Data
         /// Fills provider properties automatically.
         /// </summary>
         /// <returns>The count of property filled.</returns>
-        protected virtual int FillProviderProperties()
+        protected virtual void FillProviderProperties()
         {
-            var i = 0;
             var properties = GetType().GetProperties();
             Action<Type> initDbContext = db is InternalDbContext dbContext ? type => dbContext.RegisterEntityType(type) : type => { };
             var fill = new List<Action>();
@@ -311,7 +309,6 @@ namespace NuScien.Data
                 try
                 {
                     a();
-                    i++;
                 }
                 catch (NullReferenceException)
                 {
@@ -332,8 +329,6 @@ namespace NuScien.Data
                 {
                 }
             }
-
-            return i;
         }
 
         /// <summary>

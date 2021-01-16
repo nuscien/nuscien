@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Collection;
 using NuScien.Security;
 using Trivial.Data;
 using Trivial.Net;
@@ -22,6 +23,9 @@ namespace NuScien.Data
     /// <typeparam name="T">The type of the resouce entity.</typeparam>
     public abstract class OnPremisesResourceEntityProvider<T> : IResourceEntityProvider<T> where T : BaseResourceEntity
     {
+        /// <summary>
+        /// The save handler.
+        /// </summary>
         private readonly Func<CancellationToken, Task<int>> saveHandler;
 
         /// <summary>
@@ -118,7 +122,12 @@ namespace NuScien.Data
         {
             if (q == null) return new CollectionResult<T>(await Set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
             QueryArgs args = q;
-            var col = Set.ListEntities(args, l => Filter(l, q));
+            var col = Set.ListEntities(args, l =>
+            {
+                var info = new QueryPredication<T>(l, q);
+                MapQuery(info);
+                return info.Data;
+            });
             if (col is null) return new CollectionResult<T>(null, args.Offset);
             return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
         }
@@ -142,10 +151,9 @@ namespace NuScien.Data
         /// <summary>
         /// Searches.
         /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="q">The full query data.</param>
+        /// <param name="predication">The query predication.</param>
         /// <returns>The result.</returns>
-        protected abstract IQueryable<T> Filter(IQueryable<T> source, QueryData q);
+        protected abstract void MapQuery(QueryPredication<T> predication);
 
         /// <summary>
         /// Tests if the new entity is valid.
