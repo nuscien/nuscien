@@ -32,10 +32,14 @@
     <OutputPath>..\bin\Release\</OutputPath>
     <DocumentationFile>..\bin\Release\netcoreapp3.1\NuScien.xml</DocumentationFile>
   </PropertyGroup>
-
+      
   <ItemGroup>
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
