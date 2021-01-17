@@ -550,6 +550,9 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = TokenInfo.ErrorCodeProperty)]
         [JsonPropertyName(TokenInfo.ErrorCodeProperty)]
+        #if !NETCOREAPP3_1
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        #endif
         public string ErrorCode { get; set; }
 
         /// <summary>
@@ -557,6 +560,9 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "details")]
         [JsonPropertyName("details")]
+        #if !NETCOREAPP3_1
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        #endif
         public List<string> Details { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,6 +27,27 @@ namespace NuScien.Web
         where TEntity : BaseResourceEntity
     {
         /// <summary>
+        /// Initializes a new instance of the BaseResourceEntityController class.
+        /// </summary>
+        public BaseResourceEntityController()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ResourceAccessController class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public BaseResourceEntityController(ILogger<BaseResourceEntityController<TProvider, TEntity>> logger)
+        {
+            Logger = logger;
+        }
+
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        protected ILogger<BaseResourceEntityController<TProvider, TEntity>> Logger { get; set; }
+
+        /// <summary>
         /// Gets an entity.
         /// </summary>
         /// <returns>The entity.</returns>
@@ -33,9 +55,18 @@ namespace NuScien.Web
         [Route("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var provider = await GetProviderAsync();
-            var entity = await provider.GetAsync(id);
-            return this.ResourceEntityResult(entity);
+            try
+            {
+                var provider = await GetProviderAsync();
+                var entity = await provider.GetAsync(id);
+                return this.ResourceEntityResult(entity);
+            }
+            catch (Exception ex)
+            {
+                var er = this.ExceptionResult(ex, true);
+                if (er != null) return er;
+                throw;
+            }
         }
 
         /// <summary>
@@ -45,10 +76,19 @@ namespace NuScien.Web
         [HttpGet]
         public async Task<IActionResult> Search()
         {
-            var provider = await GetProviderAsync();
-            var q = Request.Query.GetQueryArgs();
-            var col = await provider.SearchAsync(q);
-            return this.ResourceEntityResult(col.Value, col.Offset, col.TotalCount);
+            try
+            {
+                var provider = await GetProviderAsync();
+                var q = Request.Query.GetQueryArgs();
+                var col = await provider.SearchAsync(q);
+                return this.ResourceEntityResult(col.Value, col.Offset, col.TotalCount);
+            }
+            catch (Exception ex)
+            {
+                var er = this.ExceptionResult(ex, true);
+                if (er != null) return er;
+                throw;
+            }
         }
 
         /// <summary>
@@ -56,11 +96,27 @@ namespace NuScien.Web
         /// </summary>
         /// <returns>The changing state.</returns>
         [HttpPut]
-        public async Task<ChangeMethodResult> Save([FromBody] TEntity entity)
+        public async Task<IActionResult> Save([FromBody] TEntity entity)
         {
-            var provider = await GetProviderAsync();
-            var result = await provider.SaveAsync(entity);
-            return result;
+            try
+            {
+                if (entity is null) return this.ExceptionResult(400, "Body request. Require to send the entity in JSON format as request body.", "NoBody");
+                var provider = await GetProviderAsync();
+                var result = await provider.SaveAsync(entity);
+                Logger?.LogInformation(new EventId(17002003, "SaveEntity"), $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
+                return result.ToActionResult();
+            }
+            catch (Exception ex)
+            {
+                var er = this.ExceptionResult(ex, true);
+                if (er != null)
+                {
+                    Logger?.LogError(new EventId(17002003, "SaveEntity"), $"Failed save entity {entity.GetType().Name} {entity.Name} ({entity.Id}). {ex.GetType().Name} {ex.Message}");
+                    return er;
+                }
+
+                throw;
+            }
         }
 
         /// <summary>

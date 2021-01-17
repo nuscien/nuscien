@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -177,9 +178,23 @@ namespace NuScien.Web
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The action result.</returns>
-        public static JsonResult ToActionResult(this ChangeMethods value)
+        public static ActionResult ToActionResult(this ChangeMethodResult value)
         {
-            return new JsonResult(new ChangeMethodResult(value));
+            if (value == null) return new NotFoundResult();
+            return new JsonResult(value)
+            {
+                StatusCode = value.State == ChangeMethods.Invalid ? 403 : 200
+            };
+        }
+
+        /// <summary>
+        /// Convert to an action result.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The action result.</returns>
+        public static ActionResult ToActionResult(this ChangeMethods value)
+        {
+            return ToActionResult(new ChangeMethodResult(value));
         }
 
         /// <summary>
@@ -237,6 +252,81 @@ namespace NuScien.Web
         {
             if (value == null) return controller.NotFound();
             return new JsonResult(new CollectionResult<T>(value?.ToList(), offset, count));
+        }
+
+        /// <summary>
+        /// Converts an exception to action result with exception message.
+        /// </summary>
+        /// <param name="controller">The controller.</param>
+        /// <param name="ex">The exception.</param>
+        /// <param name="ignoreUnknownException">true if return null for unknown exception; otherwise, false.</param>
+        /// <returns>The action result.</returns>
+        public static ActionResult ExceptionResult(this ControllerBase controller, Exception ex, bool ignoreUnknownException = false)
+        {
+            if (ex == null) return controller.StatusCode(500);
+            var result = new ErrorMessageResult(ex);
+            var status = 500;
+            if (ex is InvalidOperationException && ex.InnerException != null) ex = ex.InnerException;
+            if (ex is SecurityException) status = 403;
+            else if (ex is UnauthorizedAccessException) status = 401;
+            else if (ex is NotImplementedException) status = 502;
+            else if (ex is TimeoutException) status = 408;
+            else if (ex is OperationCanceledException) status = 408;
+            if (ignoreUnknownException && !(
+                ex is InvalidOperationException
+                || ex is ArgumentException
+                || ex is NullReferenceException
+                || ex is System.Data.Common.DbException
+                || ex is System.Text.Json.JsonException
+                || ex is System.Runtime.Serialization.SerializationException
+                || ex is ObjectDisposedException
+                || ex is FailedHttpException
+                || ex is IOException
+                || ex is ApplicationException
+                || ex is InvalidCastException
+                || ex is FormatException
+                || ex is InvalidDataException)) return null;
+
+            return new JsonResult(result)
+            {
+                StatusCode = status
+            };
+        }
+
+        /// <summary>
+        /// Converts an exception to action result with exception message.
+        /// </summary>
+        /// <param name="controller">The controller.</param>
+        /// <param name="status">The HTTP status code.</param>
+        /// <param name="ex">The exception.</param>
+        /// <returns>The action result.</returns>
+        public static ActionResult ExceptionResult(this ControllerBase controller, int status, Exception ex)
+        {
+            if (ex == null) return controller.StatusCode(status);
+            var result = new ErrorMessageResult(ex);
+            return new JsonResult(result)
+            {
+                StatusCode = status
+            };
+        }
+
+        /// <summary>
+        /// Converts an exception to action result with exception message.
+        /// </summary>
+        /// <param name="controller">The controller.</param>
+        /// <param name="status">The HTTP status code.</param>
+        /// <param name="ex">The exception message.</param>
+        /// <param name="errorCode">The optional error code.</param>
+        /// <returns>The action result.</returns>
+        #pragma warning disable IDE0060
+        public static ActionResult ExceptionResult(this ControllerBase controller, int status, string ex, string errorCode = null)
+        #pragma warning restore IDE0060
+        {
+            var result = new ErrorMessageResult(ex, errorCode);
+            return new JsonResult(result)
+            {
+                StatusCode = status
+            };
         }
 
         /// <summary>

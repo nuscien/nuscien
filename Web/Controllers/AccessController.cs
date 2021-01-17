@@ -27,6 +27,13 @@ namespace NuScien.Web
         /// <summary>
         /// Initializes a new instance of the ResourceAccessController class.
         /// </summary>
+        public ResourceAccessController()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ResourceAccessController class.
+        /// </summary>
         /// <param name="logger">The logger.</param>
         public ResourceAccessController(ILogger<ResourceAccessController> logger)
         {
