@@ -28,7 +28,7 @@ namespace NuScien.UnitTest.Data
     /// The customer entity.
     /// </summary>
     [Table("testcustomers")]
-    public class CustomerEntity : BaseResourceEntity
+    public class CustomerEntity : SiteOwnedResourceEntity
     {
         #region Constructors
 
@@ -58,17 +58,6 @@ namespace NuScien.UnitTest.Data
             set => SetCurrentProperty(value);
         }
 
-        /// <summary>
-        /// Gets or sets the identifier of the owner site.
-        /// </summary>
-        [JsonPropertyName("site")]
-        [Column("site")]
-        public string SiteId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
         #endregion
 
         #region Member methods
@@ -84,7 +73,7 @@ namespace NuScien.UnitTest.Data
     /// The customer entity.
     /// </summary>
     [Table("testgoods")]
-    public class GoodEntity : BaseResourceEntity
+    public class GoodEntity : SiteOwnedResourceEntity
     {
         #region Constructors
 
@@ -93,11 +82,11 @@ namespace NuScien.UnitTest.Data
         #region Properties
 
         /// <summary>
-        /// Gets or sets the identifier of the owner site.
+        /// Gets or sets the image.
         /// </summary>
-        [JsonPropertyName("site")]
-        [Column("site")]
-        public string SiteId
+        [JsonPropertyName("image")]
+        [Column("image")]
+        public string Image
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
