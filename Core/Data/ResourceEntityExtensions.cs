@@ -272,6 +272,27 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Fills the owner information.
+        /// </summary>
+        /// <param name="client">The resource access client.</param>
+        /// <param name="entity">The entity.</param>
+        /// <returns>true if fill succeeded; otherwise, false.</returns>
+        public static async Task<bool> FillOwner(BaseResourceAccessClient client, SpecificOwnerResourceEntity entity)
+        {
+            if (client == null || entity?.OwnerId == null) return false;
+            BaseSecurityEntity v = entity.OwnerType switch
+            {
+                SecurityEntityTypes.User => await client.GetUserByIdAsync(entity.OwnerId),
+                SecurityEntityTypes.UserGroup => await client.GetUserGroupByIdAsync(entity.OwnerId),
+                SecurityEntityTypes.ServiceClient => client.ClientVerified != null && client.ClientVerified?.Id == entity?.OwnerId ? client.ClientVerified : null,
+                _ => null
+            };
+            if (v == null) return false;
+            entity.Owner = v;
+            return true;
+        }
+
+        /// <summary>
         /// Creates or updates an entity.
         /// </summary>
         /// <typeparam name="T">The type of entity.</typeparam>

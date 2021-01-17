@@ -233,6 +233,23 @@ namespace NuScien.Data
     }
 
     /// <summary>
+    /// The base resource entity with site bound.
+    /// </summary>
+    public abstract class SiteOwnedResourceEntity : BaseResourceEntity
+    {
+        /// <summary>
+        /// Gets or sets the identifier of the owner site.
+        /// </summary>
+        [JsonPropertyName("site")]
+        [Column("site")]
+        public string SiteId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+    }
+
+    /// <summary>
     /// The base configurable resource entity.
     /// </summary>
     [DataContract]
@@ -370,6 +387,64 @@ namespace NuScien.Data
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
+        }
+    }
+
+    /// <summary>
+    /// The base resource entity with security entity bound.
+    /// </summary>
+    public abstract class SpecificOwnerResourceEntity : BaseResourceEntity
+    {
+        private Security.BaseSecurityEntity owner;
+
+        /// <summary>
+        /// Gets or sets the owner identifier.
+        /// </summary>
+        [DataMember(Name = "owner")]
+        [JsonPropertyName("owner")]
+        [Column("owner")]
+        [Required]
+        public string OwnerId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the security entity type.
+        /// </summary>
+        [NotMapped]
+        [JsonPropertyName("kind")]
+        public abstract Security.SecurityEntityTypes OwnerType { get; }
+
+        /// <summary>
+        /// Gets the owner security entity; or null, if not applied.
+        /// </summary>
+        [NotMapped]
+#if !NETCOREAPP3_1
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+#endif
+        public Security.BaseSecurityEntity Owner
+        {
+            get => IsOwner(owner) ? owner : null;
+            internal set => owner = IsOwner(value) ? value : null;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the owner entity has been filled.
+        /// </summary>
+        [NotMapped]
+        [JsonIgnore]
+        public bool HasFilledOwnerEntity => IsOwner(owner);
+
+        /// <summary>
+        /// Tests if the entity is the owner.
+        /// </summary>
+        /// <param name="entity">The entity to test.</param>
+        /// <returns>true if the specific entity is the owner; otherwise, false.</returns>
+        public bool IsOwner(Security.BaseSecurityEntity entity)
+        {
+            return entity != null && entity.Id == OwnerId && entity.SecurityEntityType == OwnerType;
         }
     }
 

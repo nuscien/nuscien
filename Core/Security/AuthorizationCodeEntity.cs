@@ -20,7 +20,7 @@ namespace NuScien.Security
     public class AuthorizationCodeEntity : BaseOwnerResourceEntity
     {
         /// <summary>
-        /// Gets or sets the avatar or icon URL.
+        /// Gets or sets the security entity type.
         /// </summary>
         [NotMapped]
         [JsonPropertyName("kind")]
@@ -31,7 +31,7 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Gets or sets the avatar or icon URL.
+        /// Gets or sets the security entity type code.
         /// </summary>
         [Column("kind")]
         [JsonIgnore]
