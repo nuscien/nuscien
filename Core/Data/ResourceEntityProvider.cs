@@ -180,6 +180,12 @@ namespace NuScien.Data
         {
             if (string.IsNullOrWhiteSpace(path)) return CoreResources.GetUri(RelativePath, query);
             if (string.IsNullOrWhiteSpace(RelativePath)) return CoreResources.GetUri(path, query);
+            if (path.Contains("://"))
+            {
+                if (query != null) path = query.ToString(path);
+                return new Uri(path);
+            }
+
             var a = RelativePath + (RelativePath[^1] == '/' ? string.Empty : "/");
             var b = path[0] == '/' ? path[0..^1] : path;
             return CoreResources.GetUri(a + b, query);
@@ -199,5 +205,34 @@ namespace NuScien.Data
         /// <param name="callback">An optional callback raised on data received.</param>
         /// <returns>A new JSON HTTP client.</returns>
         public virtual JsonHttpClient<TResult> CreateHttp<TResult>(Action<ReceivedEventArgs<TResult>> callback = null) => CoreResources.Create(callback);
+
+        /// <summary>
+        /// Gets data via network.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="method">HTTP method.</param>
+        /// <param name="relativePath">The relative path.</param>
+        /// <param name="q">The query data.</param>
+        /// <param name="content">The body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The result.</returns>
+        public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, object content, CancellationToken cancellationToken = default)
+        {
+            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), content, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets data via network.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="method">HTTP method.</param>
+        /// <param name="relativePath">The relative path.</param>
+        /// <param name="q">The query data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The result.</returns>
+        public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, CancellationToken cancellationToken = default)
+        {
+            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), cancellationToken);
+        }
     }
 }

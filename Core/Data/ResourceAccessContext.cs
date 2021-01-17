@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +51,10 @@ namespace NuScien.Data
             remove => CoreResources.Sending -= value;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether need disable automation of filling provider properties.
+        /// </summary>
+        protected virtual bool DisableProvidersAutoFilling { get; }
 
         /// <summary>
         /// Gets the resources access client.
@@ -99,13 +104,57 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Creates a JSON HTTP client.
+        /// </summary>
+        /// <typeparam name="T">The type of response.</typeparam>
+        /// <param name="callback">An optional callback raised on data received.</param>
+        /// <returns>A new JSON HTTP client.</returns>
+        public virtual JsonHttpClient<T> CreateHttp<T>(Action<ReceivedEventArgs<T>> callback = null) => CoreResources.Create(callback);
+
+        /// <summary>
+        /// Combines path to root to generate a URI.
+        /// </summary>
+        /// <param name="path">The relative path.</param>
+        /// <param name="query">The optional query data.</param>
+        /// <returns>A URI.</returns>
+        public Uri GetUri(string path, QueryData query = null) => CoreResources.GetUri(path, query);
+
+        /// <summary>
+        /// Gets data via network.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="method">HTTP method.</param>
+        /// <param name="relativePath">The relative path.</param>
+        /// <param name="q">The query data.</param>
+        /// <param name="content">The body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The result.</returns>
+        public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, object content, CancellationToken cancellationToken = default)
+        {
+            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), content, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets data via network.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="method">HTTP method.</param>
+        /// <param name="relativePath">The relative path.</param>
+        /// <param name="q">The query data.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The result.</returns>
+        public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, CancellationToken cancellationToken = default)
+        {
+            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), cancellationToken);
+        }
+
+        /// <summary>
         /// Fills provider properties automatically.
         /// </summary>
         /// <returns>The count of property filled.</returns>
-        protected virtual int FillProviderProperties()
+        private void FillProviderProperties()
         {
-            var i = 0;
-            if (CoreResources == null) return i;
+            if (CoreResources == null || DisableProvidersAutoFilling) return;
             var properties = GetType().GetProperties();
             foreach (var prop in properties)
             {
@@ -132,7 +181,6 @@ namespace NuScien.Data
                     }
 
                     prop.SetValue(this, v);
-                    i++;
                 }
                 catch (NullReferenceException)
                 {
@@ -147,24 +195,6 @@ namespace NuScien.Data
                 {
                 }
             }
-
-            return i;
         }
-
-        /// <summary>
-        /// Creates a JSON HTTP client.
-        /// </summary>
-        /// <typeparam name="T">The type of response.</typeparam>
-        /// <param name="callback">An optional callback raised on data received.</param>
-        /// <returns>A new JSON HTTP client.</returns>
-        public virtual JsonHttpClient<T> CreateHttp<T>(Action<ReceivedEventArgs<T>> callback = null) => CoreResources.Create(callback);
-
-        /// <summary>
-        /// Combines path to root to generate a URI.
-        /// </summary>
-        /// <param name="path">The relative path.</param>
-        /// <param name="query">The optional query data.</param>
-        /// <returns>A URI.</returns>
-        public Uri GetUri(string path, QueryData query = null) => CoreResources.GetUri(path, query);
     }
 }

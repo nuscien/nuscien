@@ -28,12 +28,17 @@ namespace NuScien.Security
     /// <summary>
     /// The on-premises resource access client.
     /// </summary>
-    public class HttpResourceAccessClient : BaseResourceAccessClient
+    public class HttpResourceAccessClient : BaseResourceAccessClient, IDisposable
     {
         /// <summary>
         /// The OAuth client.
         /// </summary>
         private readonly AppAccessingKey appKey;
+
+        /// <summary>
+        /// The relative path of core resources.
+        /// </summary>
+        private string coreResPath = "nuscien5/";
 
         /// <summary>
         /// Initializes a new instance of the HttpResourceAccessClient class.
@@ -97,6 +102,25 @@ namespace NuScien.Security
         /// Gets the host URI.
         /// </summary>
         public Uri Host { get; }
+
+        /// <summary>
+        /// Gets or sets the relative path of core resource.
+        /// </summary>
+        public string CoreResourceFolderName
+        {
+            get
+            {
+                return coreResPath;
+            }
+
+            set
+            {
+                if (value == null) coreResPath = string.Empty;
+                if (value.StartsWith("/")) value = value[1..];
+                if (!value.EndsWith("/")) value = value + "/";
+                coreResPath = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the HTTP web client handler for sending message.
@@ -321,7 +345,7 @@ namespace NuScien.Security
         /// <exception cref="OperationCanceledException">The task is cancelled.</exception>
         protected Task<UserTokenInfo> ResolveTokenAsync(TokenRequestBody content, CancellationToken cancellationToken = default)
         {
-            var uri = GetUri("passport/login");
+            var uri = GetUri(coreResPath + "passport/login");
             if (content == null) throw new ArgumentNullException(nameof(content), "content should not be null.");
             var c = new TokenRequest<TokenRequestBody>(content, appKey, Scope);
             return CreateTokenResolveHttpClient().SendAsync(HttpMethod.Post, uri, c.ToQueryData(), cancellationToken);
@@ -339,7 +363,7 @@ namespace NuScien.Security
         /// <exception cref="OperationCanceledException">The task is cancelled.</exception>
         public async Task<UserTokenInfo> ResolveTokenAsync(CancellationToken cancellationToken = default)
         {
-            var uri = GetUri("passport/login");
+            var uri = GetUri(coreResPath + "passport/login");
             var client = CreateTokenResolveHttpClient();
             using var request = new HttpRequestMessage(HttpMethod.Post, uri);
             WriteAuthenticationHeaderValue(request.Headers);
@@ -430,7 +454,7 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         public override Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default)
         {
-            return SendChangeAsync(HttpMethod.Put, "passport/authcode/" + serviceProvider, new JsonObject
+            return SendChangeAsync(HttpMethod.Put, coreResPath + "passport/authcode/" + serviceProvider, new JsonObject
             {
                 { CodeTokenRequestBody.CodeProperty, code },
                 { "insert", insertNewOne }
@@ -445,7 +469,7 @@ namespace NuScien.Security
         {
             var t = Token;
             if (t == null || t.IsEmpty) return;
-            using var req = new HttpRequestMessage(HttpMethod.Get, GetUri("passport/logout"));
+            using var req = new HttpRequestMessage(HttpMethod.Get, GetUri(coreResPath + "passport/logout"));
             await SendAsync(req);
             Token = null;
         }
@@ -459,7 +483,7 @@ namespace NuScien.Security
         public override Task<bool> HasUserNameAsync(string logname, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(logname)) return Task.FromResult(false);
-            return SendTestingAsync(HttpMethod.Post, "passport/users/exist", new JsonObject
+            return SendTestingAsync(HttpMethod.Post, coreResPath + "passport/users/exist", new JsonObject
             {
                 { "key", "logname" },
                 { "value", logname }
@@ -475,7 +499,7 @@ namespace NuScien.Security
         public override Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
-            return SendAsync<UserEntity>(HttpMethod.Get, GetUri("passport/user/" + id), cancellationToken);
+            return SendAsync<UserEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/user/" + id), cancellationToken);
         }
 
         /// <summary>
@@ -487,7 +511,7 @@ namespace NuScien.Security
         public override Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
-            return SendAsync<UserGroupEntity>(HttpMethod.Get, GetUri("passport/group/" + id), cancellationToken);
+            return SendAsync<UserGroupEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/group/" + id), cancellationToken);
         }
 
         /// <summary>
@@ -499,7 +523,7 @@ namespace NuScien.Security
         public override Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, CancellationToken cancellationToken = default)
         {
             var query = ToQueryData(q);
-            return QueryAsync<UserGroupEntity>("passport/groups", query, cancellationToken);
+            return QueryAsync<UserGroupEntity>(coreResPath + "passport/groups", query, cancellationToken);
         }
 
         /// <summary>
@@ -513,7 +537,7 @@ namespace NuScien.Security
         {
             var query = ToQueryData(q);
             if (!string.IsNullOrWhiteSpace(siteId)) query["site"] = siteId;
-            return QueryAsync<UserGroupEntity>("passport/groups", query, cancellationToken);
+            return QueryAsync<UserGroupEntity>(coreResPath + "passport/groups", query, cancellationToken);
         }
 
         /// <summary>
@@ -524,7 +548,7 @@ namespace NuScien.Security
         /// <returns>The client app identifier and secret key.</returns>
         public override async Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default)
         {
-            var r = await SendAsync<JsonObject>(HttpMethod.Post, GetUri($"passport/credential/client/{appId}/renew"), cancellationToken);
+            var r = await SendAsync<JsonObject>(HttpMethod.Post, GetUri($"{coreResPath}passport/credential/client/{appId}/renew"), cancellationToken);
             if (r == null) return null;
             var id = r.GetStringValue("id");
             var secret = r.GetStringValue("secret");
@@ -559,7 +583,7 @@ namespace NuScien.Security
         protected override Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(key)) return null;
-            return SendAsync<JsonObject>(HttpMethod.Get, GetUri(string.IsNullOrWhiteSpace(siteId) ? $"settings/global/{key.Trim()}" : $"settings/site/{siteId}/{key.Trim()}"), cancellationToken);
+            return SendAsync<JsonObject>(HttpMethod.Get, GetUri(string.IsNullOrWhiteSpace(siteId) ? $"{coreResPath}settings/global/{key.Trim()}" : $"{coreResPath}settings/site/{siteId}/{key.Trim()}"), cancellationToken);
         }
 
         /// <summary>
@@ -572,7 +596,7 @@ namespace NuScien.Security
         protected override Task<string> GetSettingsJsonStringByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(key)) return null;
-            return SendAsync<string>(HttpMethod.Get, GetUri(string.IsNullOrWhiteSpace(siteId) ? $"settings/global/{key.Trim()}" : $"settings/site/{siteId}/{key.Trim()}"), cancellationToken);
+            return SendAsync<string>(HttpMethod.Get, GetUri(string.IsNullOrWhiteSpace(siteId) ? $"{coreResPath}settings/global/{key.Trim()}" : $"{coreResPath}settings/site/{siteId}/{key.Trim()}"), cancellationToken);
         }
 
         /// <summary>
@@ -587,7 +611,7 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(key)) return Task.FromResult(ChangeMethods.Invalid);
             key = key.Trim();
-            return SendChangeAsync(HttpMethod.Put, string.IsNullOrWhiteSpace(siteId) ? $"settings/global/{key}" : $"settings/site/{siteId}/{key}", value, cancellationToken);
+            return SendChangeAsync(HttpMethod.Put, string.IsNullOrWhiteSpace(siteId) ? $"{coreResPath}settings/global/{key}" : $"{coreResPath}settings/site/{siteId}/{key}", value, cancellationToken);
         }
 
         /// <summary>
@@ -609,9 +633,9 @@ namespace NuScien.Security
             };
             return targetType switch
             {
-                SecurityEntityTypes.User => SendChangeAsync(HttpMethod.Put, $"settings/perms/{siteId}/user/{targetId}", content, cancellationToken),
-                SecurityEntityTypes.UserGroup => SendChangeAsync(HttpMethod.Put, $"settings/perms/{siteId}/group/{targetId}", content, cancellationToken),
-                SecurityEntityTypes.ServiceClient => SendChangeAsync(HttpMethod.Put, $"settings/perms/{siteId}/client/{targetId}", content, cancellationToken),
+                SecurityEntityTypes.User => SendChangeAsync(HttpMethod.Put, $"{coreResPath}settings/perms/{siteId}/user/{targetId}", content, cancellationToken),
+                SecurityEntityTypes.UserGroup => SendChangeAsync(HttpMethod.Put, $"{coreResPath}settings/perms/{siteId}/group/{targetId}", content, cancellationToken),
+                SecurityEntityTypes.ServiceClient => SendChangeAsync(HttpMethod.Put, $"{coreResPath}settings/perms/{siteId}/client/{targetId}", content, cancellationToken),
                 _ => Task.FromResult(ChangeMethods.Invalid),
             };
         }
@@ -672,7 +696,7 @@ namespace NuScien.Security
             var query = new QueryData();
             if (!string.IsNullOrWhiteSpace(q)) query["q"] = q;
             query["state"] = ((int)relationshipState).ToString();
-            return QueryAsync<UserGroupRelationshipEntity>("passport/relas/me", query, cancellationToken);
+            return QueryAsync<UserGroupRelationshipEntity>(coreResPath + "passport/relas/me", query, cancellationToken);
         }
 
         /// <summary>
@@ -683,7 +707,7 @@ namespace NuScien.Security
         /// <returns>The user permission list.</returns>
         protected override Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
-            return SendAsync<UserPermissionItemEntity>(HttpMethod.Get, GetUri($"settings/perms/{siteId}/user"), cancellationToken);
+            return SendAsync<UserPermissionItemEntity>(HttpMethod.Get, GetUri($"{coreResPath}settings/perms/{siteId}/user"), cancellationToken);
         }
 
         /// <summary>
@@ -694,7 +718,7 @@ namespace NuScien.Security
         /// <returns>The user group permission list.</returns>
         protected override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
-            return QueryAsync<UserGroupPermissionItemEntity>(HttpMethod.Get, $"settings/perms/{siteId}/groups", null as QueryData, cancellationToken);
+            return QueryAsync<UserGroupPermissionItemEntity>(HttpMethod.Get, $"{coreResPath}settings/perms/{siteId}/groups", null, cancellationToken);
         }
 
         /// <summary>
@@ -705,7 +729,7 @@ namespace NuScien.Security
         /// <returns>The client permission list.</returns>
         protected override Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
-            return SendAsync<ClientPermissionItemEntity>(HttpMethod.Get, GetUri($"settings/perms/{siteId}/client"), cancellationToken);
+            return SendAsync<ClientPermissionItemEntity>(HttpMethod.Get, GetUri($"{coreResPath}settings/perms/{siteId}/client"), cancellationToken);
         }
 
         /// <summary>
@@ -716,7 +740,7 @@ namespace NuScien.Security
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         protected override Task<UserGroupRelationshipEntity> GetRelationshipAsync(string id, CancellationToken cancellationToken = default)
         {
-            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri("passport/rela/" + id), cancellationToken);
+            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/rela/" + id), cancellationToken);
         }
 
         /// <summary>
@@ -734,7 +758,7 @@ namespace NuScien.Security
                 ["group"] = groupId,
                 ["user"] = userId
             };
-            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri("passport/rela", query), cancellationToken);
+            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/rela", query), cancellationToken);
         }
 
         /// <summary>
@@ -745,7 +769,7 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
-            return SendChangeAsync(HttpMethod.Put, "passport/user", value, cancellationToken);
+            return SendChangeAsync(HttpMethod.Put, coreResPath + "passport/user", value, cancellationToken);
         }
 
         /// <summary>
@@ -756,7 +780,7 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
-            return SendChangeAsync(HttpMethod.Put, "passport/group", value, cancellationToken);
+            return SendChangeAsync(HttpMethod.Put, coreResPath + "passport/group", value, cancellationToken);
         }
 
         /// <summary>
@@ -767,7 +791,7 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
-            return SendChangeAsync(HttpMethod.Put, "passport/rela", value, cancellationToken);
+            return SendChangeAsync(HttpMethod.Put, coreResPath + "passport/rela", value, cancellationToken);
         }
 
         private async Task<ChangeMethods> SendChangeAsync(HttpMethod method, string path, object content, CancellationToken cancellationToken = default)

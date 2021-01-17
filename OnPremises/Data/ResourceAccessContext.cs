@@ -197,6 +197,11 @@ namespace NuScien.Data
         public bool IsTokenNullOrEmpty => CoreResources.IsTokenNullOrEmpty;
 
         /// <summary>
+        /// Gets a value indicating whether need disable automation of filling provider properties.
+        /// </summary>
+        protected virtual bool DisableProvidersAutoFilling { get; }
+
+        /// <summary>
         /// Provides access to information and operations for entity instances this context is tracking.
         /// </summary>
         protected Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker ChangeTracker => db.ChangeTracker;
@@ -248,87 +253,6 @@ namespace NuScien.Data
             var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), typeof(DbSet<TEntity>), typeof(Func<CancellationToken, Task<int>>) });
             if (c == null) return null;
             return c.Invoke(new object[] { CoreResources, Set<TEntity>(), h }) as THandler;
-        }
-
-        /// <summary>
-        /// Fills provider properties automatically.
-        /// </summary>
-        /// <returns>The count of property filled.</returns>
-        protected virtual void FillProviderProperties()
-        {
-            var properties = GetType().GetProperties();
-            Action<Type> initDbContext = db is InternalDbContext dbContext ? type => dbContext.RegisterEntityType(type) : type => { };
-            var fill = new List<Action>();
-            Func<CancellationToken, Task<int>> h = SaveChangesAsync;
-            foreach (var prop in properties)
-            {
-                var type = prop.PropertyType;
-                if (type.IsAbstract || !prop.CanWrite || !prop.CanRead) continue;
-                var cType = type;
-                while (cType != null && !IsOnPremisesResourceEntityProvider(cType)) cType = cType.BaseType;
-                try
-                {
-                    if (cType == null || cType.GenericTypeArguments.Length < 1) continue;
-                    var gta = cType.GenericTypeArguments[0];
-                    if (gta == null || !gta.IsSubclassOf(typeof(BaseResourceEntity)) || prop.GetValue(this) != null) continue;
-                    initDbContext(gta);
-                    var setType = typeof(DbSet<>).MakeGenericType(gta);
-                    var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), setType, typeof(Func<CancellationToken, Task<int>>) });
-                    if (c == null) continue;
-                    var m = GetType().GetMethod("Set", 1, BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
-                    m = m.MakeGenericMethod(gta);
-                    fill.Add(() =>
-                    {
-                        var e = m.Invoke(this, null);
-                        var v = c.Invoke(new object[] { CoreResources, e, h });
-                        prop.SetValue(this, v);
-                    });
-                }
-                catch (NullReferenceException)
-                {
-                }
-                catch (ArgumentException)
-                {
-                }
-                catch (MemberAccessException)
-                {
-                }
-                catch (TargetException)
-                {
-                }
-                catch (TargetInvocationException)
-                {
-                }
-                catch (TargetParameterCountException)
-                {
-                }
-            }
-
-            foreach (var a in fill)
-            {
-                try
-                {
-                    a();
-                }
-                catch (NullReferenceException)
-                {
-                }
-                catch (ArgumentException)
-                {
-                }
-                catch (MemberAccessException)
-                {
-                }
-                catch (TargetException)
-                {
-                }
-                catch (TargetInvocationException)
-                {
-                }
-                catch (TargetParameterCountException)
-                {
-                }
-            }
         }
 
         /// <summary>
@@ -394,6 +318,87 @@ namespace NuScien.Data
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Fills provider properties automatically.
+        /// </summary>
+        private void FillProviderProperties()
+        {
+            var properties = GetType().GetProperties();
+            Action<Type> initDbContext = db is InternalDbContext dbContext ? type => dbContext.RegisterEntityType(type) : type => { };
+            var fill = new List<Action>();
+            Func<CancellationToken, Task<int>> h = SaveChangesAsync;
+            foreach (var prop in properties)
+            {
+                var type = prop.PropertyType;
+                if (type.IsAbstract || !prop.CanWrite || !prop.CanRead) continue;
+                var cType = type;
+                while (cType != null && !IsOnPremisesResourceEntityProvider(cType)) cType = cType.BaseType;
+                try
+                {
+                    if (cType == null || cType.GenericTypeArguments.Length < 1) continue;
+                    var gta = cType.GenericTypeArguments[0];
+                    if (gta == null || !gta.IsSubclassOf(typeof(BaseResourceEntity)) || prop.GetValue(this) != null) continue;
+                    initDbContext(gta);
+                    var setType = typeof(DbSet<>).MakeGenericType(gta);
+                    var c = type.GetConstructor(new Type[] { typeof(OnPremisesResourceAccessClient), setType, typeof(Func<CancellationToken, Task<int>>) });
+                    if (c == null) continue;
+                    var m = GetType().GetMethod("Set", 1, BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
+                    m = m.MakeGenericMethod(gta);
+                    fill.Add(() =>
+                    {
+                        var e = m.Invoke(this, null);
+                        var v = c.Invoke(new object[] { CoreResources, e, h });
+                        prop.SetValue(this, v);
+                    });
+                }
+                catch (NullReferenceException)
+                {
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (MemberAccessException)
+                {
+                }
+                catch (TargetException)
+                {
+                }
+                catch (TargetInvocationException)
+                {
+                }
+                catch (TargetParameterCountException)
+                {
+                }
+            }
+
+            if (DisableProvidersAutoFilling) return;
+            foreach (var a in fill)
+            {
+                try
+                {
+                    a();
+                }
+                catch (NullReferenceException)
+                {
+                }
+                catch (ArgumentException)
+                {
+                }
+                catch (MemberAccessException)
+                {
+                }
+                catch (TargetException)
+                {
+                }
+                catch (TargetInvocationException)
+                {
+                }
+                catch (TargetParameterCountException)
+                {
+                }
+            }
         }
 
         private static bool IsOnPremisesResourceEntityProvider(Type type)
