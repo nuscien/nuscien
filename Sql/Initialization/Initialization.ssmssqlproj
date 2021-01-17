@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Initialization">
   <Items>
-    <LogicalFolder Name="连接" Type="2" Sorted="true">
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
         <ConnectionNode Name="ALPS:">
           <Created>2020-02-08T14:21:24.6453983+08:00</Created>
@@ -29,7 +29,7 @@
         </ConnectionNode>
       </Items>
     </LogicalFolder>
-    <LogicalFolder Name="查询" Type="0" Sorted="true">
+    <LogicalFolder Name="Table Factory" Type="0" Sorted="true">
       <Items>
         <FileNode Name="TablesCreation.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
@@ -43,10 +43,19 @@
           <AssociatedConnUserName />
           <FullPath>TablesDeletion.sql</FullPath>
         </FileNode>
+        <FileNode Name="TestTabelsDeletion.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TestTabelsDeletion.sql</FullPath>
+        </FileNode>
+        <FileNode Name="TestTablesCreation.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>TestTablesCreation.sql</FullPath>
+        </FileNode>
       </Items>
-    </LogicalFolder>
-    <LogicalFolder Name="杂项" Type="3" Sorted="true">
-      <Items />
     </LogicalFolder>
   </Items>
 </SqlWorkbenchSqlProject>
