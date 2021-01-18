@@ -5,6 +5,11 @@ You can contribute to NuScien libraries and documentations with issues and PRs.
 Simply filing issues for problems you encounter is a great way to contribute.
 Contributing implementations is greatly appreciated.
 
+## Contributors
+
+Thanks for all contriubutors.
+See the [contributor list](https://github.com/nuscien/nuscien/graphs/contributors) to get details.
+
 ## Suggested Workflow
 
 We recommend the following workflow.
