@@ -14,7 +14,7 @@ See [sample and tutorials](https://github.com/nuscien/sample) to get start. Foll
 ![.NET 5.0](./docs/assets/badge_NET_5_0.svg)
 ![.NET Core 3.1](./docs/assets/badge_NET_Core_3_1.svg)
 
-> `NuScien.dll`
+`NuScien.dll`
 
 The common library.
 
@@ -26,7 +26,7 @@ The common library.
 
 P.S.:
 Core resources mentioned above include passport, groups, messages, settings, etc.
-Authorizationn is based on OAuth 2.0 powered by [Trivial](https://github.com/nuscien/trivial) library.
+Authorizationn is based on OAuth 2.0 and powered by [Trivial](https://github.com/nuscien/trivial) library.
 
 ## OnPremises
 
@@ -34,7 +34,7 @@ Authorizationn is based on OAuth 2.0 powered by [Trivial](https://github.com/nus
 ![.NET 5.0](./docs/assets/badge_NET_5_0.svg)
 ![.NET Core 3.1](./docs/assets/badge_NET_Core_3_1.svg)
 
-> `NuScien.OnPremises.dll`
+`NuScien.OnPremises.dll`
 
 On-premises library with EF Core 5.0 supports.
 
@@ -47,18 +47,18 @@ On-premises library with EF Core 5.0 supports.
 [![NuGet package](https://img.shields.io/nuget/dt/NuScien.Web?label=nuget+downloads)](https://www.nuget.org/packages/NuScien.Web)
 ![ASP.NET Core 5.0](./docs/assets/badge_ASPNET_5_0.svg)
 
-> `NuScien.Web.dll`
+`NuScien.Web.dll`
 
 Web API components and toolkits.
 
 - `ResourceAccessController` class: an MVC web API controller for core resources.
 - `ResourceEntityController<TProvider, TEntity>` base class: an MVC web API controller to route the network transfer to `OnPremisesResourceEntityProvider<TEntity>` implementation.
 
-## Unit tests and others
+## Others
 
 | Project | Description |
 | ------------ | ----------------------- |
 | `UnitTest` | The unit tests. |
 | `SampleSite` | A simple Web API. |
 
-The directory `Sql` is used to store SSMS project and TSQL files to create initialized tables and to do other useful things for database.
+And the directory `Sql` is used to store SSMS project and TSQL files to create initialized tables and to do other useful things for database.

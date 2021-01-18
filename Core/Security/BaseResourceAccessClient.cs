@@ -918,11 +918,11 @@ namespace NuScien.Security
         /// <summary>
         /// Gets the relationship between the specific user and the specific group.
         /// </summary>
-        /// <param name="user">The user to test.</param>
         /// <param name="group">The group to test.</param>
+        /// <param name="user">The user to test.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The relationship.</returns>
-        public async Task<UserGroupRelationshipEntity> GetRelationshipAsync(UserEntity user, UserGroupEntity group, CancellationToken cancellationToken)
+        public async Task<UserGroupRelationshipEntity> GetRelationshipAsync(UserGroupEntity group, UserEntity user, CancellationToken cancellationToken)
         {
             return group == null || string.IsNullOrWhiteSpace(user.Id) ? null : await GetRelationshipAsync(group.Id, user.Id, cancellationToken);
         }
