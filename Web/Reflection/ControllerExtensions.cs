@@ -336,6 +336,7 @@ namespace NuScien.Web
         /// <returns>The query arguments instance.</returns>
         public static QueryArgs GetQueryArgs(this IQueryCollection request)
         {
+            if (request == null) return null;
             var q = new QueryArgs
             {
                 NameQuery = GetFirstStringValue(request, "q"),
@@ -345,6 +346,23 @@ namespace NuScien.Web
             };
             var state = TryGetInt32Value(request, "state");
             if (state.HasValue) q.State = (ResourceEntityStates)state.Value;
+            return q;
+        }
+
+        /// <summary>
+        /// Gets the query data instance.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>The query data instance.</returns>
+        public static QueryData GetQueryData(this IQueryCollection request)
+        {
+            if (request == null) return null;
+            var q = new QueryData();
+            foreach (var item in request)
+            {
+                q.Add(item.Key, item.Value as IEnumerable<string>);
+            }
+            
             return q;
         }
 

@@ -904,6 +904,30 @@ namespace NuScien.Security
         public abstract Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets the relationship between current user and the specific group.
+        /// </summary>
+        /// <param name="group">The group to test.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The relationship.</returns>
+        public async Task<UserGroupRelationshipEntity> GetRelationshipAsync(UserGroupEntity group, CancellationToken cancellationToken)
+        {
+            var userId = User.Id;
+            return group == null || string.IsNullOrWhiteSpace(userId) ? null : await GetRelationshipAsync(group.Id, userId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the relationship between the specific user and the specific group.
+        /// </summary>
+        /// <param name="user">The user to test.</param>
+        /// <param name="group">The group to test.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The relationship.</returns>
+        public async Task<UserGroupRelationshipEntity> GetRelationshipAsync(UserEntity user, UserGroupEntity group, CancellationToken cancellationToken)
+        {
+            return group == null || string.IsNullOrWhiteSpace(user.Id) ? null : await GetRelationshipAsync(group.Id, user.Id, cancellationToken);
+        }
+
+        /// <summary>
         /// Joins in a specific group.
         /// </summary>
         /// <param name="group">The user group entity to join in.</param>

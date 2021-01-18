@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NuScien.Collection;
 using NuScien.Security;
+using Trivial.Collection;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Reflection;
@@ -121,6 +122,20 @@ namespace NuScien.Data
         public virtual async Task<CollectionResult<T>> SearchAsync(QueryData q, CancellationToken cancellationToken = default)
         {
             if (q == null) return new CollectionResult<T>(await Set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
+            if (q.Count == 1 && q.ContainsKey("id"))
+            {
+                var ids = q.GetValues("id").Where(ele => !string.IsNullOrWhiteSpace(ele));
+                var list = new List<T>();
+                foreach (var id in ids)
+                {
+                    var entity = await Set.GetByIdAsync(id, false, cancellationToken);
+                    list.Add(entity);
+                }
+
+                var result = new CollectionResult<T>(list, 0, list.Count);
+                return result;
+            }
+
             QueryArgs args = q;
             var col = Set.ListEntities(args, l =>
             {
@@ -140,6 +155,7 @@ namespace NuScien.Data
         /// <returns>The change method.</returns>
         public virtual async Task<ChangeMethodResult> SaveAsync(T value, CancellationToken cancellationToken = default)
         {
+            if (value == null) return new ChangeMethodResult(ChangeMethods.Unchanged);
             var isNew = value.IsNew;
             if (isNew) OnAdd(value);
             else OnUpdate(value);
@@ -149,11 +165,81 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Saves.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <param name="changes">The data to change.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public virtual async Task<T> SaveAsync(string id, JsonObject changes, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                if (changes == null) return null;
+                try
+                {
+                    var newEntity = changes.Deserialize<T>();
+                    var result = await SaveAsync(newEntity, cancellationToken);
+                    if (result == null) return null;
+                    return result.State switch
+                    {
+                        ChangeMethods.Add => newEntity,
+                        ChangeMethods.Same => newEntity,
+                        ChangeMethods.Unchanged => newEntity,
+                        ChangeMethods.Remove => newEntity,
+                        ChangeMethods.MemberModify => newEntity,
+                        ChangeMethods.Update => newEntity,
+                        _ => null
+                    };
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    return null;
+                }
+            }
+
+            var entity = await GetAsync(id, true, cancellationToken);
+            if (changes == null || changes.Count == 0) return entity;
+            var state = changes.TryGetEnumValue<ResourceEntityStates>("state");
+            if (state.HasValue) entity.State = state.Value;
+            if (FillProperties(entity, changes)) await SaveAsync(entity, cancellationToken);
+            return entity;
+        }
+
+        /// <summary>
+        /// Updates the entity state.
+        /// </summary>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<T> UpdateStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
+        {
+            var entity = await GetAsync(id, true, cancellationToken);
+            if (entity == null) return null;
+            if (entity.State == state) return entity;
+            entity.State = state;
+            await SaveAsync(entity, cancellationToken);
+            return entity;
+        }
+
+        /// <summary>
         /// Searches.
         /// </summary>
         /// <param name="predication">The query predication.</param>
         /// <returns>The result.</returns>
         protected abstract void MapQuery(QueryPredication<T> predication);
+
+        /// <summary>
+        /// Fills the data into the entity.
+        /// </summary>
+        /// <param name="entity">The target entity.</param>
+        /// <param name="changes">The data to change.</param>
+        /// <returns>true if the change set is valid; otherwise, false.</returns>
+        protected virtual bool FillProperties(T entity, JsonObject changes)
+        {
+            return true;
+        }
 
         /// <summary>
         /// Tests if the new entity is valid.

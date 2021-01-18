@@ -33,13 +33,31 @@ namespace NuScien.Data
         /// <returns>A resource entity if exists; or null.</returns>
         /// <exception cref="ArgumentNullException">source or id was null.</exception>
         /// <exception cref="ArgumentException">id was empty or consists only of white-space characters.</exception>
-        public static async Task<T> GetByIdAsync<T>(this IQueryable<T> source, string id, bool includeAllStates = false, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        public static async Task<T> GetByIdAsync<T>(this IQueryable<T> source, string id, bool includeAllStates, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             InternalAssertion.IsNotNull(source);
             InternalAssertion.IsNotNullOrWhiteSpace(id, nameof(id));
             var entity = await source.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
             if (entity is null) return null;
             return includeAllStates || entity.State == ResourceEntityStates.Normal ? entity : null;
+        }
+
+        /// <summary>
+        /// Gets a resource entity by identifier.
+        /// </summary>
+        /// <typeparam name="T">The type of the resource entity.</typeparam>
+        /// <param name="source">A queryable resource entity collection to filter.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>A resource entity if exists; or null.</returns>
+        /// <exception cref="ArgumentNullException">source or id was null.</exception>
+        /// <exception cref="ArgumentException">id was empty or consists only of white-space characters.</exception>
+        public static async Task<T> GetByIdAsync<T>(this IQueryable<T> source, string id, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        {
+            InternalAssertion.IsNotNull(source);
+            InternalAssertion.IsNotNullOrWhiteSpace(id, nameof(id));
+            var entity = await source.FirstOrDefaultAsync(ele => ele.Id == id, cancellationToken);
+            return entity;
         }
 
         /// <summary>

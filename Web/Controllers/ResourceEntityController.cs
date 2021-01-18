@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Users;
+using Trivial.Collection;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
@@ -52,7 +53,7 @@ namespace NuScien.Web
         /// </summary>
         /// <returns>The entity.</returns>
         [HttpGet]
-        [Route("{id}")]
+        [Route("e/{id}")]
         public async Task<IActionResult> Get(string id)
         {
             try
@@ -79,7 +80,17 @@ namespace NuScien.Web
             try
             {
                 var provider = await GetProviderAsync();
-                var q = Request.Query.GetQueryArgs();
+                var q = Request.Query.GetQueryData() ?? new QueryData();
+                if (q.Count == 1)
+                {
+                    var ids = q.GetValues("id")?.ToList() ?? new List<string>();
+                    if (ids.Count == 1 && !string.IsNullOrWhiteSpace(ids[0]))
+                    {
+                        var entity = await provider.GetAsync(q.GetFirstValue("id"));
+                        return this.ResourceEntityResult(entity);
+                    }
+                }
+
                 var col = await provider.SearchAsync(q);
                 return this.ResourceEntityResult(col.Value, col.Offset, col.TotalCount);
             }
@@ -100,9 +111,9 @@ namespace NuScien.Web
         {
             try
             {
-                if (entity is null) return this.ExceptionResult(400, "Body request. Require to send the entity in JSON format as request body.", "NoBody");
+                if (entity is null) return this.ExceptionResult(400, "Require to send the entity in JSON format as request body.", "NoBody");
                 var provider = await GetProviderAsync();
-                var result = await provider.SaveAsync(entity);
+                var result = await provider.SaveAsync(entity) ?? new ChangeMethodResult(ChangeMethods.Invalid);
                 Logger?.LogInformation(new EventId(17002003, "SaveEntity"), $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
                 return result.ToActionResult();
             }
@@ -112,6 +123,65 @@ namespace NuScien.Web
                 if (er != null)
                 {
                     Logger?.LogError(new EventId(17002003, "SaveEntity"), $"Failed save entity {entity.GetType().Name} {entity.Name} ({entity.Id}). {ex.GetType().Name} {ex.Message}");
+                    return er;
+                }
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Saves.
+        /// </summary>
+        /// <returns>The changing state.</returns>
+        [HttpPut]
+        [Route("e/{id}")]
+        public virtual async Task<IActionResult> Update(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id)) return this.ExceptionResult(400, "An entity identifier is required in path.", "NoBody");
+                var provider = await GetProviderAsync();
+                var content = await JsonObject.ParseAsync(Request.Body);
+                var entity = await provider.SaveAsync(id, content);
+                Logger?.LogInformation(new EventId(17002004, "UpdateEntity"), entity != null ? $"Update entity {entity.GetType().Name} {entity.Name} ({entity.Id})." : $"Failed update entity {id} because of non-existing.");
+                return this.ResourceEntityResult(entity);
+            }
+            catch (Exception ex)
+            {
+                var er = this.ExceptionResult(ex, true);
+                if (er != null)
+                {
+                    Logger?.LogError(new EventId(17002004, "UpdateEntity"), $"Failed update entity {id}. {ex.GetType().Name} {ex.Message}");
+                    return er;
+                }
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Saves.
+        /// </summary>
+        /// <returns>The changing state.</returns>
+        [HttpDelete]
+        [Route("e/{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id)) return this.ExceptionResult(400, "An entity identifier is required in path.", "NoBody");
+                var provider = await GetProviderAsync();
+                var entity = await provider.UpdateStateAsync(id, ResourceEntityStates.Deleted);
+                Logger?.LogInformation(new EventId(17002005, "DeleteEntity"), entity != null ? $"Delete entity {entity.GetType().Name} {entity.Name} ({entity.Id})." : $"Failed delete entity {id} because of non-existing.");
+                return this.ResourceEntityResult(entity);
+            }
+            catch (Exception ex)
+            {
+                var er = this.ExceptionResult(ex, true);
+                if (er != null)
+                {
+                    Logger?.LogError(new EventId(17002005, "DeleteEntity"), $"Failed delete entity {id}. {ex.GetType().Name} {ex.Message}");
                     return er;
                 }
 
