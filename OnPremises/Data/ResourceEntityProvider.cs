@@ -200,8 +200,6 @@ namespace NuScien.Data
 
             var entity = await GetAsync(id, true, cancellationToken);
             if (changes == null || changes.Count == 0) return entity;
-            var state = changes.TryGetEnumValue<ResourceEntityStates>("state");
-            if (state.HasValue) entity.State = state.Value;
             if (FillProperties(entity, changes)) await SaveAsync(entity, cancellationToken);
             return entity;
         }
@@ -238,6 +236,10 @@ namespace NuScien.Data
         /// <returns>true if the change set is valid; otherwise, false.</returns>
         protected virtual bool FillProperties(T entity, JsonObject changes)
         {
+            var state = changes.TryGetEnumValue<ResourceEntityStates>("state", true);
+            if (state.HasValue) entity.State = state.Value;
+            var name = changes.TryGetStringValue("name");
+            entity.Name = name;
             return true;
         }
 
