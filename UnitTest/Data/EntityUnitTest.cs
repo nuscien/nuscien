@@ -63,6 +63,31 @@ namespace NuScien.UnitTest.Data
             // Goods.
             var goods = await context.Goods.SearchAsync("Test");
             Assert.AreEqual(0, goods.CurrentCount);
+            goods = await context.Goods.SearchAsync(new QueryArgs
+            {
+                NameQuery = "Test",
+                State = ResourceEntityStates.Deleted
+            });
+            var good = (goods.CurrentCount > 0 ? goods.Value.FirstOrDefault() : null) ?? new GoodEntity
+            {
+                Name = "Test",
+                SiteId = string.Empty
+            };
+            good.State = ResourceEntityStates.Normal;
+            await context.Goods.SaveAsync(good);
+            goods = await context.Goods.SearchAsync("Test");
+            Assert.AreEqual(1, goods.CurrentCount);
+            Assert.AreEqual(good.Id, goods.Value.FirstOrDefault()?.Id);
+            good = goods.Value.First();
+            good.State = ResourceEntityStates.Deleted;
+            await context.Goods.SaveAsync(good);
+            goods = await context.Goods.SearchAsync("Test");
+            Assert.AreEqual(0, goods.CurrentCount);
+            good = await context.Goods.GetAsync(good.Id, true);
+            Assert.IsNotNull(good);
+            Assert.AreEqual("Test", good.Name);
+            good = await context.Goods.GetAsync(good.Id);
+            Assert.IsNull(good);
         }
     }
 }

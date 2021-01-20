@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Text;
@@ -156,6 +157,114 @@ namespace NuScien.Users
         {
             get => (int)Role;
             set => Role = (Roles)value;
+        }
+    }
+
+    /// <summary>
+    /// The collection of user group relationship.
+    /// </summary>
+    public class UserGroupRelationshipCollection
+    {
+        /// <summary>
+        /// The user list related.
+        /// </summary>
+        private List<UserEntity> users;
+
+        /// <summary>
+        /// The user group list related.
+        /// </summary>
+        private List<UserGroupEntity> groups;
+
+        /// <summary>
+        /// The user group relationship list.
+        /// </summary>
+        private List<UserGroupRelationshipEntity> relationships;
+
+        /// <summary>
+        /// Initializes a new instance of the UserGroupRelationshipCollection class.
+        /// </summary>
+        public UserGroupRelationshipCollection()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the UserGroupRelationshipCollection class.
+        /// </summary>
+        /// <param name="col">The relationship collection.</param>
+        public UserGroupRelationshipCollection(IEnumerable<UserGroupRelationshipEntity> col)
+        {
+            Relationships = col;
+        }
+
+        /// <summary>
+        /// Gets or sets the user list related.
+        /// </summary>
+        [JsonPropertyName("users")]
+        public IEnumerable<UserEntity> Users
+        {
+            get
+            {
+                return users;
+            }
+
+            set
+            {
+                if (users == value) return;
+                users = value.DistinctById().ToList();
+                if (value == null || relationships == null) return;
+                foreach (var item in relationships)
+                {
+                    var id = item?.TargetId;
+                    if (string.IsNullOrWhiteSpace(id)) continue;
+                    if (item.Target == null) item.Target = value.FirstOrDefault(ele => ele?.Id == id);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the user group list related.
+        /// </summary>
+        [JsonPropertyName("groups")]
+        public IEnumerable<UserGroupEntity> Groups
+        {
+            get
+            {
+                return groups;
+            }
+
+            set
+            {
+                if (groups == value) return;
+                groups = value.DistinctById().ToList();
+                if (value == null || relationships == null) return;
+                foreach (var item in relationships)
+                {
+                    var id = item?.OwnerId;
+                    if (string.IsNullOrWhiteSpace(id)) continue;
+                    if (item.Owner == null) item.Owner = value.FirstOrDefault(ele => ele?.Id == id);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the user group relationship list.
+        /// </summary>
+        [JsonPropertyName("relas")]
+        public IEnumerable<UserGroupRelationshipEntity> Relationships
+        {
+            get
+            {
+                return relationships;
+            }
+
+            set
+            {
+                if (relationships == value) return;
+                relationships = value.Where(ele => !string.IsNullOrWhiteSpace(ele.Id)).ToList();
+                if (value == null) return;
+                if (users == null) users = value.Select(ele => ele.Target).DistinctById().ToList();
+                if (groups == null) groups = value.Select(ele => ele.Owner).DistinctById().ToList();
+            }
         }
     }
 }

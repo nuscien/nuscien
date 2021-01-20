@@ -25,6 +25,10 @@ CREATE TABLE [dbo].[testcustomers](
 ) ON [PRIMARY]
 GO
 
+CREATE INDEX IX_testcustomers
+ON [dbo].[testcustomers] ([name], [state], [update] DESC, [site])
+
+
 /* Goods */
 CREATE TABLE [dbo].[testgoods](
 	[id] [varchar](80) NOT NULL,
@@ -41,3 +45,7 @@ CREATE TABLE [dbo].[testgoods](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+CREATE INDEX IX_testgoods
+ON [dbo].[testgoods] ([name], [state], [update] DESC, [site])
+

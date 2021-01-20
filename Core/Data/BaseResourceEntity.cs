@@ -218,8 +218,9 @@ namespace NuScien.Data
         /// Copy base properties into current instance.
         /// </summary>
         /// <param name="entity">The source entity to copy.</param>
-        protected void FillBaseProperties(BaseResourceEntity entity)
+        protected virtual void FillBaseProperties(BaseResourceEntity entity)
         {
+            if (entity == null) return;
             revision = entity.revision;
             id = entity.id;
             isRandomId = entity.isRandomId;
@@ -246,6 +247,14 @@ namespace NuScien.Data
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not SiteOwnedResourceEntity e) return;
+            SiteId = e.SiteId;
         }
     }
 
@@ -345,6 +354,14 @@ namespace NuScien.Data
         }
         */
 
+        /// <summary>
+        /// Updates the configuration string from its JSON object type property.
+        /// </summary>
+        public void SyncConfig()
+        {
+            if (json != null) config = null;
+        }
+
         private static JsonObject ParseJson(string s)
         {
             try
@@ -368,6 +385,14 @@ namespace NuScien.Data
                 return new JsonObject();
             }
         }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not ConfigurableResourceEntity e) return;
+            ConfigString = e.ConfigString;
+        }
     }
 
     /// <summary>
@@ -387,6 +412,14 @@ namespace NuScien.Data
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not BaseOwnerResourceEntity e) return;
+            OwnerId = e.OwnerId;
         }
     }
 
@@ -446,6 +479,15 @@ namespace NuScien.Data
         {
             return entity != null && entity.Id == OwnerId && entity.SecurityEntityType == OwnerType;
         }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not SpecificOwnerResourceEntity e) return;
+            OwnerId = e.OwnerId;
+            if (e.Owner != null) Owner = e.Owner;
+        }
     }
 
     /// <summary>
@@ -472,6 +514,14 @@ namespace NuScien.Data
         [NotMapped]
         [JsonIgnore]
         public bool HasTarget => !string.IsNullOrWhiteSpace(TargetId);
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not OwnerResourceEntity e) return;
+            TargetId = e.TargetId;
+        }
     }
 
     /// <summary>

@@ -271,18 +271,17 @@ namespace NuScien.Security
         public async Task<IEnumerable<UserGroupRelationshipEntity>> ListUsersAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
-            if (!q.NameExactly)
+            if (!q.NameExactly || string.IsNullOrWhiteSpace(q.NameQuery))
                 return await ListUsers(group, role, q.NameQuery, q.State).ToListAsync(q, cancellationToken);
             var context = GetContext(true);
-            var user = await context.Users.FirstOrDefaultAsync(ele => ele.Nickname == q.NameQuery && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
-            var col = new List<UserGroupRelationshipEntity>();
-            if (user == null) return col;
-            var rela = await context.Relationships.FirstOrDefaultAsync(ele => ele.OwnerId == group.Id && ele.TargetId == user.Id, cancellationToken);
-            if (rela == null) return col;
-            col.Add(rela);
-            rela.Owner = group;
-            rela.Target = user;
-            return col;
+            var users = context.Users.Where(ele => ele.Nickname == q.NameQuery && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+            var relationships = context.Relationships.Where(ele => ele.OwnerId == group.Id && ele.StateCode == (int)q.State);
+            if (role.HasValue) relationships = relationships.Where(ele => ele.RoleCode == (int)role.Value);
+            return relationships.Join(
+                users,
+                ele => ele.OwnerId,
+                ele => ele.Id,
+                (rela, user) => new UserGroupRelationshipEntity(rela, group, user));
         }
 
         /// <summary>

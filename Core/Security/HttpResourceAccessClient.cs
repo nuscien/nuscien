@@ -661,7 +661,7 @@ namespace NuScien.Security
 
             var q = Host.OriginalString;
             if (!string.IsNullOrEmpty(q) && q.EndsWith('/')) q += '/';
-            if (path.StartsWith('/')) path = path.Substring(1);
+            if (path.StartsWith('/')) path = path[1..];
             q += path;
             if (query != null) q = query.ToString(q);
             return new Uri(q);
@@ -681,7 +681,7 @@ namespace NuScien.Security
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
             var query = ToQueryData(q);
             query["role"] = ((int)role).ToString();
-            return QueryAsync<UserEntity>($"passport/users/group/" + group.Id, query, cancellationToken);
+            return QueryAsync<UserEntity>(coreResPath + "passport/users/group/" + group.Id, query, cancellationToken);
         }
 
         /// <summary>
@@ -691,12 +691,13 @@ namespace NuScien.Security
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group relationships.</returns>
-        protected override Task<IEnumerable<UserGroupRelationshipEntity>> GetRelationshipsAsync(string q, ResourceEntityStates relationshipState, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<UserGroupRelationshipEntity>> GetRelationshipsAsync(string q, ResourceEntityStates relationshipState, CancellationToken cancellationToken = default)
         {
             var query = new QueryData();
             if (!string.IsNullOrWhiteSpace(q)) query["q"] = q;
             query["state"] = ((int)relationshipState).ToString();
-            return QueryAsync<UserGroupRelationshipEntity>(coreResPath + "passport/relas/me", query, cancellationToken);
+            var col = await SendAsync<UserGroupRelationshipCollection>(HttpMethod.Get, GetUri(coreResPath + "passport/rela", query), cancellationToken);
+            return col.Relationships;
         }
 
         /// <summary>
@@ -735,17 +736,6 @@ namespace NuScien.Security
         /// <summary>
         /// Gets a user group relationship entity.
         /// </summary>
-        /// <param name="id">The user group relationship entity identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group entity matched if found; otherwise, null.</returns>
-        protected override Task<UserGroupRelationshipEntity> GetRelationshipAsync(string id, CancellationToken cancellationToken = default)
-        {
-            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/rela/" + id), cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets a user group relationship entity.
-        /// </summary>
         /// <param name="groupId">The user group identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
@@ -753,12 +743,7 @@ namespace NuScien.Security
         protected override Task<UserGroupRelationshipEntity> GetRelationshipAsync(string groupId, string userId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(groupId) || string.IsNullOrWhiteSpace(userId)) return Task.FromResult<UserGroupRelationshipEntity>(null);
-            var query = new QueryData
-            {
-                ["group"] = groupId,
-                ["user"] = userId
-            };
-            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/rela", query), cancellationToken);
+            return SendAsync<UserGroupRelationshipEntity>(HttpMethod.Get, GetUri($"{coreResPath}passport/rela/g/{groupId}/{userId}"), cancellationToken);
         }
 
         /// <summary>
@@ -821,11 +806,11 @@ namespace NuScien.Security
         private async Task<IEnumerable<T>> QueryAsync<T>(string path, QueryData q, CancellationToken cancellationToken = default)
         {
             var url = GetUri(path, q);
-            var result = await SendJsonAsync<CollectionResult<T>>(HttpMethod.Get, url, cancellationToken);
+            var result = await SendJsonAsync<CollectionResult<T>>(HttpMethod.Get, url, null, cancellationToken);
             return result?.Value;
         }
 
-        private Task<IEnumerable<T>> QueryAsync<T>()
+        private static Task<IEnumerable<T>> QueryAsync<T>()
         {
             var list = new List<T>();
             IEnumerable<T> col = list.AsReadOnly();
@@ -897,7 +882,7 @@ namespace NuScien.Security
             return client;
         }
 
-        private QueryData ToQueryData(QueryArgs q)
+        private static QueryData ToQueryData(QueryArgs q)
         {
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
             var query = new QueryData();

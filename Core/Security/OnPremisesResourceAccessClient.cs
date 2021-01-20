@@ -668,7 +668,7 @@ namespace NuScien.Security
         /// <param name="id">The user group relationship entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
-        protected override Task<UserGroupRelationshipEntity> GetRelationshipAsync(string id, CancellationToken cancellationToken = default)
+        protected Task<UserGroupRelationshipEntity> GetRelationshipAsync(string id, CancellationToken cancellationToken = default)
         {
             return DataProvider.GetRelationshipByIdAsync(id, cancellationToken);
         }

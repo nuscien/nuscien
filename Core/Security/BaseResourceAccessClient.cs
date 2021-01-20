@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -49,7 +50,7 @@ namespace NuScien.Security
         /// <summary>
         /// The user groups.
         /// </summary>
-        private IList<UserGroupRelationshipEntity> groups;
+        private System.Collections.Concurrent.ConcurrentBag<UserGroupRelationshipEntity> groupsCache;
 
         /// <summary>
         /// The permissions set.
@@ -71,6 +72,25 @@ namespace NuScien.Security
         {
             Expiration = TimeSpan.FromMinutes(10)
         };
+
+        /// <summary>
+        /// The user groups.
+        /// </summary>
+        protected ConcurrentBag<UserGroupRelationshipEntity> JoinedGroupsCache
+        {
+            get
+            {
+                var time = GroupsCacheTime;
+                if (!time.HasValue || groupsCache == null || (DateTime.Now - time.Value).TotalMinutes > 2) return null;
+                return groupsCache;
+            }
+
+            set
+            {
+                groupsCache = value;
+                GroupsCacheTime = DateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether use long cache duration
@@ -482,7 +502,7 @@ namespace NuScien.Security
         /// <returns>The login response.</returns>
         public async Task<IEnumerable<UserGroupEntity>> GetGroupsJoinedInAsync(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
         {
-            var col = await GetGroupRelationshipsAsync(q, relationshipState);
+            var col = await ListRelationshipsAsync(q, relationshipState);
             if (col is null) return new List<UserGroupEntity>();
             return col.Select(ele => ele.Owner);
         }
@@ -904,6 +924,22 @@ namespace NuScien.Security
         public abstract Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets a collection of user groups joined in.
+        /// </summary>
+        /// <param name="q">The optional query for group.</param>
+        /// <param name="relationshipState">The relationship entity state.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public async Task<IEnumerable<UserGroupRelationshipEntity>> ListRelationshipsAsync(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal, CancellationToken cancellationToken = default)
+        {
+            var isForAll = relationshipState == ResourceEntityStates.Normal && string.IsNullOrEmpty(q);
+            if (isForAll && JoinedGroupsCache != null) return JoinedGroupsCache;
+            var col = await GetRelationshipsAsync(q, relationshipState, cancellationToken);
+            if (isForAll) JoinedGroupsCache = new ConcurrentBag<UserGroupRelationshipEntity>(col);
+            return col;
+        }
+
+        /// <summary>
         /// Gets the relationship between current user and the specific group.
         /// </summary>
         /// <param name="group">The group to test.</param>
@@ -912,7 +948,8 @@ namespace NuScien.Security
         public async Task<UserGroupRelationshipEntity> GetRelationshipAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
         {
             var userId = User?.Id;
-            return group == null || string.IsNullOrWhiteSpace(userId) ? null : await GetRelationshipAsync(group.Id, userId, cancellationToken);
+            if (string.IsNullOrWhiteSpace(group.Id) || string.IsNullOrWhiteSpace(userId) || group.IsNew) return null;
+            return JoinedGroupsCache?.FirstOrDefault(ele => ele.OwnerId == group.Id) ?? await GetRelationshipAsync(group.Id, userId, cancellationToken);
         }
 
         /// <summary>
@@ -924,7 +961,7 @@ namespace NuScien.Security
         /// <returns>The relationship.</returns>
         public async Task<UserGroupRelationshipEntity> GetRelationshipAsync(UserGroupEntity group, UserEntity user, CancellationToken cancellationToken = default)
         {
-            return group == null || string.IsNullOrWhiteSpace(user?.Id) ? null : await GetRelationshipAsync(group.Id, user.Id, cancellationToken);
+            return string.IsNullOrWhiteSpace(group.Id) || string.IsNullOrWhiteSpace(user?.Id) || group.IsNew || user.IsNew ? null : await GetRelationshipAsync(group.Id, user.Id, cancellationToken);
         }
 
         /// <summary>
@@ -937,7 +974,7 @@ namespace NuScien.Security
         public async Task<ChangeMethods> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
             if (group == null || group.IsNew || IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return ChangeMethods.Invalid;
-            var rela = await GetGroupRelationshipAsync(group);
+            var rela = await GetRelationshipAsync(group, cancellationToken);
             if (rela != null) return ChangeMethods.Unchanged;
             if (group.MembershipPolicy == UserGroupMembershipPolicies.Forbidden) return ChangeMethods.Invalid;
             rela = new UserGroupRelationshipEntity
@@ -975,9 +1012,9 @@ namespace NuScien.Security
             if (group == null || group.IsNew || user == null) return ChangeMethods.Invalid;
             var userId = user.Id;
             if (!IsTokenNullOrEmpty && UserId == userId) return await JoinAsync(group, role, cancellationToken);
-            var rela = await GetGroupRelationshipAsync(group);
+            var rela = await GetRelationshipAsync(group, cancellationToken);
             var isAdmin = false;
-            if (rela == null)
+            if (rela == null || rela.State != ResourceEntityStates.Normal)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken))
@@ -992,13 +1029,14 @@ namespace NuScien.Security
                     _ => false
                 };
 
-                if (!isAdmin && rela.Role != UserGroupRelationshipEntity.Roles.Member)
+                if (!isAdmin)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     isAdmin = await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken);
                 }
             }
 
+            if (!isAdmin && group.MembershipPolicy != UserGroupMembershipPolicies.Allow) return ChangeMethods.Invalid;
             rela = string.IsNullOrWhiteSpace(userId) ? null : await GetRelationshipAsync(group.Id, userId, cancellationToken);
             if (rela == null)
             {
@@ -1013,6 +1051,7 @@ namespace NuScien.Security
             }
             else
             {
+                rela.State = ResourceEntityStates.Normal;
                 var nickName = user.Nickname ?? user.Name;
                 if (!string.IsNullOrWhiteSpace(nickName)) rela.Name = nickName;
             }
@@ -1125,7 +1164,7 @@ namespace NuScien.Security
                 return await SaveEntityAsync(value, cancellationToken);
             }
 
-            var groups = await GetGroupRelationshipsAsync();
+            var groups = await ListRelationshipsAsync();
             foreach (var g in groups)
             {
                 if (g == null || g.OwnerId != value.Id) continue;
@@ -1138,6 +1177,54 @@ namespace NuScien.Security
             }
 
             return ChangeMethods.Unchanged;
+        }
+
+        /// <summary>
+        /// Creates or updates a user group relationship entity.
+        /// </summary>
+        /// <param name="value">The user group relationship entity.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        public async Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(value?.OwnerId)) return ChangeMethods.Invalid;
+            if (value.Owner == null) value.Owner = await GetUserGroupByIdAsync(value.OwnerId, cancellationToken);
+            var group = value.Owner;
+            var rela = await GetRelationshipAsync(group, cancellationToken);
+            var isAdmin = rela == null || rela.State != ResourceEntityStates.Normal
+                ? await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken)
+                : rela.Role switch
+                {
+                    UserGroupRelationshipEntity.Roles.Owner => true,
+                    UserGroupRelationshipEntity.Roles.Master => true,
+                    _ => await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken)
+                };
+            if (!isAdmin) return ChangeMethods.Invalid;
+            return await SaveEntityAsync(value, cancellationToken);
+        }
+
+        /// <summary>
+        /// Checks if current user is the admin of a specific group.
+        /// </summary>
+        /// <param name="group">The user group entity to test.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        public async Task<bool> IsGroupAdminAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(group.Id)) return false;
+            var rela = await GetRelationshipAsync(group, cancellationToken);
+            if (rela == null || rela.State != ResourceEntityStates.Normal)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken);
+            }
+
+            return rela.Role switch
+            {
+                UserGroupRelationshipEntity.Roles.Owner => true,
+                UserGroupRelationshipEntity.Roles.Master => true,
+                _ => await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken)
+            };
         }
 
         /// <summary>
@@ -1156,7 +1243,7 @@ namespace NuScien.Security
         /// </summary>
         public void ClearCache()
         {
-            groups = null;
+            groupsCache = null;
             GroupsCacheTime = null;
             permissions.Clear();
             globalSettings = null;
@@ -1172,7 +1259,7 @@ namespace NuScien.Security
         {
             if (group.Visibility == UserGroupVisibilities.Visible) return true;
             if (IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return false;
-            var g = groups;
+            var g = JoinedGroupsCache;
             if (g == null)
             {
                 var rela = await GetRelationshipAsync(group.Id, UserId);
@@ -1273,14 +1360,6 @@ namespace NuScien.Security
         /// <summary>
         /// Gets a user group relationship entity.
         /// </summary>
-        /// <param name="id">The user group relationship entity identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group entity matched if found; otherwise, null.</returns>
-        protected abstract Task<UserGroupRelationshipEntity> GetRelationshipAsync(string id, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets a user group relationship entity.
-        /// </summary>
         /// <param name="groupId">The user group identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
@@ -1310,34 +1389,5 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets a collection of user groups joined in.
-        /// </summary>
-        /// <param name="q">The optional query for group.</param>
-        /// <param name="relationshipState">The relationship entity state.</param>
-        /// <returns>The login response.</returns>
-        private async Task<IEnumerable<UserGroupRelationshipEntity>> GetGroupRelationshipsAsync(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal)
-        {
-            var isForAll = relationshipState == ResourceEntityStates.Normal && string.IsNullOrEmpty(q);
-            if (isForAll && groups != null) return groups;
-            var col = await GetRelationshipsAsync(q, relationshipState);
-            GroupsCacheTime = DateTime.Now;
-            if (isForAll) groups = col.ToList();
-            return col;
-        }
-
-        /// <summary>
-        /// Gets the user group relationship joined in.
-        /// </summary>
-        /// <param name="group">The group entity.</param>
-        /// <returns>The login response.</returns>
-        private async Task<UserGroupRelationshipEntity> GetGroupRelationshipAsync(UserGroupEntity group)
-        {
-            if (group == null) return null;
-            var col = await GetGroupRelationshipsAsync();
-            if (col is null) return null;
-            return col.FirstOrDefault(ele => ele.OwnerId == group.Id);
-        }
     }
 }

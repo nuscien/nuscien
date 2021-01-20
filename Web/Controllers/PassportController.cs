@@ -142,6 +142,23 @@ namespace NuScien.Web
         /// <summary>
         /// Gets the user group relationship.
         /// </summary>
+        /// <returns>The user group entity matched if found; otherwise, null.</returns>
+        [HttpGet]
+        [Route("passport/rela")]
+        public async Task<IActionResult> ListRelationshipsAsync()
+        {
+            var q = Request.Query.GetQueryData();
+            var instance = await this.GetResourceAccessClientAsync();
+            var name = q["name"]?.Trim();
+            if (string.IsNullOrEmpty(name)) name = null;
+            var state = q.TryGetEnumValue<ResourceEntityStates>("state", true) ?? ResourceEntityStates.Normal;
+            var result = await instance.ListRelationshipsAsync(name, state);
+            return new JsonResult(new UserGroupRelationshipCollection(result));
+        }
+
+        /// <summary>
+        /// Gets the user group relationship.
+        /// </summary>
         /// <param name="groupId">The user group identifier.</param>
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         [HttpGet]
@@ -223,7 +240,7 @@ namespace NuScien.Web
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         [HttpGet]
         [Route("passport/users/group/{id}")]
-        protected async Task<IActionResult> ListUsersByGroupAsync(string id)
+        public async Task<IActionResult> ListUsersByGroupAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var query = Request.Query.GetQueryArgs();
@@ -242,7 +259,7 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/user")]
-        protected async Task<IActionResult> SaveUserAsync([FromBody] UserEntity entity)
+        public async Task<IActionResult> SaveUserAsync([FromBody] UserEntity entity)
         {
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
             var instance = await this.GetResourceAccessClientAsync();
@@ -258,7 +275,7 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/group")]
-        protected async Task<IActionResult> SaveGroupAsync([FromBody] UserGroupEntity entity)
+        public async Task<IActionResult> SaveGroupAsync([FromBody] UserGroupEntity entity)
         {
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
             var instance = await this.GetResourceAccessClientAsync();
@@ -274,20 +291,11 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/rela")]
-        protected async Task<IActionResult> SaveRelationshipAsync([FromBody] UserGroupRelationshipEntity entity)
+        public async Task<IActionResult> SaveRelationshipAsync([FromBody] UserGroupRelationshipEntity entity)
         {
             if (entity == null) return ChangeMethods.Invalid.ToActionResult();
             var instance = await this.GetResourceAccessClientAsync();
-            if (entity.OwnerId == instance.UserId)
-            {
-                var group = await instance.GetUserGroupByIdAsync(entity.OwnerId);
-                var joinInResult = await instance.JoinAsync(group);
-                return joinInResult.ToActionResult();
-            }
-
-            var groupTask = instance.GetUserGroupByIdAsync(entity.OwnerId);
-            var user = await instance.GetUserByIdAsync(entity.TargetId);
-            var result = await instance.InviteAsync(await groupTask, user);
+            var result = await instance.SaveAsync(entity);
             Logger?.LogInformation(new EventId(17001016, "SaveUserGroupRela"), "Save user group relationship {0}, owner {1}, target {2}.", entity.Id, entity.OwnerId, entity.TargetId);
             return result.ToActionResult();
         }

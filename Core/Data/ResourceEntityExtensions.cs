@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NuScien.Security;
+using NuScien.Users;
 using Trivial.Data;
 using Trivial.Reflection;
 using Trivial.Security;
@@ -549,6 +551,84 @@ namespace NuScien.Data
         {
             if (h == null) return Task.FromResult<T>(null);
             return h.GetAsync(id, false, cancellationToken);
+        }
+
+        /// <summary>
+        /// Returns distinct elements from a sequence by using the default equality comparer to compare their identifiers.
+        /// </summary>
+        /// <typeparam name="T">The type of resource entity.</typeparam>
+        /// <param name="source">The sequence to remove duplicate elements from.</param>
+        /// <returns>An collection that contains distinct elements from the source sequence.</returns>
+        public static IEnumerable<T> DistinctById<T>(this IEnumerable<T> source) where T : BaseResourceEntity => source?.Where(ele => !string.IsNullOrWhiteSpace(ele?.Id))?.Distinct(ResourceEntityIdComparer<T>.Singleton);
+    }
+
+    /// <summary>
+    /// The identifier comparer of resource entity.
+    /// </summary>
+    public class ResourceEntityIdComparer : IEqualityComparer<BaseResourceEntity>
+    {
+        /// <summary>
+        /// Determines whether the specified objects are equal.
+        /// </summary>
+        /// <param name="x">The first object to compare.</param>
+        /// <param name="y">The right object to compare.</param>
+        /// <returns>true if the specified objects are equal; otherwise, false.</returns>
+        public bool Equals(BaseResourceEntity x, BaseResourceEntity y)
+        {
+            return x?.Id == y?.Id;
+        }
+
+        /// <summary>
+        /// Returns a hash code for the specified object.
+        /// </summary>
+        /// <param name="obj">The instance for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified object.</returns>
+        public int GetHashCode(BaseResourceEntity obj)
+        {
+            return string.IsNullOrWhiteSpace(obj?.Id) ? string.Empty.GetHashCode() : obj.Id.GetHashCode();
+        }
+    }
+
+    /// <summary>
+    /// The identifier comparer of resource entity.
+    /// </summary>
+    /// <typeparam name="T">The type of resource entity.</typeparam>
+    public sealed class ResourceEntityIdComparer<T> : IEqualityComparer<T>
+         where T : BaseResourceEntity
+    {
+        private static ResourceEntityIdComparer<T> singleton;
+
+        /// <summary>
+        /// Gets the singleton instance.
+        /// </summary>
+        public static ResourceEntityIdComparer<T> Singleton
+        {
+            get
+            {
+                if (singleton == null) singleton = new ResourceEntityIdComparer<T>();
+                return singleton;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified objects are equal.
+        /// </summary>
+        /// <param name="x">The first object to compare.</param>
+        /// <param name="y">The right object to compare.</param>
+        /// <returns>true if the specified objects are equal; otherwise, false.</returns>
+        public bool Equals(T x, T y)
+        {
+            return x?.Id == y?.Id;
+        }
+
+        /// <summary>
+        /// Returns a hash code for the specified object.
+        /// </summary>
+        /// <param name="obj">The instance for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified object.</returns>
+        public int GetHashCode(T obj)
+        {
+            return string.IsNullOrWhiteSpace(obj?.Id) ? string.Empty.GetHashCode() : obj.Id.GetHashCode();
         }
     }
 }
