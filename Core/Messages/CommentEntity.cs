@@ -45,11 +45,22 @@ namespace NuScien.Messages
         }
 
         /// <summary>
-        /// Gets or sets the parent content identifier.
+        /// Gets or sets the parent message identifier.
         /// </summary>
         [JsonPropertyName("parent")]
         [Column("parent")]
         public string ParentId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the ancestor message identifier.
+        /// </summary>
+        [JsonPropertyName("ancestor")]
+        [Column("ancestor")]
+        public string SourceMessageId
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
@@ -83,7 +94,7 @@ namespace NuScien.Messages
     /// <summary>
     /// The content comment entity.
     /// </summary>
-    [Table("nscontcomment")]
+    [Table("nscontcomments")]
     public class ContentCommentEntity : BaseCommentEntity<ContentEntity>
     {
     }

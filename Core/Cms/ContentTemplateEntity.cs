@@ -17,9 +17,9 @@ using Trivial.Text;
 namespace NuScien.Cms
 {
     /// <summary>
-    /// Base publish content entity.
+    /// Base publish content template entity.
     /// </summary>
-    public abstract class BaseContentEntity : BaseSiteOwnerResourceEntity
+    public abstract class BaseContentTemplateEntity : BaseSiteOwnerResourceEntity
     {
         /// <summary>
         /// Gets or sets the introduction.
@@ -27,17 +27,6 @@ namespace NuScien.Cms
         [JsonPropertyName("intro")]
         [Column("intro")]
         public string Introduction
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the parent content identifier.
-        /// </summary>
-        [JsonPropertyName("parent")]
-        [Column("parent")]
-        public string ParentId
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
@@ -66,17 +55,6 @@ namespace NuScien.Cms
         }
 
         /// <summary>
-        /// Gets or sets the template identifier.
-        /// </summary>
-        [JsonPropertyName("templ")]
-        [Column("templ")]
-        public string TemplateId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
         /// Gets or sets the content body.
         /// </summary>
         [JsonPropertyName("content")]
@@ -86,24 +64,13 @@ namespace NuScien.Cms
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
-
-        /// <summary>
-        /// Gets or sets the customized template content.
-        /// </summary>
-        [JsonPropertyName("templc")]
-        [Column("templc")]
-        public string TemplateContent
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
     }
 
     /// <summary>
-    /// The publish content entity.
+    /// The publish content template entity.
     /// </summary>
-    [Table("nscontents")]
-    public class ContentEntity : BaseContentEntity
+    [Table("nstemplates")]
+    public class ContentTemplateEntity : BaseContentTemplateEntity
     {
         /// <summary>
         /// Gets or sets the creator identifier.
@@ -121,9 +88,9 @@ namespace NuScien.Cms
         /// </summary>
         /// <param name="message">The commit message.</param>
         /// <returns>A revision entity.</returns>
-        public ContentRevisionEntity CreateRevision(string message)
+        public ContentTemplateRevisionEntity CreateRevision(string message)
         {
-            return new ContentRevisionEntity
+            return new ContentTemplateRevisionEntity
             {
                 Name = Name,
                 Config = Config,
@@ -132,9 +99,6 @@ namespace NuScien.Cms
                 Introduction = Introduction,
                 Thumbnail = Thumbnail,
                 Content = Content,
-                TemplateContent = TemplateContent,
-                TemplateId = TemplateId,
-                ParentId = ParentId,
                 SourceId = Id,
                 Message = message
             };
@@ -142,10 +106,10 @@ namespace NuScien.Cms
     }
 
     /// <summary>
-    /// The revision entity of publish content.
+    /// The revision entity of publish content template.
     /// </summary>
-    [Table("nscontrev")]
-    public class ContentRevisionEntity : BaseContentEntity
+    [Table("nstemplrev")]
+    public class ContentTemplateRevisionEntity : BaseContentTemplateEntity
     {
         /// <summary>
         /// Gets or sets the owner source identifier.

@@ -11,7 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Cms;
 using NuScien.Data;
+using NuScien.Messages;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Reflection;
@@ -522,12 +524,52 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="accessToken">The access token to delete.</param>
         /// <returns>The async task.</returns>
-        public async Task DeleteAccessToken(string accessToken)
+        public async Task DeleteAccessTokenAsync(string accessToken)
         {
             var context = GetContext();
             var list = await context.Tokens.Where(ele => ele.Name == accessToken).ToListAsync();
             context.Tokens.RemoveRange(list);
             await context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Gets a specific publish content.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).Contents.GetByIdAsync(id, includeAllStates, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a specific publish content template.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).ContentTemplates.GetByIdAsync(id, includeAllStates, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="content">The owner content identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+        {
+            var context = GetContext(true);
+            var col = context.ContentComments.Where(ele => ele.SourceId == content);
+            if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.SourceMessageId));
+            col = col.OrderByDescending(ele => ele.LastModificationTime);
+            return await col.ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -666,6 +708,52 @@ namespace NuScien.Security
             }
 
             return await DbResourceEntityExtensions.SaveAsync(context.Settings, context.SaveChangesAsync, entity, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content entity.
+        /// </summary>
+        /// <param name="content">The publish content entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
+        {
+            if (content is null) return ChangeMethods.Invalid;
+            var rev = content.CreateRevision(message);
+            var context = GetContext();
+            var result = await DbResourceEntityExtensions.SaveAsync(context.Contents, context.SaveChangesAsync, content, cancellationToken);
+            await DbResourceEntityExtensions.SaveAsync(context.ContentRevisions, context.SaveChangesAsync, rev, cancellationToken);
+            return result;
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content template entity.
+        /// </summary>
+        /// <param name="template">The publish content template entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
+        {
+            if (template is null) return ChangeMethods.Invalid;
+            var rev = template.CreateRevision(message);
+            var context = GetContext();
+            var result = await DbResourceEntityExtensions.SaveAsync(context.ContentTemplates, context.SaveChangesAsync, template, cancellationToken);
+            await DbResourceEntityExtensions.SaveAsync(context.ContentTemplateRevisions, context.SaveChangesAsync, rev, cancellationToken);
+            return result;
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content comment entity.
+        /// </summary>
+        /// <param name="comment">The publish content comment entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
+        {
+            var context = GetContext();
+            return DbResourceEntityExtensions.SaveAsync(context.ContentComments, context.SaveChangesAsync, comment, cancellationToken);
         }
 
         /// <summary>

@@ -10,8 +10,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
+using NuScien.Messages;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Reflection;
@@ -63,6 +65,7 @@ namespace NuScien.Security
         /// The user group permissions database set.
         /// </summary>
         private readonly List<UserGroupPermissionItemEntity> groupPermissions = new List<UserGroupPermissionItemEntity>();
+
         /// <summary>
         /// The client permissions database set.
         /// </summary>
@@ -72,6 +75,31 @@ namespace NuScien.Security
         /// The settings database set.
         /// </summary>
         private readonly List<SettingsEntity> settings = new List<SettingsEntity>();
+
+        /// <summary>
+        /// The publish contents database set.
+        /// </summary>
+        private readonly List<ContentEntity> contents = new List<ContentEntity>();
+
+        /// <summary>
+        /// The publish content revisions database set.
+        /// </summary>
+        private readonly List<ContentRevisionEntity> contentRevisions = new List<ContentRevisionEntity>();
+
+        /// <summary>
+        /// The publish content templates database set.
+        /// </summary>
+        private readonly List<ContentTemplateEntity> contentTemplates = new List<ContentTemplateEntity>();
+
+        /// <summary>
+        /// The publish content template revisions database set.
+        /// </summary>
+        private readonly List<ContentTemplateRevisionEntity> contentTemplateRevisions = new List<ContentTemplateRevisionEntity>();
+
+        /// <summary>
+        /// The publish content comments database set.
+        /// </summary>
+        private readonly List<ContentCommentEntity> contentComments = new List<ContentCommentEntity>();
 
         /// <summary>
         /// Gets a user entity by given identifier.
@@ -459,12 +487,51 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="accessToken">The access token to delete.</param>
         /// <returns>The async task.</returns>
-        public Task DeleteAccessToken(string accessToken)
+        public Task DeleteAccessTokenAsync(string accessToken)
         {
             return Task.Run(() =>
             {
                 tokens.RemoveAll(ele => ele.Name == accessToken);
             });
+        }
+
+        /// <summary>
+        /// Gets a specific publish content.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
+        {
+            return FirstOrDefaultAsync(contents, ele => ele.Id == id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a specific publish content template.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
+        {
+            return FirstOrDefaultAsync(contentTemplates, ele => ele.Id == id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="content">The owner content identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+        {
+            var col = contentComments.Where(ele => ele.SourceId == content);
+            if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.SourceMessageId));
+            col = col.OrderByDescending(ele => ele.LastModificationTime);
+            return ToListAsync(col, cancellationToken);
         }
 
         /// <summary>
@@ -475,7 +542,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserEntity user, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(user, cancellationToken);
+            return SaveAsync(users, user, cancellationToken);
         }
 
         /// <summary>
@@ -486,7 +553,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(group, cancellationToken);
+            return SaveAsync(groups, group, cancellationToken);
         }
 
         /// <summary>
@@ -497,7 +564,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(TokenEntity token, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(token, cancellationToken);
+            return SaveAsync(tokens, token, cancellationToken);
         }
 
         /// <summary>
@@ -508,7 +575,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(AccessingClientEntity client, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(client, cancellationToken);
+            return SaveAsync(clients, client, cancellationToken);
         }
 
         /// <summary>
@@ -519,7 +586,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(permissionItem, cancellationToken);
+            return SaveAsync(userPermissions, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -530,7 +597,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(permissionItem, cancellationToken);
+            return SaveAsync(groupPermissions, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -541,7 +608,7 @@ namespace NuScien.Security
         /// <returns>An async task result.</returns>
         public Task<ChangeMethods> SaveAsync(ClientPermissionItemEntity permissionItem, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(permissionItem, cancellationToken);
+            return SaveAsync(clientPermissions, permissionItem, cancellationToken);
         }
 
         /// <summary>
@@ -552,7 +619,7 @@ namespace NuScien.Security
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity relationship, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(relationship, cancellationToken);
+            return SaveAsync(relationships, relationship, cancellationToken);
         }
 
 
@@ -564,7 +631,7 @@ namespace NuScien.Security
         /// <returns>The change method result.</returns>
         public Task<ChangeMethods> SaveAsync(AuthorizationCodeEntity code, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(code, cancellationToken);
+            return SaveAsync(codes, code, cancellationToken);
         }
 
         /// <summary>
@@ -581,7 +648,7 @@ namespace NuScien.Security
             if (s != null)
             {
                 s.Config = value;
-                return await SaveAsync(s, cancellationToken);
+                return await SaveAsync(settings, s, cancellationToken);
             }
 
             s = new SettingsEntity
@@ -591,7 +658,46 @@ namespace NuScien.Security
                 State = ResourceEntityStates.Normal,
                 Config = value
             };
-            return await SaveAsync(s, cancellationToken);
+            return await SaveAsync(settings, s, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content entity.
+        /// </summary>
+        /// <param name="content">The publish content entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
+        {
+            var rev = content?.CreateRevision(message);
+            _ = SaveAsync(contentRevisions, rev, cancellationToken);
+            return SaveAsync(contents, content, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content template entity.
+        /// </summary>
+        /// <param name="template">The publish content template entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
+        {
+            var rev = template?.CreateRevision(message);
+            _ = SaveAsync(contentTemplateRevisions, rev, cancellationToken);
+            return SaveAsync(contentTemplates, template, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content comment entity.
+        /// </summary>
+        /// <param name="comment">The publish content comment entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
+        {
+            return SaveAsync(contentComments, comment, cancellationToken);
         }
 
         private Task<IEnumerable<T>> ToListAsync<T>(IEnumerable<T> col, CancellationToken cancellationToken = default)
@@ -606,13 +712,15 @@ namespace NuScien.Security
             return predicate is null ? Task.Run(() => col.FirstOrDefault()) : Task.Run(() => col.FirstOrDefault(predicate));
         }
 
-        private Task<ChangeMethods> SaveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        private Task<ChangeMethods> SaveAsync<T>(IList<T> col, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
-            return ResourceEntityExtensions.SaveAsync(EmptyAction, EmptyAction, entity, cancellationToken);
-        }
-
-        private void EmptyAction<T>(T data)
-        {
+            if (col is null || entity is null) return Task.FromResult(ChangeMethods.Invalid);
+            return ResourceEntityExtensions.SaveAsync(col.Add, ele =>
+            {
+                var removing = col.FirstOrDefault(ele => ele.Id == entity.Id);
+                if (removing != null) col.Remove(removing);
+                col.Add(entity);
+            }, entity, cancellationToken);
         }
     }
 }

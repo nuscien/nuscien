@@ -12,8 +12,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
+using NuScien.Messages;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Reflection;
@@ -75,6 +77,31 @@ namespace NuScien.Security
         /// Gets the settings database set.
         /// </summary>
         public DbSet<SettingsEntity> Settings { get; }
+
+        /// <summary>
+        /// Gets the publish content database set.
+        /// </summary>
+        public DbSet<ContentEntity> Contents { get; }
+
+        /// <summary>
+        /// Gets the publish content revision database set.
+        /// </summary>
+        public DbSet<ContentRevisionEntity> ContentRevisions { get; }
+
+        /// <summary>
+        /// Gets the publish content template database set.
+        /// </summary>
+        public DbSet<ContentTemplateEntity> ContentTemplates { get; }
+
+        /// <summary>
+        /// Gets the publish content template revision database set.
+        /// </summary>
+        public DbSet<ContentTemplateRevisionEntity> ContentTemplateRevisions { get; }
+
+        /// <summary>
+        /// Gets the publish content comment database set.
+        /// </summary>
+        public DbSet<ContentCommentEntity> ContentComments { get; }
 
         /// <summary>
         /// Saves all changes made in this context to the database.
@@ -216,5 +243,30 @@ namespace NuScien.Security
         /// Gets or sets the settings database set.
         /// </summary>
         public DbSet<SettingsEntity> Settings { get; set; }
+
+        /// <summary>
+        /// Gets the publish content database set.
+        /// </summary>
+        public DbSet<ContentEntity> Contents { get; }
+
+        /// <summary>
+        /// Gets the publish content revision database set.
+        /// </summary>
+        public DbSet<ContentRevisionEntity> ContentRevisions { get; }
+
+        /// <summary>
+        /// Gets the publish content template database set.
+        /// </summary>
+        public DbSet<ContentTemplateEntity> ContentTemplates { get; }
+
+        /// <summary>
+        /// Gets the publish content template revision database set.
+        /// </summary>
+        public DbSet<ContentTemplateRevisionEntity> ContentTemplateRevisions { get; }
+
+        /// <summary>
+        /// Gets the publish content comment database set.
+        /// </summary>
+        public DbSet<ContentCommentEntity> ContentComments { get; }
     }
 }

@@ -9,8 +9,11 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+
+using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
+using NuScien.Messages;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Reflection;
@@ -274,7 +277,53 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="accessToken">The access token to delete.</param>
         /// <returns>The async task.</returns>
-        public Task DeleteAccessToken(string accessToken);
+        public Task DeleteAccessTokenAsync(string accessToken);
+
+        /// <summary>
+        /// Gets a specific publish content.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
+
+        ///// <summary>
+        ///// Lists the publish contents.
+        ///// </summary>
+        ///// <param name="siteId">The owner site identifier.</param>
+        ///// <param name="parent">The optional parent content identifier.</param>
+        ///// <param name="q">The optional query arguments.</param>
+        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        ///// <returns>The entity list.</returns>
+        //public Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a specific publish content template.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
+
+        ///// <summary>
+        ///// Lists the publish content templates.
+        ///// </summary>
+        ///// <param name="siteId">The owner site identifier.</param>
+        ///// <param name="q">The optional query arguments.</param>
+        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        ///// <returns>The entity list.</returns>
+        //public Task<IEnumerable<ContentTemplateEntity>> ListContentTemplateAsync(string siteId, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="content">The owner content identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a user entity.
@@ -357,5 +406,31 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
         public Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a publish content entity.
+        /// </summary>
+        /// <param name="content">The publish content entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentEntity content, string message, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a publish content template entity.
+        /// </summary>
+        /// <param name="template">The publish content template entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a publish content comment entity.
+        /// </summary>
+        /// <param name="comment">The publish content comment entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangeMethods> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default);
     }
 }

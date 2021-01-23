@@ -241,7 +241,7 @@ ON [dbo].[nsusergroupperms] ([name], [state], [lastupdate] DESC, [site])
 
 
 /* Contents */
-CREATE TABLE [dbo].[nscontent](
+CREATE TABLE [dbo].[nscontents](
 	[id] [varchar](80) NOT NULL,
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
@@ -254,18 +254,19 @@ CREATE TABLE [dbo].[nscontent](
 	[parent] [varchar](80) NULL,
 	[publisher] [varchar](80) NOT NULL,
 	[thumb] [varchar](250) NULL,
+	[templ] [nvarchar](80) NULL,
 	[content] [nvarchar](max) NULL,
-	[templ] [nvarchar](max) NULL,
-	[creator] [varchar](80) NULL,
- CONSTRAINT [PK_nscontent] PRIMARY KEY CLUSTERED 
+	[templc] [nvarchar](max) NULL,
+	[creator] [varchar](80) NOT NULL,
+ CONSTRAINT [PK_nscontents] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
-CREATE INDEX IX_nscontent
-ON [dbo].[nscontent] ([name], [state], [lastupdate] DESC, [site], [parent], [intro], [publisher])
+CREATE INDEX IX_nscontents
+ON [dbo].[nscontents] ([name], [state], [lastupdate] DESC, [site], [parent], [intro], [publisher])
 
 
 /* Content revisions */
@@ -283,8 +284,9 @@ CREATE TABLE [dbo].[nscontrev](
 	[parent] [varchar](80) NULL,
 	[publisher] [varchar](80) NOT NULL,
 	[thumb] [varchar](250) NULL,
+	[templ] [nvarchar](80) NULL,
 	[content] [nvarchar](max) NULL,
-	[templ] [nvarchar](max) NULL,
+	[templc] [nvarchar](max) NULL,
 	[msg] [varchar](250) NULL,
  CONSTRAINT [PK_nscontrev] PRIMARY KEY CLUSTERED 
 (
@@ -297,8 +299,61 @@ CREATE INDEX IX_nscontrev
 ON [dbo].[nscontrev] ([name], [state], [lastupdate] DESC, [site], [owner], [publisher])
 
 
+/* Content templates */
+CREATE TABLE [dbo].[nstemplates](
+	[id] [varchar](80) NOT NULL,
+	[name] [nvarchar](250) NOT NULL,
+	[state] [int] NOT NULL,
+	[creation] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
+	[revision] [varchar](80) NOT NULL,
+	[config] [nvarchar](max) NULL,
+	[site] [nvarchar](80) NULL,
+	[intro] [varchar](250) NULL,
+	[publisher] [varchar](80) NOT NULL,
+	[thumb] [varchar](250) NULL,
+	[content] [nvarchar](max) NULL,
+	[creator] [varchar](80) NOT NULL,
+ CONSTRAINT [PK_nstemplates] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE INDEX IX_nstemplates
+ON [dbo].[nstemplates] ([name], [state], [lastupdate] DESC, [site], [intro], [publisher])
+
+
+/* Content template revisions */
+CREATE TABLE [dbo].[nstemplrev](
+	[id] [varchar](80) NOT NULL,
+	[name] [nvarchar](250) NOT NULL,
+	[state] [int] NOT NULL,
+	[creation] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
+	[revision] [varchar](80) NOT NULL,
+	[config] [nvarchar](max) NULL,
+	[site] [nvarchar](80) NULL,
+	[owner] [varchar](80) NOT NULL,
+	[intro] [varchar](250) NULL,
+	[publisher] [varchar](80) NOT NULL,
+	[thumb] [varchar](250) NULL,
+	[content] [nvarchar](max) NULL,
+	[msg] [varchar](250) NULL,
+CONSTRAINT [PK_nstemplrev] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE INDEX IX_nstemplrev
+ON [dbo].[nstemplrev] ([name], [state], [lastupdate] DESC, [site], [owner], [publisher])
+
+
 /* Content comments */
-CREATE TABLE [dbo].[nscontcomment](
+CREATE TABLE [dbo].[nscontcomments](
 	[id] [varchar](80) NOT NULL,
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
@@ -309,13 +364,14 @@ CREATE TABLE [dbo].[nscontcomment](
 	[owner] [varchar](80) NOT NULL,
 	[publisher] [varchar](80) NOT NULL,
 	[parent] [varchar](80) NULL,
+	[ancestor] [varchar](80) NULL,
 	[content] [nvarchar](max) NULL,
- CONSTRAINT [PK_nscontcomment] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_nscontcomments] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
-CREATE INDEX IX_nscontcomment
-ON [dbo].[nscontcomment] ([name], [state], [lastupdate] DESC, [parent], [owner], [publisher])
+CREATE INDEX IX_nscontcomments
+ON [dbo].[nscontcomments] ([name], [state], [lastupdate] DESC, [parent], [owner], [publisher])

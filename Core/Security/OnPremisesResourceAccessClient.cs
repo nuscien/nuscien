@@ -325,7 +325,7 @@ namespace NuScien.Security
             Task<int> task = null;
             try
             {
-                await DataProvider.DeleteAccessToken(t.AccessToken);
+                await DataProvider.DeleteAccessTokenAsync(t.AccessToken);
                 var uId = t.UserId;
                 if (!string.IsNullOrWhiteSpace(uId))
                     task = DataProvider.DeleteExpiredClientTokensAsync(uId);
