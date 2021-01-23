@@ -17,7 +17,7 @@ namespace NuScien.Configurations
     /// Settings entity.
     /// </summary>
     [Table("nssettings")]
-    public class SettingsEntity : ConfigurableResourceEntity
+    public class SettingsEntity : BaseSiteOwnerResourceEntity
     {
         /// <summary>
         /// The model.
@@ -144,25 +144,6 @@ namespace NuScien.Configurations
             public T DeserializeGlobalConfig<T>(JsonSerializerOptions options)
             {
                 return JsonSerializer.Deserialize<T>(GlobalConfigString, options);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the owner site identifier.
-        /// </summary>
-        [Column("site")]
-        [DataMember(Name = "site")]
-        [JsonPropertyName("site")]
-        public string OwnerSiteId
-        {
-            get
-            {
-                return GetCurrentProperty<string>();
-            }
-
-            set
-            {
-                SetCurrentProperty(value);
             }
         }
     }

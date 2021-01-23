@@ -181,6 +181,13 @@ namespace NuScien.UnitTest.Data
         }
 
         /// <inheritdoc />
+        public override async Task<ChangeMethodResult> SaveAsync(GoodEntity value, CancellationToken cancellationToken = default)
+        {
+            if (!CoreResources.IsUserSignedIn) return new ChangeMethodResult(ChangeMethods.Invalid);
+            return await base.SaveAsync(value, cancellationToken);
+        }
+
+        /// <inheritdoc />
         protected override void MapQuery(QueryPredication<GoodEntity> source)
         {
             source.AddForString("site", info => info.Source.Where(ele => ele.SiteId == info.Value), true);

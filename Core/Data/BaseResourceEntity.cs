@@ -149,10 +149,10 @@ namespace NuScien.Data
         /// <summary>
         /// Gets or sets the last modification date time.
         /// </summary>
-        [DataMember(Name = "update")]
-        [JsonPropertyName("update")]
+        [DataMember(Name = "lastupdate")]
+        [JsonPropertyName("lastupdate")]
         [JsonConverter(typeof(JsonJavaScriptTicksConverter.FallbackConverter))]
-        [Column("update")]
+        [Column("lastupdate")]
         [Required]
         public DateTime LastModificationTime
         {
@@ -362,6 +362,251 @@ namespace NuScien.Data
             if (json != null) config = null;
         }
 
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public string TryGetStringConfigValue(string key)
+        {
+            return Config?.TryGetStringValue(key);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public int? TryGetInt32ConfigValue(string key)
+        {
+            return Config?.TryGetInt32Value(key);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>The value of the property.</returns>
+        public bool TryGetInt32ConfigValue(string key, out int result)
+        {
+            var json = Config;
+            if (json == null)
+            {
+                result = default;
+                return false;
+            }
+
+            return json.TryGetInt32Value(key, out result);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public long? TryGetInt64ConfigValue(string key)
+        {
+            return Config?.TryGetInt64Value(key);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>The value of the property.</returns>
+        public bool TryGetInt64ConfigValue(string key, out long result)
+        {
+            var json = Config;
+            if (json == null)
+            {
+                result = default;
+                return false;
+            }
+
+            return json.TryGetInt64Value(key, out result);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public double? TryGetDoubleConfigValue(string key)
+        {
+            return Config?.TryGetDoubleValue(key);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>The value of the property.</returns>
+        public bool TryGetDoubleConfigValue(string key, out double result)
+        {
+            var json = Config;
+            if (json == null)
+            {
+                result = default;
+                return false;
+            }
+
+            return json.TryGetDoubleValue(key, out result);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public bool? TryGetBooleanConfigValue(string key)
+        {
+            return Config?.TryGetBooleanValue(key);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>The value of the property.</returns>
+        public bool TryGetBooleanConfigValue(string key, out bool result)
+        {
+            var json = Config;
+            if (json == null)
+            {
+                result = default;
+                return false;
+            }
+
+            return json.TryGetBooleanValue(key, out result);
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public JsonObject TryGetJsonConfigValue(string key)
+        {
+            var json = Config;
+            if (json != null) return json.TryGetObjectValue(key);
+            return default;
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public JsonArray TryGetJsonArrayConfigValue(string key)
+        {
+            var json = Config;
+            if (json != null) return json.TryGetArrayValue(key);
+            return default;
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public JsonValueKind GetConfigValueKind(string key)
+        {
+            var json = Config;
+            try
+            {
+                if (json != null) return json.GetValueKind(key);
+            }
+            catch (ArgumentException)
+            {
+            }
+
+            return JsonValueKind.Undefined;
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public IJsonValueResolver TryGetConfigValue(string key)
+        {
+            var json = Config;
+            try
+            {
+                if (json != null) return json.GetValue(key);
+            }
+            catch (ArgumentException)
+            {
+            }
+
+            return JsonValues.Undefined;
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <returns>The value of the property.</returns>
+        public T TryDeserializeConfigValue<T>(string key)
+        {
+            var json = Config;
+            try
+            {
+                if (json != null) return json.DeserializeValue<T>(key);
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (JsonException)
+            {
+            }
+
+            return default;
+        }
+
+        /// <summary>
+        /// Gets the specific configuration property.
+        /// </summary>
+        /// <param name="key">The property key.</param>
+        /// <param name="result">The result.</param>
+        /// <returns>true if get and deserialize succeeded; otherwise, false.</returns>
+        public bool TryDeserializeConfigValue<T>(string key, out T result)
+        {
+            var json = Config;
+            try
+            {
+                if (json != null)
+                {
+                    result = json.DeserializeValue<T>(key);
+                    return true;
+                }
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (JsonException)
+            {
+            }
+
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Writes the configuration content to the specified writer as a JSON value.
+        /// </summary>
+        /// <param name="writer">The writer to which to write this instance.</param>
+        public void WriteConfigTo(Utf8JsonWriter writer)
+        {
+            var json = Config;
+            if (json != null) json.WriteTo(writer);
+            else writer.WriteNullValue();
+        }
+
         private static JsonObject ParseJson(string s)
         {
             try
@@ -392,6 +637,40 @@ namespace NuScien.Data
             base.FillBaseProperties(entity);
             if (entity is not ConfigurableResourceEntity e) return;
             ConfigString = e.ConfigString;
+        }
+    }
+
+    /// <summary>
+    /// The base owner resource entity.
+    /// </summary>
+    [DataContract]
+    public class BaseSiteOwnerResourceEntity : ConfigurableResourceEntity
+    {
+        /// <summary>
+        /// Gets or sets the owner site identifier.
+        /// </summary>
+        [Column("site")]
+        [DataMember(Name = "site")]
+        [JsonPropertyName("site")]
+        public string OwnerSiteId
+        {
+            get
+            {
+                return GetCurrentProperty<string>();
+            }
+
+            set
+            {
+                SetCurrentProperty(value);
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not BaseSiteOwnerResourceEntity e) return;
+            OwnerSiteId = e.OwnerSiteId;
         }
     }
 

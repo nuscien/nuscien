@@ -81,7 +81,7 @@ namespace NuScien.Security
             get
             {
                 var time = GroupsCacheTime;
-                if (!time.HasValue || groupsCache == null || (DateTime.Now - time.Value).TotalMinutes > 2) return null;
+                if (!time.HasValue || groupsCache == null || (DateTime.Now - time.Value).TotalMinutes > (isLongCacheDuration ? 4 : 2)) return null;
                 return groupsCache;
             }
 
@@ -106,8 +106,8 @@ namespace NuScien.Security
             {
                 if (isLongCacheDuration == value) return;
                 isLongCacheDuration = value;
-                settings.Expiration = value ? TimeSpan.FromHours(2) : TimeSpan.FromMinutes(3);
-                siteSettings.Expiration = value ? TimeSpan.FromHours(2) : TimeSpan.FromMinutes(10);
+                settings.Expiration = value ? TimeSpan.FromHours(1) : TimeSpan.FromMinutes(3);
+                siteSettings.Expiration = value ? TimeSpan.FromHours(1) : TimeSpan.FromMinutes(10);
             }
         }
 

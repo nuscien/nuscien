@@ -16,6 +16,8 @@ using Trivial.Net;
 using Trivial.Security;
 using Trivial.Text;
 
+using ResourceAccessClients = NuScien.UnitTest.Security.ResourceAccessClients;
+
 namespace NuScien.UnitTest.Data
 {
     /// <summary>
@@ -74,7 +76,11 @@ namespace NuScien.UnitTest.Data
                 SiteId = string.Empty
             };
             good.State = ResourceEntityStates.Normal;
-            await context.Goods.SaveAsync(good);
+            var result = await context.Goods.SaveAsync(good);
+            Assert.AreEqual(ChangeMethods.Invalid, result.State);
+            await context.CoreResources.SignInAsync(ResourceAccessClients.AppKey, ResourceAccessClients.NameAndPassword);
+            result = await context.Goods.SaveAsync(good);
+            Assert.AreNotEqual(ChangeMethods.Invalid, result.State);
             goods = await context.Goods.SearchAsync("Test");
             Assert.AreEqual(1, goods.CurrentCount);
             Assert.AreEqual(good.Id, goods.Value.FirstOrDefault()?.Id);
@@ -88,6 +94,9 @@ namespace NuScien.UnitTest.Data
             Assert.AreEqual("Test", good.Name);
             good = await context.Goods.GetAsync(good.Id);
             Assert.IsNull(good);
+
+            // Sign out
+            await context.CoreResources.SignOutAsync();
         }
     }
 }

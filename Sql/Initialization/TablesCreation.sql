@@ -7,13 +7,14 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+
 /* Settings */
 CREATE TABLE [dbo].[nssettings](
 	[id] [varchar](80) NOT NULL,
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[site] [nvarchar](80) NULL,
 	[config] [nvarchar](max) NULL,
@@ -25,7 +26,7 @@ CREATE TABLE [dbo].[nssettings](
 GO
 
 CREATE INDEX IX_nssettings
-ON [dbo].[nssettings] ([name], [state], [update] DESC, [site])
+ON [dbo].[nssettings] ([name], [state], [lastupdate] DESC, [site])
 
 
 /* Clients */
@@ -34,7 +35,7 @@ CREATE TABLE [dbo].[nsclients](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[nickname] [nvarchar](250) NULL,
 	[avatar] [nvarchar](250) NULL,
@@ -48,7 +49,7 @@ CREATE TABLE [dbo].[nsclients](
 GO
 
 CREATE INDEX IX_nsclients
-ON [dbo].[nsclients] ([name], [state], [update] DESC, [group])
+ON [dbo].[nsclients] ([name], [state], [lastupdate] DESC, [group])
 
 
 /* Users */
@@ -57,7 +58,7 @@ CREATE TABLE [dbo].[nsusers](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[nickname] [nvarchar](250) NULL,
 	[avatar] [nvarchar](250) NULL,
@@ -73,7 +74,7 @@ CREATE TABLE [dbo].[nsusers](
 GO
 
 CREATE INDEX IX_nsusers
-ON [dbo].[nsusers] ([name], [state], [update] DESC, [nickname])
+ON [dbo].[nsusers] ([name], [state], [lastupdate] DESC, [nickname])
 
 
 /* User groups */
@@ -82,7 +83,7 @@ CREATE TABLE [dbo].[nsusergroups](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[nickname] [nvarchar](250) NULL,
 	[avatar] [nvarchar](250) NULL,
@@ -97,7 +98,7 @@ CREATE TABLE [dbo].[nsusergroups](
 GO
 
 CREATE INDEX IX_nsusergroups
-ON [dbo].[nsusergroups] ([name], [state], [update] DESC, [nickname], [site])
+ON [dbo].[nsusergroups] ([name], [state], [lastupdate] DESC, [nickname], [site])
 
 
 /* User group relatonships */
@@ -106,7 +107,7 @@ CREATE TABLE [dbo].[nsusergrouprelas](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[config] [nvarchar](max) NULL,
 	[owner] [varchar](80) NOT NULL,
@@ -120,7 +121,7 @@ CREATE TABLE [dbo].[nsusergrouprelas](
 GO
 
 CREATE INDEX IX_nsusergrouprelas
-ON [dbo].[nsusergrouprelas] ([name], [state], [update] DESC, [owner])
+ON [dbo].[nsusergrouprelas] ([name], [state], [lastupdate] DESC, [owner])
 
 
 /* Access tokens */
@@ -129,7 +130,7 @@ CREATE TABLE [dbo].[nstokens](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[refreshtoken] [nvarchar](250) NULL,
 	[expiration] [datetime2](7) NOT NULL,
@@ -145,7 +146,7 @@ CREATE TABLE [dbo].[nstokens](
 GO
 
 CREATE INDEX IX_nstokens
-ON [dbo].[nstokens] ([name], [state], [update] DESC, [user])
+ON [dbo].[nstokens] ([name], [state], [lastupdate] DESC, [user])
 
 
 /* Autherization codes */
@@ -154,7 +155,7 @@ CREATE TABLE [dbo].[nsauthcodes](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[config] [nvarchar](max) NULL,
 	[owner] [varchar](80) NOT NULL,
@@ -170,7 +171,7 @@ CREATE TABLE [dbo].[nsauthcodes](
 GO
 
 CREATE INDEX IX_nsauthcodes
-ON [dbo].[nsauthcodes] ([name], [state], [update] DESC, [owner])
+ON [dbo].[nsauthcodes] ([name], [state], [lastupdate] DESC, [owner])
 
 
 /* Client permissions */
@@ -179,7 +180,7 @@ CREATE TABLE [dbo].[nsclientperms](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[site] [nvarchar](80) NULL,
 	[target] [varchar](80) NOT NULL,
@@ -192,7 +193,7 @@ CREATE TABLE [dbo].[nsclientperms](
 GO
 
 CREATE INDEX IX_nsclientperms
-ON [dbo].[nsclientperms] ([name], [state], [update] DESC, [site])
+ON [dbo].[nsclientperms] ([name], [state], [lastupdate] DESC, [site])
 
 
 /* User permissions */
@@ -201,7 +202,7 @@ CREATE TABLE [dbo].[nsuserperms](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[site] [nvarchar](80) NULL,
 	[target] [varchar](80) NOT NULL,
@@ -214,7 +215,7 @@ CREATE TABLE [dbo].[nsuserperms](
 GO
 
 CREATE INDEX IX_nsuserperms
-ON [dbo].[nsuserperms] ([name], [state], [update] DESC, [site])
+ON [dbo].[nsuserperms] ([name], [state], [lastupdate] DESC, [site])
 
 
 /* User group permissions */
@@ -223,7 +224,7 @@ CREATE TABLE [dbo].[nsusergroupperms](
 	[name] [nvarchar](250) NOT NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
 	[site] [nvarchar](80) NULL,
 	[target] [varchar](80) NOT NULL,
@@ -236,5 +237,85 @@ CREATE TABLE [dbo].[nsusergroupperms](
 GO
 
 CREATE INDEX IX_nsusergroupperms
-ON [dbo].[nsusergroupperms] ([name], [state], [update] DESC, [site])
+ON [dbo].[nsusergroupperms] ([name], [state], [lastupdate] DESC, [site])
 
+
+/* Contents */
+CREATE TABLE [dbo].[nscontent](
+	[id] [varchar](80) NOT NULL,
+	[name] [nvarchar](250) NOT NULL,
+	[state] [int] NOT NULL,
+	[creation] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
+	[revision] [varchar](80) NOT NULL,
+	[config] [nvarchar](max) NULL,
+	[site] [nvarchar](80) NULL,
+	[intro] [varchar](250) NULL,
+	[parent] [varchar](80) NULL,
+	[publisher] [varchar](80) NOT NULL,
+	[thumb] [varchar](250) NULL,
+	[content] [nvarchar](max) NULL,
+	[templ] [nvarchar](max) NULL,
+	[creator] [varchar](80) NULL,
+ CONSTRAINT [PK_nscontent] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE INDEX IX_nscontent
+ON [dbo].[nscontent] ([name], [state], [lastupdate] DESC, [site], [parent], [intro], [publisher])
+
+
+/* Content revisions */
+CREATE TABLE [dbo].[nscontrev](
+	[id] [varchar](80) NOT NULL,
+	[name] [nvarchar](250) NOT NULL,
+	[state] [int] NOT NULL,
+	[creation] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
+	[revision] [varchar](80) NOT NULL,
+	[config] [nvarchar](max) NULL,
+	[site] [nvarchar](80) NULL,
+	[owner] [varchar](80) NOT NULL,
+	[intro] [varchar](250) NULL,
+	[parent] [varchar](80) NULL,
+	[publisher] [varchar](80) NOT NULL,
+	[thumb] [varchar](250) NULL,
+	[content] [nvarchar](max) NULL,
+	[templ] [nvarchar](max) NULL,
+	[msg] [varchar](250) NULL,
+ CONSTRAINT [PK_nscontrev] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE INDEX IX_nscontrev
+ON [dbo].[nscontrev] ([name], [state], [lastupdate] DESC, [site], [owner], [publisher])
+
+
+/* Content comments */
+CREATE TABLE [dbo].[nscontcomment](
+	[id] [varchar](80) NOT NULL,
+	[name] [nvarchar](250) NOT NULL,
+	[state] [int] NOT NULL,
+	[creation] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
+	[revision] [varchar](80) NOT NULL,
+	[config] [nvarchar](max) NULL,
+	[owner] [varchar](80) NOT NULL,
+	[publisher] [varchar](80) NOT NULL,
+	[parent] [varchar](80) NULL,
+	[content] [nvarchar](max) NULL,
+ CONSTRAINT [PK_nscontcomment] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE INDEX IX_nscontcomment
+ON [dbo].[nscontcomment] ([name], [state], [lastupdate] DESC, [parent], [owner], [publisher])

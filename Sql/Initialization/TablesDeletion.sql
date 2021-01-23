@@ -31,3 +31,11 @@ GO
 DROP TABLE [dbo].[nsusergroupperms]
 GO
 
+DROP TABLE [dbo].[nscontent]
+GO
+
+DROP TABLE [dbo].[nscontrev]
+GO
+
+DROP TABLE [dbo].[nscontcomment]
+GO

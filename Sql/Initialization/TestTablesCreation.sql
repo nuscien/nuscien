@@ -16,7 +16,7 @@ CREATE TABLE [dbo].[testcustomers](
 	[site] [nvarchar](80) NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
  CONSTRAINT [PK_testcustomers] PRIMARY KEY CLUSTERED 
 (
@@ -26,7 +26,7 @@ CREATE TABLE [dbo].[testcustomers](
 GO
 
 CREATE INDEX IX_testcustomers
-ON [dbo].[testcustomers] ([name], [state], [update] DESC, [site])
+ON [dbo].[testcustomers] ([name], [state], [lastupdate] DESC, [site])
 
 
 /* Goods */
@@ -37,7 +37,7 @@ CREATE TABLE [dbo].[testgoods](
 	[site] [nvarchar](80) NULL,
 	[state] [int] NOT NULL,
 	[creation] [datetime2](7) NOT NULL,
-	[update] [datetime2](7) NOT NULL,
+	[lastupdate] [datetime2](7) NOT NULL,
 	[revision] [varchar](80) NOT NULL,
  CONSTRAINT [PK_testgoods] PRIMARY KEY CLUSTERED 
 (
@@ -47,5 +47,5 @@ CREATE TABLE [dbo].[testgoods](
 GO
 
 CREATE INDEX IX_testgoods
-ON [dbo].[testgoods] ([name], [state], [update] DESC, [site])
+ON [dbo].[testgoods] ([name], [state], [lastupdate] DESC, [site])
 

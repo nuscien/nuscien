@@ -4,7 +4,7 @@
 
 [![MIT Licensed](./docs/assets/badge_lisence_MIT.svg)](https://github.com/nuscien/nuscien/blob/master/LICENSE)
 
-A framework with ACL, CMS and message management.
+A framework with ACL and CMS.
 
 See [sample and tutorials](https://github.com/nuscien/sample) to get start. Following are the introduction for each project.
 
