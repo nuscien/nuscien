@@ -248,24 +248,6 @@ namespace NuScien.Data
             return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
         }
 
-        /// <summary>
-        /// Tests if the state is successful.
-        /// </summary>
-        /// <returns>true if the state is for success.</returns>
-        public static bool IsSuccess(ChangeMethods state)
-        {
-            return state switch
-            {
-                ChangeMethods.Add => true,
-                ChangeMethods.Same => true,
-                ChangeMethods.Unchanged => true,
-                ChangeMethods.Remove => true,
-                ChangeMethods.MemberModify => true,
-                ChangeMethods.Update => true,
-                _ => false
-            };
-        }
-
         internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken)
         {
             if (q != null)

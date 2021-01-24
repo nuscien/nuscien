@@ -560,6 +560,21 @@ namespace NuScien.Data
         /// <param name="source">The sequence to remove duplicate elements from.</param>
         /// <returns>An collection that contains distinct elements from the source sequence.</returns>
         public static IEnumerable<T> DistinctById<T>(this IEnumerable<T> source) where T : BaseResourceEntity => source?.Where(ele => !string.IsNullOrWhiteSpace(ele?.Id))?.Distinct(ResourceEntityIdComparer<T>.Singleton);
+
+        /// <summary>
+        /// Tests if the state is successful.
+        /// </summary>
+        /// <returns>true if the state is for success.</returns>
+        public static bool IsSuccessful(ChangeMethods state) => state switch
+        {
+            ChangeMethods.Unchanged => true,
+            ChangeMethods.Same => true,
+            ChangeMethods.Add => true,
+            ChangeMethods.Update => true,
+            ChangeMethods.MemberModify => true,
+            ChangeMethods.Remove => true,
+            _ => false
+        };
     }
 
     /// <summary>

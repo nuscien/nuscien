@@ -181,9 +181,21 @@ namespace NuScien.Web
         public static ActionResult ToActionResult(this ChangeMethodResult value)
         {
             if (value == null) return new NotFoundResult();
+            var ex = value.GetException();
+            var status = ex != null ? (GetStatusCode(ex) ?? 500) : 200;
+            if (status >= 300)
+            {
+                status = value.ErrorCode switch
+                {
+                    ChangeErrorKinds.NotFound => 404,
+                    ChangeErrorKinds.Busy => 503,
+                    _ => status
+                };
+            }
+
             return new JsonResult(value)
             {
-                StatusCode = value.State == ChangeMethods.Invalid ? 403 : 200
+                StatusCode = status
             };
         }
 
@@ -265,31 +277,11 @@ namespace NuScien.Web
         {
             if (ex == null) return controller.StatusCode(500);
             var result = new ErrorMessageResult(ex);
-            var status = 500;
-            if (ex is InvalidOperationException && ex.InnerException != null) ex = ex.InnerException;
-            if (ex is SecurityException) status = 403;
-            else if (ex is UnauthorizedAccessException) status = 401;
-            else if (ex is NotImplementedException) status = 502;
-            else if (ex is TimeoutException) status = 408;
-            else if (ex is OperationCanceledException) status = 408;
-            if (ignoreUnknownException && !(
-                ex is InvalidOperationException
-                || ex is ArgumentException
-                || ex is NullReferenceException
-                || ex is System.Data.Common.DbException
-                || ex is System.Text.Json.JsonException
-                || ex is System.Runtime.Serialization.SerializationException
-                || ex is ObjectDisposedException
-                || ex is FailedHttpException
-                || ex is IOException
-                || ex is ApplicationException
-                || ex is InvalidCastException
-                || ex is FormatException
-                || ex is InvalidDataException)) return null;
-
+            var status = GetStatusCode(ex, ignoreUnknownException);
+            if (!status.HasValue) return null;
             return new JsonResult(result)
             {
-                StatusCode = status
+                StatusCode = status.Value
             };
         }
 
@@ -506,6 +498,38 @@ namespace NuScien.Web
         {
             if (!header.TryGetValue(key, out var col)) return null;
             return col.FirstOrDefault(ele => !string.IsNullOrWhiteSpace(ele));
+        }
+
+        /// <summary>
+        /// Gets the status code.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        /// <param name="ignoreUnknownException">true if return null for unknown exception; otherwise, false.</param>
+        /// <returns>The action result.</returns>
+        private static int? GetStatusCode(Exception ex, bool ignoreUnknownException = false)
+        {
+            if (ex == null) return 500;
+            if (ex is AggregateException && ex.InnerException != null) ex = ex.InnerException;
+            if (ex is SecurityException) return 403;
+            else if (ex is UnauthorizedAccessException) return 401;
+            else if (ex is NotImplementedException) return 502;
+            else if (ex is TimeoutException) return 408;
+            else if (ex is OperationCanceledException) return 408;
+            if (ignoreUnknownException && !(
+                ex is InvalidOperationException
+                || ex is ArgumentException
+                || ex is NullReferenceException
+                || ex is System.Data.Common.DbException
+                || ex is System.Text.Json.JsonException
+                || ex is System.Runtime.Serialization.SerializationException
+                || ex is ObjectDisposedException
+                || ex is FailedHttpException
+                || ex is IOException
+                || ex is ApplicationException
+                || ex is InvalidCastException
+                || ex is FormatException
+                || ex is InvalidDataException)) return null;
+            return 500;
         }
     }
 }
