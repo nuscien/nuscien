@@ -270,7 +270,7 @@ namespace NuScien.Data
         /// 'await' to ensure that any asynchronous operations have completed before calling
         /// another method on this context.
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>A number of state entries written to the database.</returns>
         /// <exception cref="DbUpdateException">An error is encountered while saving to the database.</exception>
         protected virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
