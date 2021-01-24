@@ -46,11 +46,30 @@ namespace NuScien.Reflection
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the properties are slim.
+        /// </summary>
+        [NotMapped]
+        [JsonPropertyName("slim")]
+        public bool IsSlim { get; set; }
+
+        /// <summary>
         /// Sets the properties read-only to access.
         /// </summary>
         public void SetPropertiesReadonly()
         {
             PropertiesSettingPolicy = preferThrowExceptionWhenSetPropertyFailed ? PropertySettingPolicies.Forbidden : PropertySettingPolicies.Skip;
+        }
+
+        /// <summary>
+        /// Gets a property value.
+        /// </summary>
+        /// <typeparam name="T">The type of the property value.</typeparam>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="key">The additional key.</param>
+        /// <returns>A property value; or null if slim.</returns>
+        protected T GetCurrentPropertyWhenNotSlim<T>(T defaultValue = default, [CallerMemberName] string key = null) where T : class
+        {
+            return GetCurrentProperty(defaultValue, key);
         }
     }
 }

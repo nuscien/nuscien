@@ -288,15 +288,32 @@ namespace NuScien.Security
         /// <returns>The entity to get.</returns>
         public Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
 
-        ///// <summary>
-        ///// Lists the publish contents.
-        ///// </summary>
-        ///// <param name="siteId">The owner site identifier.</param>
-        ///// <param name="parent">The optional parent content identifier.</param>
-        ///// <param name="q">The optional query arguments.</param>
-        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        ///// <returns>The entity list.</returns>
-        //public Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="parent">The optional parent content identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentRevisionEntity>> ListContentRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<ContentRevisionEntity> GetContentRevisionAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a specific publish content template.
@@ -307,23 +324,57 @@ namespace NuScien.Security
         /// <returns>The entity to get.</returns>
         public Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
 
-        ///// <summary>
-        ///// Lists the publish content templates.
-        ///// </summary>
-        ///// <param name="siteId">The owner site identifier.</param>
-        ///// <param name="q">The optional query arguments.</param>
-        ///// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        ///// <returns>The entity list.</returns>
-        //public Task<IEnumerable<ContentTemplateEntity>> ListContentTemplateAsync(string siteId, QueryArgs q = null, CancellationToken cancellationToken = default);
-
         /// <summary>
         /// Lists the publish content templates.
         /// </summary>
-        /// <param name="content">The owner content identifier.</param>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentTemplateEntity>> ListContentTemplateAsync(string siteId, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentTemplateRevisionEntity>> ListContentTemplateRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<ContentTemplateRevisionEntity> GetContentTemplateRevisionAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentCommentEntity> GetContentCommentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the publish content comments.
+        /// </summary>
+        /// <param name="content">The owner content comment identifier.</param>
         /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
         public Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the child comments of a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a user entity.

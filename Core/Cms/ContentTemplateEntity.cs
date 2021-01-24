@@ -61,7 +61,7 @@ namespace NuScien.Cms
         [Column("content")]
         public string Content
         {
-            get => GetCurrentProperty<string>();
+            get => GetCurrentPropertyWhenNotSlim<string>();
             set => SetCurrentProperty(value);
         }
     }
@@ -125,8 +125,8 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the commit message.
         /// </summary>
-        [JsonPropertyName("msg")]
-        [Column("msg")]
+        [JsonPropertyName("message")]
+        [Column("message")]
         public string Message
         {
             get => GetCurrentProperty<string>();

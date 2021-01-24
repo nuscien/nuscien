@@ -53,5 +53,15 @@ namespace NuScien.Security
         /// The CMS deletion.
         /// </summary>
         public const string CmsDeletion = "cms-delete";
+
+        /// <summary>
+        /// The CMS template management.
+        /// </summary>
+        public const string CmsTemplate = "cms-template";
+
+        /// <summary>
+        /// The CMS comments management.
+        /// </summary>
+        public const string CmsComments = "cms-comments";
     }
 }

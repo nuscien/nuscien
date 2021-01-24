@@ -137,6 +137,77 @@ namespace NuScien.Data
             return b.Options;
         }
 
+        /// <summary>
+        /// Filters the entity collection.
+        /// </summary>
+        /// <typeparam name="T">The type of entity.</typeparam>
+        /// <typeparam name="TKey">The type of the key returned by the function that is represented by keySelector.</typeparam>
+        /// <param name="col">The entity collection.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="keySelector">A function to extract a key from an element.</param>
+        /// <param name="isDesc">true if descending; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>A list of entity.</returns>
+        public static Task<List<T>> ToListAsync<T, TKey>(this IQueryable<T> col, QueryArgs q, Expression<Func<T, bool>> predicate, Expression<Func<T, TKey>> keySelector, bool isDesc = false, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        {
+            if (col == null) return null;
+            if (q != null)
+            {
+                if (!string.IsNullOrWhiteSpace(q.NameQuery)) col = q.NameExactly ? col.Where(ele => ele.Name == q.NameQuery) : col.Where(ele => ele.Name != null && ele.Name.Contains(q.NameQuery));
+                if (predicate != null) col = col.Where(predicate);
+                if (keySelector == null)
+                {
+                    col = OrderBy(col, q.Order == ResourceEntityOrders.Default ? ResourceEntityOrders.Latest : q.Order);
+                }
+                else
+                {
+                    col = isDesc ? col.OrderByDescending(keySelector) : col.OrderBy(keySelector);
+                }
+
+                if (q.Offset > 0) col = col.Skip(q.Offset);
+                col = col.Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize);
+            }
+            else
+            {
+                if (predicate != null) col = col.Where(predicate);
+                if (keySelector != null) col = isDesc ? col.OrderByDescending(keySelector) : col.OrderBy(keySelector);
+                col = col.Take(ResourceEntityExtensions.PageSize);
+            }
+
+            return col.ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Filters the entity collection.
+        /// </summary>
+        /// <typeparam name="T">The type of entity.</typeparam>
+        /// <param name="col">The entity collection.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="defaultOrder">The default order.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>A list of entity.</returns>
+        public static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, Expression<Func<T, bool>> predicate, ResourceEntityOrders defaultOrder, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        {
+            if (col == null) return null;
+            if (q != null)
+            {
+                if (!string.IsNullOrWhiteSpace(q.NameQuery)) col = q.NameExactly ? col.Where(ele => ele.Name == q.NameQuery) : col.Where(ele => ele.Name != null && ele.Name.Contains(q.NameQuery));
+                if (predicate != null) col = col.Where(predicate);
+                col = OrderBy(col, q.Order == ResourceEntityOrders.Default ? defaultOrder : q.Order);
+                if (q.Offset > 0) col = col.Skip(q.Offset);
+                col = col.Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize);
+            }
+            else
+            {
+                if (predicate != null) col = col.Where(predicate);
+                col = col.Take(ResourceEntityExtensions.PageSize);
+            }
+
+            return col.ToListAsync(cancellationToken);
+        }
+
         internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken)
         {
             if (q != null)
@@ -155,6 +226,18 @@ namespace NuScien.Data
         internal static Task<int> SaveChangesFailureAsync(CancellationToken cancellationToken)
         {
             throw new DbUpdateException("No implementation for save handler.", new NotImplementedException("Cannot find SaveChangesAsync method."));
+        }
+
+        private static IQueryable<T> OrderBy<T>(IQueryable<T> source, ResourceEntityOrders order) where T : BaseResourceEntity
+        {
+            return order switch
+            {
+                ResourceEntityOrders.Latest => source.OrderByDescending(ele => ele.LastModificationTime),
+                ResourceEntityOrders.Time => source.OrderBy(ele => ele.LastModificationTime),
+                ResourceEntityOrders.Name => source.OrderBy(ele => ele.Name),
+                ResourceEntityOrders.Z2A => source.OrderByDescending(ele => ele.Name),
+                _ => source
+            };
         }
     }
 }

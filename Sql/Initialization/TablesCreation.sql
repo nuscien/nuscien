@@ -287,7 +287,7 @@ CREATE TABLE [dbo].[nscontrev](
 	[templ] [nvarchar](80) NULL,
 	[content] [nvarchar](max) NULL,
 	[templc] [nvarchar](max) NULL,
-	[msg] [varchar](250) NULL,
+	[message] [varchar](250) NULL,
  CONSTRAINT [PK_nscontrev] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
@@ -340,7 +340,7 @@ CREATE TABLE [dbo].[nstemplrev](
 	[publisher] [varchar](80) NOT NULL,
 	[thumb] [varchar](250) NULL,
 	[content] [nvarchar](max) NULL,
-	[msg] [varchar](250) NULL,
+	[message] [varchar](250) NULL,
 CONSTRAINT [PK_nstemplrev] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC

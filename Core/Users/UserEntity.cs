@@ -58,7 +58,7 @@ namespace NuScien.Users
     /// </summary>
     [DataContract]
     [Table("nsusers")]
-    public class UserEntity : BaseSecurityEntity, IEnumerable<Claim>
+    public class UserEntity : BaseSecurityEntity
     {
         /// <summary>
         /// Gets the security entity type.
@@ -183,6 +183,17 @@ namespace NuScien.Users
         /// <returns>The claim enumerator.</returns>
         public new IEnumerator<Claim> GetEnumerator()
         {
+            return GetClaims().GetEnumerator();
+        }
+
+        private string HashPassword(string original)
+        {
+            var s = $"{original?.Trim()} - {Name?.Trim()}";
+            return HashUtility.ComputeSHA512String(s);
+        }
+
+        private List<Claim> GetClaims()
+        {
             var col = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, Nickname),
@@ -190,22 +201,7 @@ namespace NuScien.Users
                 new Claim(ClaimTypes.Gender, Gender.ToString())
             };
             if (Birthday.HasValue) col.Add(new Claim(ClaimTypes.DateOfBirth, Birthday.ToString()));
-            return col.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the user.
-        /// </summary>
-        /// <returns>The claim enumerator.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        private string HashPassword(string original)
-        {
-            var s = $"{original?.Trim()} - {Name?.Trim()}";
-            return HashUtility.ComputeSHA512String(s);
+            return col;
         }
 
         /// <summary>
@@ -216,7 +212,7 @@ namespace NuScien.Users
         public static explicit operator ClaimsIdentity (UserEntity user)
         {
             if (user == null) return null;
-            return new ClaimsIdentity(user);
+            return new ClaimsIdentity(user.GetClaims());
         }
     }
 

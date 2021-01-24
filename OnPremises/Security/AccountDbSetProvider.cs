@@ -545,6 +545,42 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="parent">The optional parent content identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return await GetContext(true).Contents.ToListAsync(q, ele => ele.OwnerSiteId == siteId && ele.ParentId == parent, ResourceEntityOrders.Latest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentRevisionEntity>> ListContentRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return await GetContext(true).ContentRevisions.ToListAsync(q, ele => ele.SourceId == source, ResourceEntityOrders.Latest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<ContentRevisionEntity> GetContentRevisionAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).ContentRevisions.GetByIdAsync(id, true, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a specific publish content template.
         /// </summary>
         /// <param name="id">The identifier of the publish content template.</param>
@@ -559,7 +595,54 @@ namespace NuScien.Security
         /// <summary>
         /// Lists the publish content templates.
         /// </summary>
-        /// <param name="content">The owner content identifier.</param>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentTemplateEntity>> ListContentTemplateAsync(string siteId, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return await GetContext(true).ContentTemplates.ToListAsync(q, ele => ele.OwnerSiteId == siteId, ResourceEntityOrders.Latest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentTemplateRevisionEntity>> ListContentTemplateRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return await GetContext(true).ContentTemplateRevisions.ToListAsync(q, ele => ele.SourceId == source, ResourceEntityOrders.Latest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<ContentTemplateRevisionEntity> GetContentTemplateRevisionAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).ContentTemplateRevisions.GetByIdAsync(id, true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public Task<ContentCommentEntity> GetContentCommentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
+        {
+            return GetContext(true).ContentComments.GetByIdAsync(id, true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the publish content comments.
+        /// </summary>
+        /// <param name="content">The owner content comment identifier.</param>
         /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
@@ -568,6 +651,20 @@ namespace NuScien.Security
             var context = GetContext(true);
             var col = context.ContentComments.Where(ele => ele.SourceId == content);
             if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.SourceMessageId));
+            col = col.OrderByDescending(ele => ele.LastModificationTime);
+            return await col.ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the child comments of a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var context = GetContext(true);
+            var col = context.ContentComments.Where(ele => ele.SourceMessageId == id);
             col = col.OrderByDescending(ele => ele.LastModificationTime);
             return await col.ToListAsync(cancellationToken);
         }

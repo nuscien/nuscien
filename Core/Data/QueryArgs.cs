@@ -59,6 +59,13 @@ namespace NuScien.Data
         public ResourceEntityStates State { get; set; } = ResourceEntityStates.Normal;
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        [DataMember(Name = "order")]
+        [JsonPropertyName("order")]
+        public ResourceEntityOrders Order { get; set; } = ResourceEntityOrders.Default;
+
+        /// <summary>
         /// Gets the query condition.
         /// </summary>
         /// <returns>The string condition instance of query name.</returns>
@@ -102,6 +109,7 @@ namespace NuScien.Data
             writer.WriteNumber("offset", Offset);
             writer.WriteNumber("count", Count);
             writer.WriteNumber("state", (int)State);
+            writer.WriteNumber("order", (int)Order);
             writer.WriteEndObject();
         }
 
@@ -126,7 +134,7 @@ namespace NuScien.Data
         public bool Equals(QueryArgs obj)
         {
             if (obj is null) return false;
-            return obj.NameQuery == NameQuery && obj.NameExactly == NameExactly && obj.Offset == Offset && obj.Count == Count && obj.State == State;
+            return obj.NameQuery == NameQuery && obj.NameExactly == NameExactly && obj.Offset == Offset && obj.Count == Count && obj.State == State && obj.Order == Order;
         }
 
         /// <inheritdoc />
@@ -162,6 +170,18 @@ namespace NuScien.Data
                     result.State = stateResult;
             }
 
+            stateNum = q.TryGetInt32Value("order");
+            if (stateNum.HasValue)
+            {
+                result.Order = (ResourceEntityOrders)stateNum.Value;
+            }
+            else
+            {
+                var stateStr = q.GetValue("order");
+                if (!string.IsNullOrWhiteSpace(stateStr) && Enum.TryParse<ResourceEntityOrders>(stateStr, true, out var stateResult))
+                    result.Order = stateResult;
+            }
+
             return result;
         }
 
@@ -179,7 +199,8 @@ namespace NuScien.Data
                 { "eq_name", q.NameExactly },
                 { "offset", q.Offset.ToString("g") },
                 { "count", q.Count.ToString("g") },
-                { "state", ((int)q.State).ToString("g") }
+                { "state", ((int)q.State).ToString("g") },
+                { "order", ((int)q.Order).ToString("g") }
             };
         }
 
@@ -197,7 +218,8 @@ namespace NuScien.Data
                 { "eq_name", q.NameExactly },
                 { "offset", q.Offset.ToString("g") },
                 { "count", q.Count.ToString("g") },
-                { "state", ((int)q.State).ToString("g") }
+                { "state", ((int)q.State).ToString("g") },
+                { "order", ((int)q.Order).ToString("g") }
             };
         }
 
@@ -212,7 +234,7 @@ namespace NuScien.Data
         {
             if (ReferenceEquals(leftValue, rightValue)) return true;
             if (rightValue is null || leftValue is null) return false;
-            return leftValue.NameQuery == rightValue.NameQuery && leftValue.NameExactly == rightValue.NameExactly && leftValue.Offset == rightValue.Offset && leftValue.Count == rightValue.Count && leftValue.State == rightValue.State;
+            return leftValue.NameQuery == rightValue.NameQuery && leftValue.NameExactly == rightValue.NameExactly && leftValue.Offset == rightValue.Offset && leftValue.Count == rightValue.Count && leftValue.State == rightValue.State && leftValue.Order == rightValue.Order;
         }
 
         /// <summary>
@@ -226,7 +248,7 @@ namespace NuScien.Data
         {
             if (ReferenceEquals(leftValue, rightValue)) return false;
             if (rightValue is null || leftValue is null) return true;
-            return leftValue.NameQuery != rightValue.NameQuery || leftValue.NameExactly != rightValue.NameExactly || leftValue.Offset != rightValue.Offset || leftValue.Count != rightValue.Count || leftValue.State != rightValue.State;
+            return leftValue.NameQuery != rightValue.NameQuery || leftValue.NameExactly != rightValue.NameExactly || leftValue.Offset != rightValue.Offset || leftValue.Count != rightValue.Count || leftValue.State != rightValue.State || leftValue.Order != rightValue.Order;
         }
 
         /// <summary>
@@ -275,7 +297,8 @@ namespace NuScien.Data
                 NameExactly = json.TryGetBooleanValue("eq_name") ?? false,
                 Offset = json.TryGetInt32Value("offset") ?? 0,
                 Count = json.TryGetInt32Value("count") ?? ResourceEntityExtensions.PageSize,
-                State = json.TryGetEnumValue<ResourceEntityStates>("state", true) ?? ResourceEntityStates.Normal
+                State = json.TryGetEnumValue<ResourceEntityStates>("state", true) ?? ResourceEntityStates.Normal,
+                Order = json.TryGetEnumValue<ResourceEntityOrders>("order", true) ?? ResourceEntityOrders.Default
             };
         }
     }
@@ -314,6 +337,7 @@ namespace NuScien.Data
             writer.WriteNumber("offset", value.Offset);
             writer.WriteNumber("count", value.Count);
             writer.WriteNumber("state", (int)value.State);
+            writer.WriteNumber("order", (int)value.Order);
             writer.WriteEndObject();
         }
 

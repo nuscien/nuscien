@@ -8,8 +8,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
+using NuScien.Messages;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Net;
@@ -464,6 +466,133 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a specific publish content.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public override Task<ContentEntity> GetContentAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetContentAsync(id, true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="parent">The optional parent content identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListContentAsync(siteId, parent, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentRevisionEntity>> ListContentRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListContentRevisionAsync(source, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<ContentRevisionEntity> GetContentRevisionAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetContentRevisionAsync(id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a specific publish content template.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public override Task<ContentTemplateEntity> GetContentTemplateAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetContentTemplateAsync(id, true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentTemplateEntity>> ListContentTemplateAsync(string siteId, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListContentTemplateAsync(siteId, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentTemplateRevisionEntity>> ListContentTemplateRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListContentTemplateRevisionAsync(source, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<ContentTemplateRevisionEntity> GetContentTemplateRevisionAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetContentTemplateRevisionAsync(id, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the publish content comments.
+        /// </summary>
+        /// <param name="content">The owner content comment identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListContentCommentsAsync(content, plain, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to delete.</returns>
+        public override Task<ContentCommentEntity> GetContentCommentAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.GetContentCommentAsync(id, true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the child comments of a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListChildContentCommentsAsync(id, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets the settings.
         /// </summary>
         /// <param name="key">The settings key with optional namespace.</param>
@@ -716,6 +845,41 @@ namespace NuScien.Security
         protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
             return DataProvider.SaveAsync(value, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content entity.
+        /// </summary>
+        /// <param name="content">The publish content entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(content, message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content template entity.
+        /// </summary>
+        /// <param name="template">The publish content template entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(template, message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content comment entity.
+        /// </summary>
+        /// <param name="comment">The publish content comment entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected override Task<ChangeMethods> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.SaveAsync(comment, cancellationToken);
         }
 
         /// <summary>

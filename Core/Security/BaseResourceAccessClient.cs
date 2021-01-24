@@ -11,8 +11,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
+using NuScien.Messages;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Net;
@@ -926,11 +928,21 @@ namespace NuScien.Security
         /// <summary>
         /// Gets a collection of user groups joined in.
         /// </summary>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The login response.</returns>
+        public Task<IEnumerable<UserGroupRelationshipEntity>> ListRelationshipsAsync(CancellationToken cancellationToken = default)
+        {
+            return ListRelationshipsAsync(null, ResourceEntityStates.Normal, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a collection of user groups joined in.
+        /// </summary>
         /// <param name="q">The optional query for group.</param>
         /// <param name="relationshipState">The relationship entity state.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The login response.</returns>
-        public async Task<IEnumerable<UserGroupRelationshipEntity>> ListRelationshipsAsync(string q = null, ResourceEntityStates relationshipState = ResourceEntityStates.Normal, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<UserGroupRelationshipEntity>> ListRelationshipsAsync(string q, ResourceEntityStates relationshipState = ResourceEntityStates.Normal, CancellationToken cancellationToken = default)
         {
             var isForAll = relationshipState == ResourceEntityStates.Normal && string.IsNullOrEmpty(q);
             if (isForAll && JoinedGroupsCache != null) return JoinedGroupsCache;
@@ -1100,6 +1112,100 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets a specific publish content.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public abstract Task<ContentEntity> GetContentAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="parent">The optional parent content identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentRevisionEntity>> ListContentRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<ContentRevisionEntity> GetContentRevisionAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a specific publish content template.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public abstract Task<ContentTemplateEntity> GetContentTemplateAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentTemplateEntity>> ListContentTemplateAsync(string siteId, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revision entities.
+        /// </summary>
+        /// <param name="source">The source owner identifier.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentTemplateRevisionEntity>> ListContentTemplateRevisionAsync(string source, QueryArgs q = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the revisions.
+        /// </summary>
+        /// <param name="id">The revision entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<ContentTemplateRevisionEntity> GetContentTemplateRevisionAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="content">The owner content identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to delete.</returns>
+        public abstract Task<ContentCommentEntity> GetContentCommentAsync(string id, CancellationToken cancellationToken = default);
+        
+        /// <summary>
+        /// Lists the child comments of a specific publish content comment.
+        /// </summary>
+        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Registers a new user or update current user.
         /// </summary>
         /// <param name="value">The user group entity to save.</param>
@@ -1164,7 +1270,7 @@ namespace NuScien.Security
                 return await SaveEntityAsync(value, cancellationToken);
             }
 
-            var groups = await ListRelationshipsAsync();
+            var groups = await ListRelationshipsAsync(cancellationToken);
             foreach (var g in groups)
             {
                 if (g == null || g.OwnerId != value.Id) continue;
@@ -1201,6 +1307,109 @@ namespace NuScien.Security
                 };
             if (!isAdmin) return ChangeMethods.Invalid;
             return await SaveEntityAsync(value, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content entity.
+        /// </summary>
+        /// <param name="content">The publish content entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(content?.OwnerSiteId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(content.CreatorId)) content.CreatorId = string.IsNullOrWhiteSpace(content.PublisherId) ? UserId : content.PublisherId;
+            content.PublisherId = UserId;
+            if (!await IsCmsAdminAsync(content.OwnerSiteId, cancellationToken))
+            {
+                if (content.State == ResourceEntityStates.Deleted)
+                {
+                    if (content.IsNew) return ChangeMethods.Unchanged;
+                    if (!await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsDeletion))
+                        return ChangeMethods.Invalid;
+                }
+                else if (content.IsNew && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsInsertion))
+                {
+                    if (await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsInsertion))
+                    {
+                    }
+                    else if (await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsRequest))
+                    {
+                        content.State = ResourceEntityStates.Request;
+                    }
+                    else
+                    {
+                        return ChangeMethods.Invalid;
+                    }
+                }
+                else
+                {
+                    if (await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsModification))
+                    {
+                    }
+                    else if (await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsRequest) && (content.State == ResourceEntityStates.Request || content.State == ResourceEntityStates.Draft))
+                    {
+                    }
+                    else
+                    {
+                        return ChangeMethods.Invalid;
+                    }
+                }
+            }
+
+            return await SaveEntityAsync(content, message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content template entity.
+        /// </summary>
+        /// <param name="template">The publish content template entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(template?.OwnerSiteId)) return ChangeMethods.Invalid;
+            template.PublisherId = UserId;
+            if (!await IsCmsAdminAsync(template.OwnerSiteId, cancellationToken) && !await HasPermissionAsync(template.OwnerSiteId, "cms-template")) return ChangeMethods.Invalid;
+            return await SaveEntityAsync(template, message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates or updates a publish content comment entity.
+        /// </summary>
+        /// <param name="comment">The publish content comment entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(comment?.SourceId)) return ChangeMethods.Invalid;
+            comment.PublisherId = UserId;
+            return await SaveEntityAsync(comment, cancellationToken);
+        }
+
+        /// <summary>
+        /// Deletes a publish content comment entity.
+        /// </summary>
+        /// <param name="id">The publish content comment entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethods> DeleteContentCommentAsync(string id, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(id)) return ChangeMethods.Invalid;
+            var comment = await GetContentCommentAsync(id, cancellationToken);
+            if (comment == null) return ChangeMethods.Invalid;
+            if (comment.State == ResourceEntityStates.Deleted) return ChangeMethods.Unchanged;
+            if (comment.PublisherId != UserId && !string.IsNullOrWhiteSpace(comment.SourceId))
+            {
+                var content = await GetContentAsync(comment.SourceId);
+                if (content?.OwnerSiteId != null && !await IsCmsAdminAsync(content.OwnerSiteId) && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsComments))
+                    return ChangeMethods.Invalid;
+            }
+
+            comment.State = ResourceEntityStates.Deleted;
+            return await SaveEntityAsync(comment, cancellationToken);
         }
 
         /// <summary>
@@ -1389,5 +1598,31 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
         protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a publish content entity.
+        /// </summary>
+        /// <param name="content">The publish content entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected abstract Task<ChangeMethods> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a publish content template entity.
+        /// </summary>
+        /// <param name="template">The publish content template entity to save.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected abstract Task<ChangeMethods> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates a publish content comment entity.
+        /// </summary>
+        /// <param name="comment">The publish content comment entity to save.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        protected abstract Task<ChangeMethods> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default);
     }
 }

@@ -1,47 +1,62 @@
 USE [NuScien5]
 GO
 
-DROP TABLE [dbo].[nssettings]
+IF OBJECT_ID('nssettings') IS NOT NULL 
+	DROP TABLE [dbo].[nssettings]
 GO
 
-DROP TABLE [dbo].[nsclients]
+IF OBJECT_ID('nsclients') IS NOT NULL 
+	DROP TABLE [dbo].[nsclients]
 GO
 
-DROP TABLE [dbo].[nsusers]
+IF OBJECT_ID('nsusers') IS NOT NULL 
+	DROP TABLE [dbo].[nsusers]
 GO
 
-DROP TABLE [dbo].[nsusergroups]
+IF OBJECT_ID('nsusergroups') IS NOT NULL 
+	DROP TABLE [dbo].[nsusergroups]
 GO
 
-DROP TABLE [dbo].[nsusergrouprelas]
+IF OBJECT_ID('nsusergrouprelas') IS NOT NULL 
+	DROP TABLE [dbo].[nsusergrouprelas]
 GO
 
-DROP TABLE [dbo].[nstokens]
+IF OBJECT_ID('nstokens') IS NOT NULL 
+	DROP TABLE [dbo].[nstokens]
 GO
 
-DROP TABLE [dbo].[nsauthcodes]
+IF OBJECT_ID('nsauthcodes') IS NOT NULL 
+	DROP TABLE [dbo].[nsauthcodes]
 GO
 
-DROP TABLE [dbo].[nsclientperms]
+IF OBJECT_ID('nsclientperms') IS NOT NULL 
+	DROP TABLE [dbo].[nsclientperms]
 GO
 
-DROP TABLE [dbo].[nsuserperms]
+IF OBJECT_ID('nsuserperms') IS NOT NULL 
+	DROP TABLE [dbo].[nsuserperms]
 GO
 
-DROP TABLE [dbo].[nsusergroupperms]
+IF OBJECT_ID('nsusergroupperms') IS NOT NULL 
+	DROP TABLE [dbo].[nsusergroupperms]
 GO
 
-DROP TABLE [dbo].[nscontents]
+IF OBJECT_ID('nscontents') IS NOT NULL 
+	DROP TABLE [dbo].[nscontents]
 GO
 
-DROP TABLE [dbo].[nscontrev]
+IF OBJECT_ID('nscontrev') IS NOT NULL 
+	DROP TABLE [dbo].[nscontrev]
 GO
 
-DROP TABLE [dbo].[nstemplates]
+IF OBJECT_ID('nstemplates') IS NOT NULL 
+	DROP TABLE [dbo].[nstemplates]
 GO
 
-DROP TABLE [dbo].[nstemplrev]
+IF OBJECT_ID('nstemplrev') IS NOT NULL 
+	DROP TABLE [dbo].[nstemplrev]
 GO
 
-DROP TABLE [dbo].[nscontcomments]
+IF OBJECT_ID('nscontcomments') IS NOT NULL 
+	DROP TABLE [dbo].[nscontcomments]
 GO
