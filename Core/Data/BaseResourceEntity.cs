@@ -1,4 +1,13 @@
-﻿using System;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="BaseResourceEntity.cs" company="Nanchang Jinchen Software Co., Ltd.">
+//   Copyright (c) 2010 Nanchang Jinchen Software Co., Ltd. All rights reserved.
+// </copyright>
+// <summary>
+//   The base resource entities.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

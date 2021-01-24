@@ -1,4 +1,13 @@
-﻿using System;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="QueryArgs.cs" company="Nanchang Jinchen Software Co., Ltd.">
+//   Copyright (c) 2010 Nanchang Jinchen Software Co., Ltd. All rights reserved.
+// </copyright>
+// <summary>
+//   The query model for basic commonly used request.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;

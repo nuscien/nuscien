@@ -51,8 +51,14 @@ namespace NuScien.Web
         public async Task<IActionResult> ListContentById()
         {
             var instance = await this.GetResourceAccessClientAsync();
-            var col = await instance.ListContentAsync(Request?.Query?["site"], Request?.Query?["parent"], Request?.Query?.GetQueryArgs());
-            return this.ResourceEntityResult(col);
+            var q = Request?.Query?.GetQueryArgs();
+            var col = await instance.ListContentAsync(Request?.Query?["site"], Request?.Query?["parent"], q);
+            return this.ResourceEntityResult(col.Select(ele =>
+            {
+                if (ele == null) return null;
+                ele.IsSlim = true;
+                return ele;
+            }), q?.Offset);
         }
 
         /// <summary>
@@ -66,8 +72,14 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var col = await instance.ListContentRevisionAsync(id, Request?.Query?.GetQueryArgs());
-            return this.ResourceEntityResult(col);
+            var q = Request?.Query?.GetQueryArgs();
+            var col = await instance.ListContentRevisionAsync(id, q);
+            return this.ResourceEntityResult(col.Select(ele =>
+            {
+                if (ele == null) return null;
+                ele.IsSlim = true;
+                return ele;
+            }), q?.Offset);
         }
 
         /// <summary>
@@ -128,8 +140,14 @@ namespace NuScien.Web
         public async Task<IActionResult> ListContentTemplateById()
         {
             var instance = await this.GetResourceAccessClientAsync();
-            var col = await instance.ListContentTemplateAsync(Request?.Query?["site"], Request?.Query?.GetQueryArgs());
-            return this.ResourceEntityResult(col);
+            var q = Request?.Query?.GetQueryArgs();
+            var col = await instance.ListContentTemplateAsync(Request?.Query?["site"], q);
+            return this.ResourceEntityResult(col.Select(ele =>
+            {
+                if (ele == null) return null;
+                ele.IsSlim = true;
+                return ele;
+            }), q?.Offset);
         }
 
         /// <summary>
@@ -143,8 +161,14 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var col = await instance.ListContentTemplateRevisionAsync(id, Request?.Query?.GetQueryArgs());
-            return this.ResourceEntityResult(col);
+            var q = Request?.Query?.GetQueryArgs();
+            var col = await instance.ListContentTemplateRevisionAsync(id, q);
+            return this.ResourceEntityResult(col.Select(ele =>
+            {
+                if (ele == null) return null;
+                ele.IsSlim = true;
+                return ele;
+            }), q?.Offset);
         }
 
         /// <summary>

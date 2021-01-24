@@ -119,32 +119,9 @@ namespace NuScien.Data
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>A collection of entity.</returns>
-        public virtual async Task<CollectionResult<T>> SearchAsync(QueryData q, CancellationToken cancellationToken = default)
+        public virtual Task<CollectionResult<T>> SearchAsync(QueryData q, CancellationToken cancellationToken = default)
         {
-            if (q == null) return new CollectionResult<T>(await Set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
-            if (q.Count == 1 && q.ContainsKey("id"))
-            {
-                var ids = q.GetValues("id").Where(ele => !string.IsNullOrWhiteSpace(ele));
-                var list = new List<T>();
-                foreach (var id in ids)
-                {
-                    var entity = await Set.GetByIdAsync(id, false, cancellationToken);
-                    list.Add(entity);
-                }
-
-                var result = new CollectionResult<T>(list, 0, list.Count);
-                return result;
-            }
-
-            QueryArgs args = q;
-            var col = Set.ListEntities(args, l =>
-            {
-                var info = new QueryPredication<T>(l, q);
-                MapQuery(info);
-                return info.Data;
-            });
-            if (col is null) return new CollectionResult<T>(null, args.Offset);
-            return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
+            return DbResourceEntityExtensions.SearchAsync(Set, q, MapQuery, cancellationToken);
         }
 
         /// <summary>
@@ -180,17 +157,7 @@ namespace NuScien.Data
                 {
                     var newEntity = changes.Deserialize<T>();
                     var result = await SaveAsync(newEntity, cancellationToken);
-                    if (result == null) return null;
-                    return result.State switch
-                    {
-                        ChangeMethods.Add => newEntity,
-                        ChangeMethods.Same => newEntity,
-                        ChangeMethods.Unchanged => newEntity,
-                        ChangeMethods.Remove => newEntity,
-                        ChangeMethods.MemberModify => newEntity,
-                        ChangeMethods.Update => newEntity,
-                        _ => null
-                    };
+                    return result != null && DbResourceEntityExtensions.IsSuccess(result.State) ? newEntity : null;
                 }
                 catch (System.Text.Json.JsonException)
                 {
@@ -276,6 +243,43 @@ namespace NuScien.Data
         protected virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return saveHandler?.Invoke(cancellationToken) ?? Task.FromResult(0);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="value">The permission item to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        protected async Task<bool> HasPermissionAsync(string siteId, string value)
+        {
+            if (CoreResources == null) return false;
+            return await CoreResources.HasPermissionAsync(siteId, value);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="value">The permission item to test.</param>
+        /// <param name="otherValues">Other permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        protected async Task<bool> HasAnyPermissionAsync(string siteId, string value, params string[] otherValues)
+        {
+            if (CoreResources == null) return false;
+            return await CoreResources.HasAnyPermissionAsync(siteId, value, otherValues);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="values">The permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        protected async Task<bool> HasAnyPermissionAsync(string siteId, IEnumerable<string> values)
+        {
+            if (CoreResources == null) return false;
+            return await CoreResources.HasAnyPermissionAsync(siteId, values);
         }
     }
 }

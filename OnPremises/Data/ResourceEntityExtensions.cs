@@ -11,7 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Collection;
+using Trivial.Collection;
 using Trivial.Data;
+using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Text;
 
@@ -206,6 +209,61 @@ namespace NuScien.Data
             }
 
             return col.ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Searches.
+        /// </summary>
+        /// <param name="set">The database set.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="mapQuery">The map query handler.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>A collection of entity.</returns>
+        public static async Task<CollectionResult<T>> SearchAsync<T>(DbSet<T> set, QueryData q, Action<QueryPredication<T>> mapQuery, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        {
+            if (set == null) return null;
+            if (q == null) return new CollectionResult<T>(await set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
+            if (q.Count == 1 && q.ContainsKey("id"))
+            {
+                var ids = q.GetValues("id").Where(ele => !string.IsNullOrWhiteSpace(ele));
+                var list = new List<T>();
+                foreach (var id in ids)
+                {
+                    var entity = await set.GetByIdAsync(id, false, cancellationToken);
+                    list.Add(entity);
+                }
+
+                var result = new CollectionResult<T>(list, 0, list.Count);
+                return result;
+            }
+
+            QueryArgs args = q;
+            var col = set.ListEntities(args, l =>
+            {
+                var info = new QueryPredication<T>(l, q);
+                mapQuery?.Invoke(info);
+                return info.Data;
+            });
+            if (col is null) return new CollectionResult<T>(null, args.Offset);
+            return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
+        }
+
+        /// <summary>
+        /// Tests if the state is successful.
+        /// </summary>
+        /// <returns>true if the state is for success.</returns>
+        public static bool IsSuccess(ChangeMethods state)
+        {
+            return state switch
+            {
+                ChangeMethods.Add => true,
+                ChangeMethods.Same => true,
+                ChangeMethods.Unchanged => true,
+                ChangeMethods.Remove => true,
+                ChangeMethods.MemberModify => true,
+                ChangeMethods.Update => true,
+                _ => false
+            };
         }
 
         internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken)

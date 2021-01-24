@@ -30,6 +30,11 @@ namespace NuScien.Web
         where TEntity : BaseResourceEntity
     {
         /// <summary>
+        /// The resource access client.
+        /// </summary>
+        private BaseResourceAccessClient coreResources;
+
+        /// <summary>
         /// Initializes a new instance of the BaseResourceEntityController class.
         /// </summary>
         public BaseResourceEntityController()
@@ -53,27 +58,7 @@ namespace NuScien.Web
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
-        protected OnPremisesResourceAccessClient CoreResources { get; }
-
-        /// <summary>
-        /// Gets the current user information.
-        /// </summary>
-        protected string UserId => CoreResources?.UserId;
-
-        /// <summary>
-        /// Gets the current client identifier.
-        /// </summary>
-        protected string ClientId => CoreResources?.ClientId;
-
-        /// <summary>
-        /// Gets a value indicating whether the access token is null, empty or consists only of white-space characters.
-        /// </summary>
-        protected bool IsTokenNullOrEmpty => CoreResources?.IsTokenNullOrEmpty != false;
-
-        /// <summary>
-        /// Gets the resource access client.
-        /// </summary>
-        BaseResourceAccessClient IResourceEntityProvider<TEntity>.CoreResources => CoreResources;
+        BaseResourceAccessClient IResourceEntityProvider<TEntity>.CoreResources => coreResources;
 
         /// <summary>
         /// Gets an entity.
@@ -150,31 +135,7 @@ namespace NuScien.Web
         /// <returns>A collection of entity.</returns>
         public virtual async Task<CollectionResult<TEntity>> SearchAsync(QueryData q, CancellationToken cancellationToken = default)
         {
-            var set = await GetDbSetAsync();
-            if (q == null) return new CollectionResult<TEntity>(await set.ListEntities(new QueryArgs()).ToListAsync(cancellationToken), 0);
-            if (q.Count == 1 && q.ContainsKey("id"))
-            {
-                var ids = q.GetValues("id").Where(ele => !string.IsNullOrWhiteSpace(ele));
-                var list = new List<TEntity>();
-                foreach (var id in ids)
-                {
-                    var entity = await set.GetByIdAsync(id, false, cancellationToken);
-                    list.Add(entity);
-                }
-
-                var result = new CollectionResult<TEntity>(list, 0, list.Count);
-                return result;
-            }
-
-            QueryArgs args = q;
-            var col = set.ListEntities(args, l =>
-            {
-                var info = new QueryPredication<TEntity>(l, q);
-                MapQuery(info);
-                return info.Data;
-            });
-            if (col is null) return new CollectionResult<TEntity>(null, args.Offset);
-            return new CollectionResult<TEntity>(await col.ToListAsync(cancellationToken), args.Offset);
+            return await DbResourceEntityExtensions.SearchAsync(await GetDbSetAsync(), q, MapQuery, cancellationToken);
         }
 
         /// <summary>
@@ -239,17 +200,7 @@ namespace NuScien.Web
                 {
                     var newEntity = changes.Deserialize<TEntity>();
                     var result = await SaveAsync(newEntity, cancellationToken);
-                    if (result == null) return null;
-                    return result.State switch
-                    {
-                        ChangeMethods.Add => newEntity,
-                        ChangeMethods.Same => newEntity,
-                        ChangeMethods.Unchanged => newEntity,
-                        ChangeMethods.Remove => newEntity,
-                        ChangeMethods.MemberModify => newEntity,
-                        ChangeMethods.Update => newEntity,
-                        _ => null
-                    };
+                    return result != null && DbResourceEntityExtensions.IsSuccess(result.State) ? newEntity : null;
                 }
                 catch (System.Text.Json.JsonException)
                 {
@@ -360,6 +311,43 @@ namespace NuScien.Web
         {
             var context = await GetDbContextAsync();
             return GetDbSet(context);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="value">The permission item to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        protected async Task<bool> HasPermissionAsync(string siteId, string value)
+        {
+            if (coreResources == null) coreResources = await this.GetResourceAccessClientAsync();
+            return await coreResources.HasPermissionAsync(siteId, value);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="value">The permission item to test.</param>
+        /// <param name="otherValues">Other permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        protected async Task<bool> HasAnyPermissionAsync(string siteId, string value, params string[] otherValues)
+        {
+            if (coreResources == null) coreResources = await this.GetResourceAccessClientAsync();
+            return await coreResources.HasAnyPermissionAsync(siteId, value, otherValues);
+        }
+
+        /// <summary>
+        /// Tests if contains any of the specific permission item.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="values">The permission items to test.</param>
+        /// <returns>true if contains; otherwise, false.</returns>
+        protected async Task<bool> HasAnyPermissionAsync(string siteId, IEnumerable<string> values)
+        {
+            if (coreResources == null) coreResources = await this.GetResourceAccessClientAsync();
+            return await coreResources.HasAnyPermissionAsync(siteId, values);
         }
 
         /// <summary>

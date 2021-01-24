@@ -13,6 +13,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json.Serialization;
+
+using Trivial.Data;
 using Trivial.Security;
 
 namespace NuScien.Data
@@ -214,37 +216,6 @@ namespace NuScien.Data
         /// Gets or sets a value indicating whether the source is only an appending parameter.
         /// </summary>
         public bool IsAppendParameter { get; set; }
-    }
-
-    /// <summary>
-    /// The change method result.
-    /// </summary>
-    [DataContract]
-    public class ChangeMethodResult
-    {
-        /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
-        /// </summary>
-        public ChangeMethodResult()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
-        /// </summary>
-        /// <param name="state">The change method result.</param>
-        public ChangeMethodResult(Trivial.Data.ChangeMethods state)
-        {
-            State = state;
-        }
-
-        /// <summary>
-        /// Gets or sets the change method result.
-        /// </summary>
-        [DataMember(Name = "state")]
-        [JsonPropertyName("state")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public Trivial.Data.ChangeMethods State { get; set; }
     }
 
     /// <summary>
