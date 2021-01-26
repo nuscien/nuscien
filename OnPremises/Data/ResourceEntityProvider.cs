@@ -157,7 +157,7 @@ namespace NuScien.Data
                 {
                     var newEntity = changes.Deserialize<T>();
                     var result = await SaveAsync(newEntity, cancellationToken);
-                    return result != null && DbResourceEntityExtensions.IsSuccess(result.State) ? newEntity : null;
+                    return result != null && ResourceEntityExtensions.IsSuccessful(result.State) ? newEntity : null;
                 }
                 catch (System.Text.Json.JsonException)
                 {

@@ -478,7 +478,7 @@ namespace NuScien.Security
         /// <param name="insertNewOne">true if need add a new one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public abstract Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default);
+        public abstract Task<ChangeMethodResult> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Signs out.
@@ -983,12 +983,13 @@ namespace NuScien.Security
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethods> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
-            if (group == null || group.IsNew || IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return ChangeMethods.Invalid;
+            if (group == null || group.IsNew) return new ChangeMethodResult(ChangeErrorKinds.Argument ,"Requires a group.");
+            if (IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires an account logged in.");
             var rela = await GetRelationshipAsync(group, cancellationToken);
             if (rela != null) return ChangeMethods.Unchanged;
-            if (group.MembershipPolicy == UserGroupMembershipPolicies.Forbidden) return ChangeMethods.Invalid;
+            if (group.MembershipPolicy == UserGroupMembershipPolicies.Forbidden) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "The group is not allow to join in. Please contact its admin if needed.");
             rela = new UserGroupRelationshipEntity
             {
                 OwnerId = group.Id,
@@ -1008,7 +1009,16 @@ namespace NuScien.Security
                     rela.State = ResourceEntityStates.Normal;
             }
 
-            return await SaveEntityAsync(rela, cancellationToken);
+            try
+            {
+                return await SaveEntityAsync(rela, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1019,9 +1029,10 @@ namespace NuScien.Security
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, UserGroupRelationshipEntity.Roles role, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> InviteAsync(UserGroupEntity group, UserEntity user, UserGroupRelationshipEntity.Roles role, CancellationToken cancellationToken = default)
         {
-            if (group == null || group.IsNew || user == null) return ChangeMethods.Invalid;
+            if (group == null || group.IsNew) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a group.");
+            if (user == null || user.IsNew) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a user.");
             var userId = user.Id;
             if (!IsTokenNullOrEmpty && UserId == userId) return await JoinAsync(group, role, cancellationToken);
             var rela = await GetRelationshipAsync(group, cancellationToken);
@@ -1030,7 +1041,7 @@ namespace NuScien.Security
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken))
-                    return ChangeMethods.Invalid;
+                    return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "Cannot add a user to the group because current user is not even a member.");
             }
             else
             {
@@ -1048,7 +1059,7 @@ namespace NuScien.Security
                 }
             }
 
-            if (!isAdmin && group.MembershipPolicy != UserGroupMembershipPolicies.Allow) return ChangeMethods.Invalid;
+            if (!isAdmin && group.MembershipPolicy != UserGroupMembershipPolicies.Allow) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to add a user to the group.");
             rela = string.IsNullOrWhiteSpace(userId) ? null : await GetRelationshipAsync(group.Id, userId, cancellationToken);
             if (rela == null)
             {
@@ -1069,7 +1080,16 @@ namespace NuScien.Security
             }
 
             if (isAdmin) rela.Role = role;
-            return await SaveEntityAsync(rela, cancellationToken);
+            try
+            {
+                return await SaveEntityAsync(rela, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1079,7 +1099,7 @@ namespace NuScien.Security
         /// <param name="user">The user entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public Task<ChangeMethods> InviteAsync(UserGroupEntity group, UserEntity user, CancellationToken cancellationToken = default)
+        public Task<ChangeMethodResult> InviteAsync(UserGroupEntity group, UserEntity user, CancellationToken cancellationToken = default)
         {
             return InviteAsync(group, user, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
         }
@@ -1092,9 +1112,9 @@ namespace NuScien.Security
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethods> InviteAsync(UserGroupEntity group, string userId, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> InviteAsync(UserGroupEntity group, string userId, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(userId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a user.");
             var user = await GetUserByIdAsync(userId, cancellationToken);
             return await InviteAsync(group, user, role, cancellationToken);
         }
@@ -1106,7 +1126,7 @@ namespace NuScien.Security
         /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public Task<ChangeMethods> InviteAsync(UserGroupEntity group, string userId, CancellationToken cancellationToken = default)
+        public Task<ChangeMethodResult> InviteAsync(UserGroupEntity group, string userId, CancellationToken cancellationToken = default)
         {
             return InviteAsync(group, userId, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
         }
@@ -1211,8 +1231,9 @@ namespace NuScien.Security
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethods> SaveAsync(UserEntity value, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> SaveAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
+            if (value == null) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a user.");
             var isCurrentUser = value.Id == UserId;
             if (string.IsNullOrWhiteSpace(value.PasswordEncrypted) && value.ExtensionSerializationData != null && value.ExtensionSerializationData.TryGetValue("password", out var password) == true && password.ValueKind == System.Text.Json.JsonValueKind.String)
             {
@@ -1223,12 +1244,12 @@ namespace NuScien.Security
             if (value.IsNew)
             {
                 var settings = await GetSystemSettingsAsync(cancellationToken);
-                if (settings.ForbidUserRegister && !await IsUserAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
-                if (await HasUserNameAsync(value.Name, cancellationToken)) return ChangeMethods.Invalid;
+                if (settings.ForbidUserRegister && !await IsUserAdminAsync(cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "Forbid to register new account.");
+                if (await HasUserNameAsync(value.Name, cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Validation, "The username has already registered. Please change to use another one.");
             }
             else
             {
-                if (!isCurrentUser && !await IsUserAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
+                if (!isCurrentUser && !await IsUserAdminAsync(cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to update the user account.");
                 if (string.IsNullOrWhiteSpace(value.PasswordEncrypted))
                 {
                     var u = await GetUserByIdAsync(value.Id, cancellationToken);
@@ -1251,7 +1272,16 @@ namespace NuScien.Security
             {
             }
 
-            return await SaveEntityAsync(value, cancellationToken);
+            try
+            {
+                return await SaveEntityAsync(value, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1260,26 +1290,44 @@ namespace NuScien.Security
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethods> SaveAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> SaveAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
-            if (value == null) return ChangeMethods.Invalid;
+            if (value == null) return new ChangeMethodResult(ChangeErrorKinds.Argument, "No user group data to save.");
             if (value.IsNew)
             {
                 if (!await IsGroupsAdminAsync(value.OwnerSiteId, cancellationToken))
-                    return ChangeMethods.Invalid;
-                return await SaveEntityAsync(value, cancellationToken);
+                    return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to create the group.");
+                try
+                {
+                    return await SaveEntityAsync(value, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    var err = ResourceEntityExtensions.TryCatch(ex);
+                    if (err != null) return err;
+                    throw;
+                }
             }
 
             var groups = await ListRelationshipsAsync(cancellationToken);
             foreach (var g in groups)
             {
                 if (g == null || g.OwnerId != value.Id) continue;
-                return g.Role switch
+                try
                 {
-                    UserGroupRelationshipEntity.Roles.Owner => await SaveEntityAsync(value, cancellationToken),
-                    UserGroupRelationshipEntity.Roles.Master => await SaveEntityAsync(value, cancellationToken),
-                    _ => ChangeMethods.Unchanged
-                };
+                    return g.Role switch
+                    {
+                        UserGroupRelationshipEntity.Roles.Owner => await SaveEntityAsync(value, cancellationToken),
+                        UserGroupRelationshipEntity.Roles.Master => await SaveEntityAsync(value, cancellationToken),
+                        _ => ChangeMethods.Unchanged
+                    };
+                }
+                catch (Exception ex)
+                {
+                    var err = ResourceEntityExtensions.TryCatch(ex);
+                    if (err != null) return err;
+                    throw;
+                }
             }
 
             return ChangeMethods.Unchanged;
@@ -1291,9 +1339,10 @@ namespace NuScien.Security
         /// <param name="value">The user group relationship entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethods> SaveAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> SaveAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(value?.OwnerId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(value?.OwnerId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "No user group relationship data to save.");
+            if (string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires to sign in.");
             if (value.Owner == null) value.Owner = await GetUserGroupByIdAsync(value.OwnerId, cancellationToken);
             var group = value.Owner;
             var rela = await GetRelationshipAsync(group, cancellationToken);
@@ -1305,8 +1354,17 @@ namespace NuScien.Security
                     UserGroupRelationshipEntity.Roles.Master => true,
                     _ => await IsGroupsAdminAsync(group.OwnerSiteId, cancellationToken)
                 };
-            if (!isAdmin) return ChangeMethods.Invalid;
-            return await SaveEntityAsync(value, cancellationToken);
+            if (!isAdmin) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to save the user group relationship.");
+            try
+            {
+                return await SaveEntityAsync(value, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1316,9 +1374,10 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethods> SaveAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> SaveAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(content?.OwnerSiteId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(content?.OwnerSiteId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a content and specify its owner site identifier.");
+            if (string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires to sign in.");
             if (string.IsNullOrWhiteSpace(content.CreatorId)) content.CreatorId = string.IsNullOrWhiteSpace(content.PublisherId) ? UserId : content.PublisherId;
             content.PublisherId = UserId;
             if (!await IsCmsAdminAsync(content.OwnerSiteId, cancellationToken))
@@ -1327,9 +1386,9 @@ namespace NuScien.Security
                 {
                     if (content.IsNew) return ChangeMethods.Unchanged;
                     if (!await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsDeletion))
-                        return ChangeMethods.Invalid;
+                        return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to delete the content.");
                 }
-                else if (content.IsNew && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsInsertion))
+                else if (content.IsNew)
                 {
                     if (await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsInsertion))
                     {
@@ -1340,7 +1399,7 @@ namespace NuScien.Security
                     }
                     else
                     {
-                        return ChangeMethods.Invalid;
+                        return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to create the content.");
                     }
                 }
                 else
@@ -1353,12 +1412,21 @@ namespace NuScien.Security
                     }
                     else
                     {
-                        return ChangeMethods.Invalid;
+                        return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to update the content.");
                     }
                 }
             }
 
-            return await SaveEntityAsync(content, message, cancellationToken);
+            try
+            {
+                return await SaveEntityAsync(content, message, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1368,12 +1436,23 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethods> SaveAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> SaveAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(template?.OwnerSiteId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(template?.OwnerSiteId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a content template and specify its owner site identifier.");
+            if (string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires to sign in.");
             template.PublisherId = UserId;
-            if (!await IsCmsAdminAsync(template.OwnerSiteId, cancellationToken) && !await HasPermissionAsync(template.OwnerSiteId, "cms-template")) return ChangeMethods.Invalid;
-            return await SaveEntityAsync(template, message, cancellationToken);
+            if (!await IsCmsAdminAsync(template.OwnerSiteId, cancellationToken) && !await HasPermissionAsync(template.OwnerSiteId, "cms-template"))
+                return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to save the content template.");
+            try
+            {
+                return await SaveEntityAsync(template, message, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1382,11 +1461,21 @@ namespace NuScien.Security
         /// <param name="comment">The publish content comment entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethods> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(comment?.SourceId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(comment?.SourceId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a content comment and specify its owner source identifier.");
+            if (string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires to sign in.");
             comment.PublisherId = UserId;
-            return await SaveEntityAsync(comment, cancellationToken);
+            try
+            {
+                return await SaveEntityAsync(comment, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1395,21 +1484,31 @@ namespace NuScien.Security
         /// <param name="id">The publish content comment entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethods> DeleteContentCommentAsync(string id, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> DeleteContentCommentAsync(string id, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(UserId) || string.IsNullOrWhiteSpace(id)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(id)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires the content comment identifier.");
+            if (string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires to sign in.");
             var comment = await GetContentCommentAsync(id, cancellationToken);
-            if (comment == null) return ChangeMethods.Invalid;
+            if (comment == null) return new ChangeMethodResult(ChangeErrorKinds.NotFound, "Cannot find the content comment.");
             if (comment.State == ResourceEntityStates.Deleted) return ChangeMethods.Unchanged;
             if (comment.PublisherId != UserId && !string.IsNullOrWhiteSpace(comment.SourceId))
             {
                 var content = await GetContentAsync(comment.SourceId);
                 if (content?.OwnerSiteId != null && !await IsCmsAdminAsync(content.OwnerSiteId) && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsComments))
-                    return ChangeMethods.Invalid;
+                    return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to delete the content comment.");
             }
 
             comment.State = ResourceEntityStates.Deleted;
-            return await SaveEntityAsync(comment, cancellationToken);
+            try
+            {
+                return await SaveEntityAsync(comment, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -1445,7 +1544,7 @@ namespace NuScien.Security
         /// <param name="permissionList">The permission list.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public abstract Task<ChangeMethods> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default);
+        public abstract Task<ChangeMethodResult> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Clears cache.
@@ -1494,7 +1593,7 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public abstract Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
+        public abstract Task<ChangeMethodResult> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the settings.
@@ -1581,7 +1680,7 @@ namespace NuScien.Security
         /// <param name="value">The user entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default);
+        protected abstract Task<ChangeMethodResult> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a user group entity.
@@ -1589,7 +1688,7 @@ namespace NuScien.Security
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default);
+        protected abstract Task<ChangeMethodResult> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a user group relationship entity.
@@ -1597,7 +1696,7 @@ namespace NuScien.Security
         /// <param name="value">The user group relationship entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
+        protected abstract Task<ChangeMethodResult> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a publish content entity.
@@ -1606,7 +1705,7 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default);
+        protected abstract Task<ChangeMethodResult> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a publish content template entity.
@@ -1615,7 +1714,7 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default);
+        protected abstract Task<ChangeMethodResult> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a publish content comment entity.
@@ -1623,6 +1722,6 @@ namespace NuScien.Security
         /// <param name="comment">The publish content comment entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected abstract Task<ChangeMethods> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default);
+        protected abstract Task<ChangeMethodResult> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default);
     }
 }

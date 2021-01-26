@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using System.Security;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -575,6 +576,46 @@ namespace NuScien.Data
             ChangeMethods.Remove => true,
             _ => false
         };
+
+        internal static ChangeMethodResult TryCatch(Exception ex)
+        {
+            if (ex == null) return null;
+            var isInvalid = false;
+            if (ex.InnerException != null)
+            {
+                if (ex is AggregateException)
+                {
+                    ex = ex.InnerException;
+                }
+                else if (ex is InvalidOperationException)
+                {
+                    ex = ex.InnerException;
+                    isInvalid = true;
+                }
+            }
+
+            return isInvalid
+                || ex is SecurityException
+                || ex is UnauthorizedAccessException
+                || ex is NotImplementedException
+                || ex is TimeoutException
+                || ex is OperationCanceledException
+                || ex is InvalidOperationException
+                || ex is ArgumentException
+                || ex is NullReferenceException
+                || ex is System.Data.Common.DbException
+                || ex is System.Text.Json.JsonException
+                || ex is System.Runtime.Serialization.SerializationException
+                || ex is ObjectDisposedException
+                || ex is Trivial.Net.FailedHttpException
+                || ex is System.IO.IOException
+                || ex is ApplicationException
+                || ex is InvalidCastException
+                || ex is FormatException
+                || ex is System.IO.InvalidDataException
+                ? new ChangeMethodResult(ex)
+                : null;
+        }
     }
 
     /// <summary>

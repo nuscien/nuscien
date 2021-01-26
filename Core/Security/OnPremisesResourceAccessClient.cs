@@ -273,7 +273,7 @@ namespace NuScien.Security
         /// <param name="insertNewOne">true if need add a new one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async override Task<ChangeMethods> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default)
+        public async override Task<ChangeMethodResult> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default)
         {
             string id;
             SecurityEntityTypes kind;
@@ -289,7 +289,7 @@ namespace NuScien.Security
             }
             else
             {
-                return ChangeMethods.Invalid;
+                return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "No authentication passed.");
             }
 
             AuthorizationCodeEntity entity = null;
@@ -651,19 +651,19 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        public override async Task<ChangeMethodResult> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(key)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(key)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a settings key.");
             else key = key.Trim();
             if (string.IsNullOrWhiteSpace(siteId))
             {
                 siteId = null;
-                if (!await IsSystemSettingsAdminAsync(cancellationToken)) return ChangeMethods.Invalid;
+                if (!await IsSystemSettingsAdminAsync(cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to save the global settings.");
             }
             else
             {
                 siteId = siteId.Trim();
-                if (!await IsSystemSettingsAdminAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
+                if (!await IsSystemSettingsAdminAsync(siteId, cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to save the settings of the specific site.");
             }
 
             return await DataProvider.SaveSettingsAsync(key, siteId, value, cancellationToken);
@@ -678,11 +678,11 @@ namespace NuScien.Security
         /// <param name="permissionList">The permission list.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public override async Task<ChangeMethods> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default)
+        public override async Task<ChangeMethodResult> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(siteId)) return ChangeMethods.Invalid;
+            if (string.IsNullOrWhiteSpace(siteId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires the site identifier.");
             siteId = siteId.Trim();
-            if (!await IsPermissionAdminAsync(siteId, cancellationToken)) return ChangeMethods.Invalid;
+            if (!await IsPermissionAdminAsync(siteId, cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to set the permission.");
             switch (targetType)
             {
                 case SecurityEntityTypes.User:
@@ -717,7 +717,7 @@ namespace NuScien.Security
                     }
                 default:
                     {
-                        return ChangeMethods.Invalid;
+                        return new ChangeMethodResult(ChangeErrorKinds.Argument, "The target type is not supported.");
                     }
             }
         }
@@ -820,9 +820,9 @@ namespace NuScien.Security
         /// <param name="value">The user entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default)
+        protected override async Task<ChangeMethodResult> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
-            return DataProvider.SaveAsync(value, cancellationToken);
+            return await DataProvider.SaveAsync(value, cancellationToken);
         }
 
         /// <summary>
@@ -831,9 +831,9 @@ namespace NuScien.Security
         /// <param name="value">The user group entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
+        protected override async Task<ChangeMethodResult> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
-            return DataProvider.SaveAsync(value, cancellationToken);
+            return await DataProvider.SaveAsync(value, cancellationToken);
         }
 
         /// <summary>
@@ -842,9 +842,9 @@ namespace NuScien.Security
         /// <param name="value">The user group relationship entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
+        protected override async Task<ChangeMethodResult> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
-            return DataProvider.SaveAsync(value, cancellationToken);
+            return await DataProvider.SaveAsync(value, cancellationToken);
         }
 
         /// <summary>
@@ -854,9 +854,9 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
+        protected override async Task<ChangeMethodResult> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
         {
-            return DataProvider.SaveAsync(content, message, cancellationToken);
+            return await DataProvider.SaveAsync(content, message, cancellationToken);
         }
 
         /// <summary>
@@ -866,9 +866,9 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
+        protected override async Task<ChangeMethodResult> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
         {
-            return DataProvider.SaveAsync(template, message, cancellationToken);
+            return await DataProvider.SaveAsync(template, message, cancellationToken);
         }
 
         /// <summary>
@@ -877,9 +877,9 @@ namespace NuScien.Security
         /// <param name="comment">The publish content comment entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        protected override Task<ChangeMethods> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
+        protected override async Task<ChangeMethodResult> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
         {
-            return DataProvider.SaveAsync(comment, cancellationToken);
+            return await DataProvider.SaveAsync(comment, cancellationToken);
         }
 
         /// <summary>

@@ -55,34 +55,49 @@ namespace NuScien.Data
         Key = 5,
 
         /// <summary>
+        /// One, some or all of parameters are invalid.
+        /// </summary>
+        Validation = 6,
+
+        /// <summary>
+        /// Unsupported.
+        /// </summary>
+        Unsupported = 7,
+
+        /// <summary>
         /// The data provider works incorrectly.
         /// </summary>
-        Provider = 6,
+        Provider = 8,
+
+        /// <summary>
+        /// The data to update is obsolete or conflicted.
+        /// </summary>
+        Conflict = 9,
 
         /// <summary>
         /// The service is busy or the request is rejected.
         /// </summary>
-        Busy = 7,
+        Busy = 10,
 
         /// <summary>
         /// Cancellation request.
         /// </summary>
-        Canceled = 8,
+        Canceled = 11,
 
         /// <summary>
         /// Timeout.
         /// </summary>
-        Timeout = 9,
+        Timeout = 12,
 
         /// <summary>
         /// Internal service error.
         /// </summary>
-        Service = 10,
+        Service = 13,
 
         /// <summary>
         /// Other special error defined by application.
         /// </summary>
-        Application = 11
+        Application = 14
     }
 
     /// <summary>
@@ -158,6 +173,17 @@ namespace NuScien.Data
         /// Gets the error kind.
         /// </summary>
         public ChangeErrorKinds Kind { get; }
+
+        /// <summary>
+        /// When overridden in a derived class, sets the System.Runtime.Serialization.SerializationInfo with information about the exception.
+        /// </summary>
+        /// <param name="info">The System.Runtime.Serialization.SerializationInfo that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The System.Runtime.Serialization.StreamingContext that contains contextual information about the source or destination.</param>
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+            info.AddValue(nameof(Kind), (int)Kind, typeof(int));
+        }
     }
 
     /// <summary>
@@ -223,6 +249,19 @@ namespace NuScien.Data
         /// <summary>
         /// Initializes a new instance of the ChangeMethodResult class.
         /// </summary>
+        /// <param name="state">The change method result.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="ex">The exception.</param>
+        public ChangeMethodResult(ChangeErrorKinds state, string message, Exception ex)
+            : this(state, message)
+        {
+            exception = ex;
+            if (string.IsNullOrWhiteSpace(message)) Message = ex.Message;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
         /// <param name="ex">The exception.</param>
         public ChangeMethodResult(Exception ex)
         {
@@ -238,6 +277,7 @@ namespace NuScien.Data
             else if (ex is OperationCanceledException) ErrorCode = ChangeErrorKinds.Canceled;
             else if (ex is System.Data.Common.DbException) ErrorCode = ChangeErrorKinds.Provider;
             else if (ex is Trivial.Net.FailedHttpException) ErrorCode = ChangeErrorKinds.Provider;
+            else if (ex is NotImplementedException) ErrorCode = ChangeErrorKinds.Unsupported;
         }
 
         /// <summary>
@@ -310,8 +350,11 @@ namespace NuScien.Data
                 ChangeErrorKinds.Unauthorized => new UnauthorizedAccessException(Message ?? "Unauthorized access.", innerEx),
                 ChangeErrorKinds.Forbidden => new System.Security.SecurityException(Message ?? "Forbidden.", innerEx),
                 ChangeErrorKinds.NotFound => new InvalidOperationException(Message ?? "The source resource is not found or is gone.", innerEx),
-                ChangeErrorKinds.Key => new ArgumentException(Message ?? "The key is out of range or invalid", innerEx),
+                ChangeErrorKinds.Key => new ArgumentException(Message ?? "The key is out of range or invalid.", innerEx),
+                ChangeErrorKinds.Validation => new InvalidOperationException(Message ?? "One, some or all of the request data is invalid.", innerEx),
+                ChangeErrorKinds.Unsupported => new NotImplementedException(Message ?? "Unsupported.", innerEx),
                 ChangeErrorKinds.Provider => new InvalidOperationException(Message ?? "The data provider does not work as expect.", innerEx),
+                ChangeErrorKinds.Conflict => new InvalidOperationException(Message ?? "The data to update is obsolete or conflicted.", innerEx),
                 ChangeErrorKinds.Busy => new TimeoutException(Message ?? "The service is busy or the request is rejected.", innerEx),
                 ChangeErrorKinds.Canceled => new OperationCanceledException(Message ?? "The operation is canceled.", innerEx),
                 ChangeErrorKinds.Timeout => new TimeoutException(Message ?? "The operation is timeout.", innerEx),
@@ -320,6 +363,16 @@ namespace NuScien.Data
                 _ => new InvalidOperationException(Message ?? "Unknown error.", innerEx),
             };
             return failedChangeEx ? new FailedChangeException(ErrorCode, Message ?? message, ex) : ex;
+        }
+
+        /// <summary>
+        /// Converts to change method result.
+        /// </summary>
+        /// <param name="value">The change method.</param>
+        /// <returns>The change method result.</returns>
+        public static implicit operator ChangeMethodResult(ChangeMethods value)
+        {
+            return new ChangeMethodResult(value);
         }
     }
 }

@@ -189,6 +189,8 @@ namespace NuScien.Web
                 {
                     ChangeErrorKinds.NotFound => 404,
                     ChangeErrorKinds.Busy => 503,
+                    ChangeErrorKinds.Unsupported => 501,
+                    ChangeErrorKinds.Conflict => 409,
                     _ => status
                 };
             }
@@ -509,7 +511,19 @@ namespace NuScien.Web
         private static int? GetStatusCode(Exception ex, bool ignoreUnknownException = false)
         {
             if (ex == null) return 500;
-            if (ex is AggregateException && ex.InnerException != null) ex = ex.InnerException;
+            if (ex.InnerException != null)
+            {
+                if (ex is AggregateException)
+                {
+                    ex = ex.InnerException;
+                }
+                else if (ex is InvalidOperationException)
+                {
+                    ex = ex.InnerException;
+                    ignoreUnknownException = false;
+                }
+            }
+
             if (ex is SecurityException) return 403;
             else if (ex is UnauthorizedAccessException) return 401;
             else if (ex is NotImplementedException) return 502;
