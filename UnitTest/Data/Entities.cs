@@ -147,7 +147,7 @@ namespace NuScien.UnitTest.Data
         /// <inheritdoc />
         protected override void MapQuery(QueryPredication<CustomerEntity> source)
         {
-            source.AddForString("site", info => info.Source.Where(ele => ele.SiteId == info.Value), true);
+            source.AddForString("site", info => info.Source.Where(ele => ele.OwnerSiteId == info.Value), true);
             source.AddForString("addr", info => info.Source.Where(ele => ele.Address != null && ele.Address.Contains(info.Value)), true);
             source.AddForString("phone", info => info.Source.Where(ele => ele.PhoneNumber == info.Value), true);
         }
@@ -190,7 +190,7 @@ namespace NuScien.UnitTest.Data
         /// <inheritdoc />
         protected override void MapQuery(QueryPredication<GoodEntity> source)
         {
-            source.AddForString("site", info => info.Source.Where(ele => ele.SiteId == info.Value), true);
+            source.AddForString("site", info => info.Source.Where(ele => ele.OwnerSiteId == info.Value), true);
         }
     }
 
@@ -202,12 +202,13 @@ namespace NuScien.UnitTest.Data
         /// <summary>
         /// Gets an instance.
         /// </summary>
+        /// <param name="core">The core resources.</param>
         /// <returns>An instance.</returns>
-        public static async Task<TestBusinessContext> CreateAsync()
+        public static async Task<TestBusinessContext> CreateAsync(OnPremisesResourceAccessClient core = null)
         {
-            var c = await TestResourceAccessClients.CreateAsync();
+            if (core == null) core = await TestResourceAccessClients.CreateAsync();
             var options = TestResourceAccessClients.CreateDbContextOptions();
-            var result = new TestBusinessContext(c, options);
+            var result = new TestBusinessContext(core, options);
             await result.EnsureDbCreatedAsync();
             return result;
         }

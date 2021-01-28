@@ -33,7 +33,7 @@ namespace NuScien.Data
             /// <summary>
             /// Initializes a new instance of the InternalDbContext class.
             /// </summary>
-            /// <param name="options"></param>
+            /// <param name="options">The database context options.</param>
             public InternalDbContext(DbContextOptions options) : base(options)
             {
             }

@@ -64,6 +64,17 @@ namespace NuScien.Cms
             get => GetCurrentPropertyWhenNotSlim<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not BaseContentTemplateEntity e) return;
+            Introduction = e.Introduction;
+            PublisherId = e.PublisherId;
+            Thumbnail = e.Thumbnail;
+            Content = e.Content;
+        }
     }
 
     /// <summary>
@@ -88,7 +99,7 @@ namespace NuScien.Cms
         /// </summary>
         /// <param name="message">The commit message.</param>
         /// <returns>A revision entity.</returns>
-        public ContentTemplateRevisionEntity CreateRevision(string message)
+        public virtual ContentTemplateRevisionEntity CreateRevision(string message)
         {
             return new ContentTemplateRevisionEntity
             {
@@ -102,6 +113,14 @@ namespace NuScien.Cms
                 SourceId = Id,
                 Message = message
             };
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not ContentTemplateEntity e) return;
+            CreatorId = e.CreatorId;
         }
     }
 
@@ -131,6 +150,15 @@ namespace NuScien.Cms
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not ContentTemplateRevisionEntity e) return;
+            SourceId = e.SourceId;
+            Message = e.Message;
         }
     }
 }

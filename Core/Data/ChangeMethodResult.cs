@@ -60,7 +60,7 @@ namespace NuScien.Data
         Validation = 6,
 
         /// <summary>
-        /// Unsupported.
+        /// Not supported.
         /// </summary>
         Unsupported = 7,
 
@@ -277,6 +277,9 @@ namespace NuScien.Data
             else if (ex is OperationCanceledException) ErrorCode = ChangeErrorKinds.Canceled;
             else if (ex is System.Data.Common.DbException) ErrorCode = ChangeErrorKinds.Provider;
             else if (ex is Trivial.Net.FailedHttpException) ErrorCode = ChangeErrorKinds.Provider;
+            else if (ex is System.Net.Http.HttpRequestException) ErrorCode = ChangeErrorKinds.Provider;
+            else if (ex is System.IO.IOException) ErrorCode = ChangeErrorKinds.Provider;
+            else if (ex is NotSupportedException) ErrorCode = ChangeErrorKinds.Unsupported;
             else if (ex is NotImplementedException) ErrorCode = ChangeErrorKinds.Unsupported;
         }
 
@@ -352,7 +355,7 @@ namespace NuScien.Data
                 ChangeErrorKinds.NotFound => new InvalidOperationException(Message ?? "The source resource is not found or is gone.", innerEx),
                 ChangeErrorKinds.Key => new ArgumentException(Message ?? "The key is out of range or invalid.", innerEx),
                 ChangeErrorKinds.Validation => new InvalidOperationException(Message ?? "One, some or all of the request data is invalid.", innerEx),
-                ChangeErrorKinds.Unsupported => new NotImplementedException(Message ?? "Unsupported.", innerEx),
+                ChangeErrorKinds.Unsupported => new NotSupportedException(Message ?? "Unsupported.", innerEx),
                 ChangeErrorKinds.Provider => new InvalidOperationException(Message ?? "The data provider does not work as expect.", innerEx),
                 ChangeErrorKinds.Conflict => new InvalidOperationException(Message ?? "The data to update is obsolete or conflicted.", innerEx),
                 ChangeErrorKinds.Busy => new TimeoutException(Message ?? "The service is busy or the request is rejected.", innerEx),
@@ -374,5 +377,56 @@ namespace NuScien.Data
         {
             return new ChangeMethodResult(value);
         }
+    }
+
+    /// <summary>
+    /// The change method result.
+    /// </summary>
+    [DataContract]
+    public class ChangeMethodResult<T> : ChangeMethodResult
+    {
+        /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
+        /// <param name="state">The change method result.</param>
+        /// <param name="data">The data.</param>
+        public ChangeMethodResult(ChangeMethods state, T data) : base(state)
+        {
+            Data = data;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
+        /// <param name="state">The change method result.</param>
+        /// <param name="data">The data.</param>
+        /// <param name="message">The message.</param>
+        public ChangeMethodResult(ChangeMethods state, T data, string message) : base(state, message)
+        {
+            Data = data;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
+        /// <param name="state">The change method result.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="ex">The exception.</param>
+        public ChangeMethodResult(ChangeErrorKinds state, string message, Exception ex) : base(state, message, ex)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ChangeMethodResult class.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        public ChangeMethodResult(Exception ex)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the data.
+        /// </summary>
+        public T Data { get; set; }
     }
 }

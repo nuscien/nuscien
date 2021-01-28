@@ -22,9 +22,9 @@ namespace NuScien.UnitTest.Security
         {
             NuScien.Security.ResourceAccessClients.Setup(async () =>
             {
-                var context = new AccountDbContext(UseSqlServer, dbConn);
-                var hasCreated = await context.Database.EnsureCreatedAsync();
-                var provider = new AccountDbSetProvider(context);
+                //var context = new AccountDbContext(UseSqlServer, dbConn);
+                //var hasCreated = await context.Database.EnsureCreatedAsync();
+                var provider = new AccountDbSetProvider(isReadonly => new AccountDbContext(UseSqlServer, dbConn));
                 await NuScien.Security.ResourceAccessClients.InitAsync(provider, AppKey, null, NameAndPassword, null);
                 return provider;
             });

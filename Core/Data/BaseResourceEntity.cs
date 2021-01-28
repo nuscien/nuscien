@@ -177,7 +177,7 @@ namespace NuScien.Data
         /// <summary>
         /// Prepares for saving.
         /// </summary>
-        public void PrepareForSaving()
+        protected internal void PrepareForSaving()
         {
             _ = Id;
             wasRandomId = isRandomId;
@@ -190,7 +190,7 @@ namespace NuScien.Data
         /// <summary>
         /// Rollbacks the saving action.
         /// </summary>
-        public void RollbackSaving()
+        protected internal void RollbackSaving()
         {
             revision = oldRevision;
             isRandomId = wasRandomId;
@@ -226,7 +226,7 @@ namespace NuScien.Data
         /// </summary>
         [JsonPropertyName("site")]
         [Column("site")]
-        public string SiteId
+        public string OwnerSiteId
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
@@ -237,7 +237,7 @@ namespace NuScien.Data
         {
             base.FillBaseProperties(entity);
             if (entity is not SiteOwnedResourceEntity e) return;
-            SiteId = e.SiteId;
+            OwnerSiteId = e.OwnerSiteId;
         }
     }
 

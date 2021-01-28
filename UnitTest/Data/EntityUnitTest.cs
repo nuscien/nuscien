@@ -43,7 +43,7 @@ namespace NuScien.UnitTest.Data
                 entity = new CustomerEntity
                 {
                     Name = "Test",
-                    SiteId = string.Empty,
+                    OwnerSiteId = string.Empty,
                     State = ResourceEntityStates.Normal
                 };
             }
@@ -73,7 +73,7 @@ namespace NuScien.UnitTest.Data
             var good = (goods.CurrentCount > 0 ? goods.Value.FirstOrDefault() : null) ?? new GoodEntity
             {
                 Name = "Test",
-                SiteId = string.Empty
+                OwnerSiteId = string.Empty
             };
             good.State = ResourceEntityStates.Normal;
             var result = await context.Goods.SaveAsync(good);
@@ -85,7 +85,11 @@ namespace NuScien.UnitTest.Data
             Assert.AreEqual(1, goods.CurrentCount);
             Assert.AreEqual(good.Id, goods.Value.FirstOrDefault()?.Id);
             good = goods.Value.First();
+            var json = JsonSerializer.Serialize(good);
+            good = JsonSerializer.Deserialize<GoodEntity>(json);
+            Assert.IsNotNull(good);
             good.State = ResourceEntityStates.Deleted;
+            context = await TestBusinessContext.CreateAsync(context.CoreResources);
             await context.Goods.SaveAsync(good);
             goods = await context.Goods.SearchAsync("Test");
             Assert.AreEqual(0, goods.CurrentCount);

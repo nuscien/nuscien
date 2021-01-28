@@ -115,14 +115,6 @@ namespace NuScien.Data
         */
 
         /// <summary>
-        /// Updates the configuration string from its JSON object type property.
-        /// </summary>
-        public void SyncConfig()
-        {
-            if (json != null) config = null;
-        }
-
-        /// <summary>
         /// Gets the specific configuration property.
         /// </summary>
         /// <param name="key">The property key.</param>

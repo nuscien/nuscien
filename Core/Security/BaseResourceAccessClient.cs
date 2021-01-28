@@ -1430,6 +1430,40 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Updates the state of a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content entity.</param>
+        /// <param name="state">The resource entity state.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethodResult> UpdateContentStateAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
+        {
+            var content = await GetContentAsync(id, cancellationToken);
+            if (content == null) return new ChangeMethodResult(ChangeErrorKinds.NotFound, "The content does not exist.");
+            if (content.State == state) return new ChangeMethodResult<ContentEntity>(ChangeMethods.Unchanged, content, $"The state is already {state}.");
+            content.State = state;
+            return await SaveAsync(content, message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates the state of a specific publish content template entity.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content entity.</param>
+        /// <param name="state">The resource entity state.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangeMethodResult> UpdateContentTemplateStateAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
+        {
+            var content = await GetContentTemplateAsync(id, cancellationToken);
+            if (content == null) return new ChangeMethodResult(ChangeErrorKinds.NotFound, "The content does not exist.");
+            if (content.State == state) return new ChangeMethodResult<ContentTemplateEntity>(ChangeMethods.Unchanged, content, $"The state is already {state}.");
+            content.State = state;
+            return await SaveAsync(content, message, cancellationToken);
+        }
+
+        /// <summary>
         /// Creates or updates a publish content template entity.
         /// </summary>
         /// <param name="template">The publish content template entity to save.</param>
@@ -1493,8 +1527,8 @@ namespace NuScien.Security
             if (comment.State == ResourceEntityStates.Deleted) return ChangeMethods.Unchanged;
             if (comment.PublisherId != UserId && !string.IsNullOrWhiteSpace(comment.SourceId))
             {
-                var content = await GetContentAsync(comment.SourceId);
-                if (content?.OwnerSiteId != null && !await IsCmsAdminAsync(content.OwnerSiteId) && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsComments))
+                var content = await GetContentAsync(comment.SourceId, cancellationToken);
+                if (content?.OwnerSiteId != null && !await IsCmsAdminAsync(content.OwnerSiteId, cancellationToken) && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsComments))
                     return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to delete the content comment.");
             }
 

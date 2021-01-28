@@ -822,7 +822,10 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         protected override async Task<ChangeMethodResult> SaveEntityAsync(UserEntity value, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.SaveAsync(value, cancellationToken);
+            var result = await DataProvider.SaveAsync(value, cancellationToken);
+            if (ResourceEntityExtensions.IsSuccessful(result))
+                return new ChangeMethodResult<UserEntity>(result, value);
+            return result;
         }
 
         /// <summary>
@@ -833,7 +836,10 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         protected override async Task<ChangeMethodResult> SaveEntityAsync(UserGroupEntity value, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.SaveAsync(value, cancellationToken);
+            var result = await DataProvider.SaveAsync(value, cancellationToken);
+            if (ResourceEntityExtensions.IsSuccessful(result))
+                return new ChangeMethodResult<UserGroupEntity>(result, value);
+            return result;
         }
 
         /// <summary>
@@ -856,7 +862,10 @@ namespace NuScien.Security
         /// <returns>The change method.</returns>
         protected override async Task<ChangeMethodResult> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.SaveAsync(content, message, cancellationToken);
+            var result = await DataProvider.SaveAsync(content, message, cancellationToken);
+            if (ResourceEntityExtensions.IsSuccessful(result))
+                return new ChangeMethodResult<ContentEntity>(result, content);
+            return result;
         }
 
         /// <summary>
@@ -868,7 +877,10 @@ namespace NuScien.Security
         /// <returns>The change method.</returns>
         protected override async Task<ChangeMethodResult> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.SaveAsync(template, message, cancellationToken);
+            var result = await DataProvider.SaveAsync(template, message, cancellationToken);
+            if (ResourceEntityExtensions.IsSuccessful(result))
+                return new ChangeMethodResult<ContentTemplateEntity>(result, template);
+            return result;
         }
 
         /// <summary>
@@ -879,7 +891,10 @@ namespace NuScien.Security
         /// <returns>The change method.</returns>
         protected override async Task<ChangeMethodResult> SaveEntityAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.SaveAsync(comment, cancellationToken);
+            var result = await DataProvider.SaveAsync(comment, cancellationToken);
+            if (ResourceEntityExtensions.IsSuccessful(result))
+                return new ChangeMethodResult<ContentCommentEntity>(result, comment);
+            return result;
         }
 
         /// <summary>

@@ -823,12 +823,12 @@ namespace NuScien.Security
         private static Task<ChangeMethods> SaveAsync<T>(IList<T> col, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             if (col is null || entity is null) return Task.FromResult(ChangeMethods.Invalid);
-            return ResourceEntityExtensions.SaveAsync(col.Add, ele =>
+            return ResourceEntityExtensions.SaveAsync(entity, col.Add, ele =>
             {
                 var removing = col.FirstOrDefault(ele => ele.Id == entity.Id);
                 if (removing != null) col.Remove(removing);
                 col.Add(entity);
-            }, entity, cancellationToken);
+            }, cancellationToken);
         }
     }
 }

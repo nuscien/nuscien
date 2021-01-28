@@ -4,9 +4,11 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Trivial.Reflection;
+using Trivial.Text;
 
 namespace NuScien.Reflection
 {
@@ -70,6 +72,41 @@ namespace NuScien.Reflection
         protected T GetCurrentPropertyWhenNotSlim<T>(T defaultValue = default, [CallerMemberName] string key = null) where T : class
         {
             return GetCurrentProperty(defaultValue, key);
+        }
+
+        /// <summary>
+        /// Writes this instance to the specified writer as a JSON value.
+        /// </summary>
+        /// <param name="writer">The writer to which to write this instance.</param>
+        public virtual void WriteTo(Utf8JsonWriter writer) => JsonObject.ConvertFrom(this).WriteTo(writer);
+
+        /// <summary>
+        /// Converts to JSON object.
+        /// </summary>
+        /// <param name="value">The entity to convert.</param>
+        /// <returns>A JSON object instance.</returns>
+        public static explicit operator JsonObject(ReadonlyObservableProperties value)
+        {
+            try
+            {
+                return JsonObject.ConvertFrom(value);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidCastException(ex.Message, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidCastException(ex.Message, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidCastException(ex.Message, ex);
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new InvalidCastException(ex.Message, ex);
+            }
         }
     }
 }

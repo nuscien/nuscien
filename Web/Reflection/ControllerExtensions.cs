@@ -526,6 +526,7 @@ namespace NuScien.Web
 
             if (ex is SecurityException) return 403;
             else if (ex is UnauthorizedAccessException) return 401;
+            else if (ex is NotSupportedException) return 502;
             else if (ex is NotImplementedException) return 502;
             else if (ex is TimeoutException) return 408;
             else if (ex is OperationCanceledException) return 408;
@@ -536,7 +537,6 @@ namespace NuScien.Web
                 || ex is System.Data.Common.DbException
                 || ex is System.Text.Json.JsonException
                 || ex is System.Runtime.Serialization.SerializationException
-                || ex is ObjectDisposedException
                 || ex is FailedHttpException
                 || ex is IOException
                 || ex is ApplicationException

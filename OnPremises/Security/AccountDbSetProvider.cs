@@ -36,7 +36,7 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="context">The database context with full-access.</param>
         /// <param name="readonlyContext">The optional database context readonly.</param>
-        public AccountDbSetProvider(IAccountDbContext context, IAccountDbContext readonlyContext = null)
+        protected AccountDbSetProvider(IAccountDbContext context, IAccountDbContext readonlyContext = null)
         {
             if (readonlyContext == null) readonlyContext = context;
             contextFactory = isReadonly => isReadonly ? readonlyContext : context;

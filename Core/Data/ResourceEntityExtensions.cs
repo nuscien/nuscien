@@ -299,12 +299,12 @@ namespace NuScien.Data
         /// Creates or updates an entity.
         /// </summary>
         /// <typeparam name="T">The type of entity.</typeparam>
+        /// <param name="entity">The entity.</param>
         /// <param name="add">The add action handler.</param>
         /// <param name="update">The update action handler.</param>
-        /// <param name="entity">The entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An async task result.</returns>
-        public static async Task<ChangeMethods> SaveAsync<T>(Action<T> add, Action<T> update, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
+        public static async Task<ChangeMethods> SaveAsync<T>(T entity, Action<T> add, Action<T> update, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             if (entity is null) return ChangeMethods.Invalid;
             if (entity.IsNew)
@@ -358,13 +358,13 @@ namespace NuScien.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of entity.</typeparam>
         /// <typeparam name="TResult">The type of action result.</typeparam>
+        /// <param name="entity">The entity.</param>
         /// <param name="add">The add action handler.</param>
         /// <param name="update">The update action handler.</param>
         /// <param name="save">The save action handler.</param>
-        /// <param name="entity">The entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The state of changing result.</returns>
-        public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(Func<TEntity, TResult> add, Func<TEntity, TResult> update, Func<CancellationToken, Task<int>> save, TEntity entity, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
+        public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(TEntity entity, Func<TEntity, TResult> add, Func<TEntity, TResult> update, Func<CancellationToken, Task<int>> save, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
         {
             if (entity is null) return ChangeMethods.Invalid;
             if (entity.IsNew)
@@ -414,12 +414,12 @@ namespace NuScien.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of entity.</typeparam>
         /// <typeparam name="TResult">The type of action result.</typeparam>
+        /// <param name="entity">The entity.</param>
         /// <param name="add">The add action handler.</param>
         /// <param name="update">The update action handler.</param>
-        /// <param name="entity">The entity.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An async task result.</returns>
-        public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(Func<TEntity, Task<TResult>> add, Func<TEntity, Task<TResult>> update, TEntity entity, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
+        public static async Task<ChangeMethods> SaveAsync<TEntity, TResult>(TEntity entity, Func<TEntity, Task<TResult>> add, Func<TEntity, Task<TResult>> update, CancellationToken cancellationToken = default) where TEntity : BaseResourceEntity
         {
             if (entity is null) return ChangeMethods.Invalid;
             if (entity.IsNew)

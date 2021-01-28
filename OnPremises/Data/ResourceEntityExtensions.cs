@@ -75,7 +75,7 @@ namespace NuScien.Data
         public static Task<ChangeMethods> SaveAsync<T>(DbSet<T> set, Func<CancellationToken, Task<int>> save, T entity, CancellationToken cancellationToken = default) where T : BaseResourceEntity
         {
             InternalAssertion.IsNotNull(set, nameof(set));
-            return ResourceEntityExtensions.SaveAsync(set.Add, set.Update, save, entity, cancellationToken);
+            return ResourceEntityExtensions.SaveAsync(entity, set.Add, set.Update, save, cancellationToken);
         }
 
         /// <summary>
