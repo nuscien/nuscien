@@ -4,7 +4,9 @@
 
 [![MIT Licensed](./docs/assets/badge_lisence_MIT.svg)](https://github.com/nuscien/nuscien/blob/master/LICENSE)
 
-A framework with ACL and CMS.
+A framework with ACL and CMS built-in.
+It provide a way to build the project by let you only need focus on business logic itself.
+It contains both for client-side SDK and server-side service.
 
 See [sample and tutorials](https://github.com/nuscien/sample) to get start. Following are the introduction for each project.
 
@@ -17,6 +19,7 @@ See [sample and tutorials](https://github.com/nuscien/sample) to get start. Foll
 `NuScien.dll`
 
 The common library.
+It contains a foundation for ACL and business resource entity.
 
 - `BaseResourceEntity` base class and its sub-classes: the shared model for DAL, BLL, Web API and GUI databinding.
 - `OnPremisesResourceAccessClient` class: used to authorize (OAuth 2.0) and to access core resources for server-side.
@@ -25,8 +28,8 @@ The common library.
 - `HttpResourceAccessContext` base class: one place for client-side to access all entity providers and core resources.
 
 P.S.:
-Core resources mentioned above include passport, groups, messages, settings, etc.
-Authorizationn is based on OAuth 2.0 and powered by [Trivial](https://github.com/nuscien/trivial) library.
+Core resources mentioned above includes passport, groups, settings, CMS, etc.
+Authorization is based on OAuth 2.0 and powered by [Trivial](https://github.com/nuscien/trivial) library.
 
 ## OnPremises
 
@@ -37,6 +40,7 @@ Authorizationn is based on OAuth 2.0 and powered by [Trivial](https://github.com
 `NuScien.OnPremises.dll`
 
 On-premises library with EF Core 5.0 supports.
+This is used in server-side (or cloud).
 
 - `AccountDbSetProvider` class: an implementation used for `OnPremisesResourceAccessClient` to power core resources management based on database for server-side.
 - `OnPremisesResourceEntityProvider<TEntity>` base class: provide a way for server-side business logic about a specific type of the resource entity.

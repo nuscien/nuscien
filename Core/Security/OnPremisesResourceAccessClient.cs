@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
-using NuScien.Messages;
+using NuScien.Sns;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Net;
@@ -766,7 +766,9 @@ namespace NuScien.Security
         /// <returns>The user permission list.</returns>
         protected override Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
-            return DataProvider.GetUserPermissionsAsync(User, siteId, cancellationToken);
+            var u = User;
+            if (u == null) return Task.FromResult<UserPermissionItemEntity>(null);
+            return DataProvider.GetUserPermissionsAsync(u, siteId, cancellationToken);
         }
 
         /// <summary>
@@ -777,6 +779,8 @@ namespace NuScien.Security
         /// <returns>The user group permission list.</returns>
         protected override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
         {
+            var u = User;
+            if (u == null) return Task.FromResult<IEnumerable<UserGroupPermissionItemEntity>>(new List<UserGroupPermissionItemEntity>());
             return DataProvider.ListGroupPermissionsAsync(User, siteId, cancellationToken);
         }
 

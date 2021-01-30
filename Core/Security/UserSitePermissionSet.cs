@@ -134,6 +134,22 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Initializes a new instance of the UserSitePermissionSet class.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="userPermission">The user permissions.</param>
+        /// <param name="clientPermission">The verified client permissions.</param>
+        /// <param name="groupPermissions">The user group permissions.</param>
+        public UserSitePermissionSet(string siteId, UserPermissionItemEntity userPermission, ClientPermissionItemEntity clientPermission, IList<UserGroupPermissionItemEntity> groupPermissions)
+            : this(siteId)
+        {
+            UserPermission = userPermission;
+            ClientPermission = clientPermission;
+            GroupPermissions = groupPermissions;
+            CacheTime = DateTime.Now;
+        }
+
+        /// <summary>
         /// Gets the site identifier.
         /// </summary>
         public string SiteId { get; }
@@ -157,6 +173,11 @@ namespace NuScien.Security
         /// Gets the user group permissions.
         /// </summary>
         protected internal IEnumerable<UserGroupPermissionItemEntity> GroupPermissions { get; internal set; }
+
+        /// <summary>
+        /// Gets the client permissions.
+        /// </summary>
+        protected internal ClientPermissionItemEntity ClientPermission { get; internal set; }
 
         /// <summary>
         /// Gets the collection of the group identifier joined in.
@@ -277,7 +298,9 @@ namespace NuScien.Security
             }
 
             if (items != null) return items;
-            items = UserPermission.GetPermissionList().Distinct().Select(p =>
+            var col = UserPermission?.GetPermissionList()?.ToList() ?? new List<string>();
+            if (ClientPermission != null) col.AddRange(ClientPermission.GetPermissionList());
+            items = col.Distinct().Select(p =>
             {
                 if (string.IsNullOrWhiteSpace(p)) return null;
                 var key = p.Trim();
@@ -289,7 +312,7 @@ namespace NuScien.Security
 
         private bool HasPermission(Func<BasePermissionItemEntity, bool> filter)
         {
-            return filter(UserPermission) || HasPermission(GroupPermissions, filter);
+            return filter(UserPermission) || HasPermission(GroupPermissions, filter) || filter(ClientPermission);
         }
 
         private static bool HasPermission<T>(IEnumerable<T> set, Func<T, bool> filter) where T : BasePermissionItemEntity

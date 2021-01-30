@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
-using NuScien.Messages;
+using NuScien.Sns;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Net;
@@ -528,16 +528,20 @@ namespace NuScien.Security
                 permissions[siteId] = set;
             }
 
+            var client = ClientVerified;
             var users = GetUserPermissionsAsync(siteId);
             set.CacheTime = DateTime.Now;
+            var clientPerms = client != null ? GetClientPermissionsAsync(siteId) : null;
             var perms = await GetGroupPermissionsAsync(siteId);
             set.UserPermission = await users;
-            set.UserPermission.SetPropertiesReadonly();
-            set.GroupPermissions = perms.ToList().Select(ele =>
+            set.UserPermission?.SetPropertiesReadonly();
+            if (perms != null) set.GroupPermissions = perms.ToList().Where(ele => ele != null).Select(ele =>
             {
                 ele.SetPropertiesReadonly();
                 return ele;
             });
+            set.ClientPermission = clientPerms != null ? await clientPerms : null;
+            set.ClientPermission?.SetPropertiesReadonly();
             return set;
         }
 
@@ -980,24 +984,68 @@ namespace NuScien.Security
         /// Joins in a specific group.
         /// </summary>
         /// <param name="group">The user group entity to join in.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The status of changing result.</returns>
+        public Task<ChangeMethodResult> JoinAsync(UserGroupEntity group, CancellationToken cancellationToken = default)
+        {
+            return JoinAsync(group, UserGroupRelationshipEntity.Roles.Member, cancellationToken);
+        }
+
+        /// <summary>
+        /// Joins in a specific group.
+        /// </summary>
+        /// <param name="group">The user group entity to join in.</param>
         /// <param name="role">The role to request.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The status of changing result.</returns>
-        public async Task<ChangeMethodResult> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role = UserGroupRelationshipEntity.Roles.Member, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethodResult> JoinAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles role, CancellationToken cancellationToken = default)
         {
             if (group == null || group.IsNew) return new ChangeMethodResult(ChangeErrorKinds.Argument ,"Requires a group.");
             if (IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires an account logged in.");
             var rela = await GetRelationshipAsync(group, cancellationToken);
-            if (rela != null) return ChangeMethods.Unchanged;
-            if (group.MembershipPolicy == UserGroupMembershipPolicies.Forbidden) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "The group is not allow to join in. Please contact its admin if needed.");
-            rela = new UserGroupRelationshipEntity
+            var nickname = User?.Nickname ?? User?.Name;
+            if (rela != null)
             {
-                OwnerId = group.Id,
-                TargetId = UserId,
-                Role = role,
-                State = ResourceEntityStates.Request,
-                Name = User?.Nickname ?? User?.Name ?? UserId
-            };
+                switch (rela.State)
+                {
+                    case ResourceEntityStates.Request:
+                        rela.State = ResourceEntityStates.Normal;
+                        if (rela.Role >= role)
+                        {
+                            if (!string.IsNullOrWhiteSpace(nickname)) rela.Name = nickname;
+                            return await SaveEntityAsync(rela, cancellationToken);
+                        }
+
+                        break;
+                    case ResourceEntityStates.Draft:
+                        if (rela.Role >= role)
+                            return new ChangeMethodResult(ChangeMethods.Unchanged, "Has sent the request to join in the group.");
+                        break;
+                    case ResourceEntityStates.Normal:
+                        if (rela.Role >= role) 
+                            return new ChangeMethodResult(ChangeMethods.Unchanged, "Already in the group.");
+                        break;
+                }
+            }
+
+            if (group.MembershipPolicy == UserGroupMembershipPolicies.Forbidden) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "The group is not allow to join in. Please contact its admin if needed.");
+            if (rela == null)
+            {
+                rela = new UserGroupRelationshipEntity
+                {
+                    OwnerId = group.Id,
+                    TargetId = UserId,
+                    Role = role,
+                    State = ResourceEntityStates.Request,
+                    Name = nickname ?? UserId
+                };
+            }
+            else
+            {
+                rela.Name = nickname ?? UserId;
+                rela.Role = role;
+            }
+
             if (role == UserGroupRelationshipEntity.Roles.Member && group.MembershipPolicy == UserGroupMembershipPolicies.Allow)
             {
                 rela.State = ResourceEntityStates.Normal;
@@ -1068,14 +1116,28 @@ namespace NuScien.Security
                     OwnerId = group.Id,
                     TargetId = user.Id,
                     Role = UserGroupRelationshipEntity.Roles.Member,
-                    State = ResourceEntityStates.Normal,
+                    State = ResourceEntityStates.Request,
                     Name = user.Nickname ?? user.Name ?? userId
                 };
             }
             else
             {
-                rela.State = ResourceEntityStates.Normal;
                 var nickName = user.Nickname ?? user.Name;
+                switch (rela.State)
+                {
+                    case ResourceEntityStates.Normal:
+                        if (rela.Name == nickName && rela.Role == role)
+                            return new ChangeMethodResult(ChangeMethods.Unchanged, "The user is already invited in the group.");
+                        rela.State = ResourceEntityStates.Normal;
+                        break;
+                    case ResourceEntityStates.Draft:
+                        rela.State = ResourceEntityStates.Normal;
+                        break;
+                    default:
+                        rela.State = ResourceEntityStates.Request;
+                        break;
+                }
+                rela.State = ResourceEntityStates.Request;
                 if (!string.IsNullOrWhiteSpace(nickName)) rela.Name = nickName;
             }
 

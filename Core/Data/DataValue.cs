@@ -22,7 +22,7 @@ namespace NuScien.Data
     /// <summary>
     /// The sources of data form value.
     /// </summary>
-    public enum DataValueSource
+    public enum DataValueSources
     {
         /// <summary>
         /// The static source.
@@ -58,7 +58,7 @@ namespace NuScien.Data
     /// <summary>
     /// The types of data form field.
     /// </summary>
-    public enum DataFieldType
+    public enum DataFieldTypes
     {
         /// <summary>
         /// The hidden field.
@@ -189,7 +189,7 @@ namespace NuScien.Data
         /// <summary>
         /// Gets or sets the data source of the field.
         /// </summary>
-        public virtual DataValueSource Source { get; set; }
+        public virtual DataValueSources Source { get; set; }
 
         /// <summary>
         /// Gets or sets the data source of the field.
@@ -205,7 +205,7 @@ namespace NuScien.Data
         /// <summary>
         /// Gets or sets the data source of the field.
         /// </summary>
-        public override DataValueSource Source { get { return DataValueSource.Data; } }
+        public override DataValueSources Source { get { return DataValueSources.Data; } }
 
         /// <summary>
         /// Gets or sets a value indicating whether the source is from original.

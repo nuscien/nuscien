@@ -13,7 +13,7 @@ using NuScien.Cms;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Users;
-using NuScien.Messages;
+using NuScien.Sns;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;

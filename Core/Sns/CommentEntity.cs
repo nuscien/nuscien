@@ -15,7 +15,7 @@ using NuScien.Data;
 using Trivial.Reflection;
 using Trivial.Text;
 
-namespace NuScien.Messages
+namespace NuScien.Sns
 {
     /// <summary>
     /// Base comment entity.

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
-using NuScien.Messages;
+using NuScien.Sns;
 using NuScien.Users;
 using Trivial.Data;
 using Trivial.Reflection;

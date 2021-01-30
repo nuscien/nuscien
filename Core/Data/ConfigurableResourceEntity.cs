@@ -42,6 +42,7 @@ namespace NuScien.Data
                 try
                 {
                     json = ParseJson(s);
+                    SetProperty("Config", json);
                 }
                 finally
                 {
@@ -55,6 +56,7 @@ namespace NuScien.Data
             {
                 config = null;
                 json = value;
+                SetProperty("Config", json);
             }
         }
 
