@@ -468,6 +468,42 @@ namespace NuScien.Sns
     }
 
     /// <summary>
+    /// The dates used for the contact.
+    /// </summary>
+    public class ContactDatesInfo : BaseObservableProperties
+    {
+        /// <summary>
+        /// Gets or sets the birthday.
+        /// </summary>
+        [JsonPropertyName("birthday")]
+        public DateTime? Birthday
+        {
+            get => GetCurrentProperty<DateTime?>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the memorial day.
+        /// </summary>
+        [JsonPropertyName("anniversary")]
+        public DateTime? Anniversary
+        {
+            get => GetCurrentProperty<DateTime?>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the other kind of day.
+        /// </summary>
+        [JsonPropertyName("other")]
+        public DateTime? Other
+        {
+            get => GetCurrentProperty<DateTime?>();
+            set => SetCurrentProperty(value);
+        }
+    }
+
+    /// <summary>
     /// The contact model.
     /// </summary>
     public class ContactModel : BaseObservableProperties
@@ -503,22 +539,12 @@ namespace NuScien.Sns
         }
 
         /// <summary>
-        /// Gets or sets the birthday.
+        /// Gets or sets the dates.
         /// </summary>
-        [JsonPropertyName("birthday")]
-        public DateTime? Birthday
+        [JsonPropertyName("dates")]
+        public ContactDatesInfo Dates
         {
-            get => GetCurrentProperty<DateTime?>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the memorial day.
-        /// </summary>
-        [JsonPropertyName("anniversary")]
-        public DateTime? Anniversary
-        {
-            get => GetCurrentProperty<DateTime?>();
+            get => GetCurrentProperty<ContactDatesInfo>();
             set => SetCurrentProperty(value);
         }
 

@@ -98,4 +98,12 @@ namespace NuScien.Sns
     public class ContentCommentEntity : BaseCommentEntity<ContentEntity>
     {
     }
+
+    /// <summary>
+    /// The blog comment entity.
+    /// </summary>
+    [Table("nsblogcomments")]
+    public class BlogCommentEntity : BaseCommentEntity<BlogEntity>
+    {
+    }
 }

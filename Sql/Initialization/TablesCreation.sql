@@ -255,6 +255,7 @@ CREATE TABLE [dbo].[nscontents](
 	[publisher] [varchar](80) NOT NULL,
 	[thumb] [varchar](250) NULL,
 	[templ] [nvarchar](80) NULL,
+	[keywords] [nvarchar](250) NULL,
 	[content] [nvarchar](max) NULL,
 	[templc] [nvarchar](max) NULL,
 	[creator] [varchar](80) NOT NULL,
@@ -266,7 +267,7 @@ CREATE TABLE [dbo].[nscontents](
 GO
 
 CREATE INDEX IX_nscontents
-ON [dbo].[nscontents] ([name], [state], [lastupdate] DESC, [site], [parent], [intro], [publisher])
+ON [dbo].[nscontents] ([name], [state], [lastupdate] DESC, [site], [parent], [intro], [publisher], [keywords])
 
 
 /* Content revisions */

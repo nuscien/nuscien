@@ -26,78 +26,112 @@ namespace NuScien.Sns
     [Table("nscontacts")]
     public class ContactEntity : UserResourceEntity
     {
-        private string details;
-        private ContactModel model;
+        //private string details;
+
+        ///// <summary>
+        ///// Gets or sets the details string.
+        ///// </summary>
+        //[Column("details")]
+        //public string Details
+        //{
+        //    get
+        //    {
+        //        return details ?? GetPropertyJson<ContactModel>("Model") ?? string.Empty;
+        //    }
+
+        //    set
+        //    {
+        //        details = value;
+        //        RemoveProperty("Model");
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Gets or sets the additional message.
+        ///// </summary>
+        //[JsonPropertyName("model")]
+        //[NotMapped]
+        //public ContactModel Model
+        //{
+        //    get
+        //    {
+        //        try
+        //        {
+        //            return GetPropertySerialized<ContactModel>("Model", details, null);
+        //        }
+        //        finally
+        //        {
+        //            details = null;
+        //        }
+        //    }
+
+        //    set
+        //    {
+        //        details = null;
+        //        SetProperty("Model", value);
+        //    }
+        //}
 
         /// <summary>
-        /// Gets or sets the details string.
+        /// Gets or sets the name.
         /// </summary>
-        [Column("details")]
-        public string Details
+        [JsonIgnore]
+        [NotMapped]
+        public UserMonikerInfo Moniker
         {
-            get
-            {
-                return details ?? model?.ToString() ?? string.Empty;
-            }
-
-            set
-            {
-                details = value;
-                model = null;
-            }
+            get => TryDeserializeConfigValue<UserMonikerInfo>("name");
+            set => SetConfigValue("name", value);
         }
 
         /// <summary>
-        /// Gets or sets the additional message.
+        /// Gets or sets the contact information.
         /// </summary>
-        [JsonPropertyName("model")]
+        [JsonIgnore]
         [NotMapped]
-        public ContactModel Model
+        public IEnumerable<ContactInfo> Contacts
         {
-            get
-            {
-                var s = details;
-                if (s == null) return model;
-                try
-                {
-                    model = JsonSerializer.Deserialize<ContactModel>(s);
-                    SetProperty("Model", model);
-                    return model;
-                }
-                catch (JsonException)
-                {
-                }
-                catch (ArgumentException)
-                {
-                }
-                catch (InvalidOperationException)
-                {
-                }
-                catch (FormatException)
-                {
-                }
-                catch (NotSupportedException)
-                {
-                }
-                catch (NullReferenceException)
-                {
-                }
-                finally
-                {
-                    details = null;
-                }
+            get => TryDeserializeConfigValue<IEnumerable<ContactInfo>>("contacts");
+            set => SetConfigValue("contacts", value);
+        }
 
-                model = new ContactModel();
-                SetProperty("Model", model);
-                return model;
-            }
+        /// <summary>
+        /// Gets or sets the birthday.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public ContactDatesInfo Dates
+        {
+            get => TryDeserializeConfigValue<ContactDatesInfo>("dates");
+            set => SetConfigValue("dates", value);
+        }
 
-            set
+        /// <summary>
+        /// Gets or sets the bio.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public string Bio
+        {
+            get => TryDeserializeConfigValue<string>("bio");
+            set => SetConfigValue("bio", value);
+        }
+
+        /// <summary>
+        /// Converts an instance of contact model from the entity.
+        /// </summary>
+        /// <param name="e">The entity to convert.</param>
+        /// <returns>The model.</returns>
+        public static explicit operator ContactModel(ContactEntity e)
+        {
+            if (e == null) return null;
+            return new ContactModel
             {
-                details = null;
-                model = value;
-                SetProperty("Model", model);
-            }
+                Name = e.Moniker,
+                Nickname = e.Name,
+                Contacts = e.Contacts,
+                Dates = e.Dates,
+                Bio = e.Bio
+            };
         }
     }
 }

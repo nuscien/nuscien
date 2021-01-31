@@ -77,6 +77,17 @@ namespace NuScien.Cms
         }
 
         /// <summary>
+        /// Gets or sets the keywords.
+        /// </summary>
+        [JsonPropertyName("keywords")]
+        [Column("keywords")]
+        public string Keywords
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
         /// Gets or sets the content body.
         /// </summary>
         [JsonPropertyName("content")]
@@ -108,6 +119,7 @@ namespace NuScien.Cms
             PublisherId = e.PublisherId;
             Thumbnail = e.Thumbnail;
             TemplateId = e.TemplateId;
+            Keywords = e.Keywords;
             Content = e.Content;
             TemplateContent = e.TemplateContent;
         }

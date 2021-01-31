@@ -38,7 +38,7 @@ namespace NuScien.Data
             get
             {
                 var s = config;
-                if (s == null) return json;
+                if (string.IsNullOrEmpty(s)) return json;
                 try
                 {
                     json = ParseJson(s);
@@ -348,6 +348,137 @@ namespace NuScien.Data
 
             result = default;
             return false;
+        }
+
+        /// <summary>
+        /// Sets the configuration propery value.
+        /// </summary>
+        /// <param name="key">The propery key.</param>
+        /// <param name="value">The value to set.</param>
+        public void SetConfigValue(string key, object value)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return;
+            var json = Config;
+            if (json == null) Config = new JsonObject();
+            json = Config;
+            if (json == null)
+            {
+                Config = new JsonObject();
+                json = Config;
+                if (json == null) json = Config = new JsonObject();
+            }
+
+            var cont = false;
+            if (value is null)
+            {
+                json.SetNullValue(key);
+            }
+            else if (value is string s)
+            {
+                json.SetValue(key, s);
+            }
+            else if (value is IJsonValueResolver j)
+            {
+                if (j.ValueKind == JsonValueKind.Null || j.ValueKind == JsonValueKind.Undefined)
+                {
+                    json.SetNullValue(key);
+                }
+                else if (j is IJsonString js)
+                {
+                    json.SetValue(key, js.StringValue);
+                }
+                else if (j is IJsonValue<string> js2)
+                {
+                    json.SetValue(key, js2.Value);
+                }
+                else if (j is IJsonNumber jn)
+                {
+                    if (jn.IsInteger) json.SetValue(key, jn.GetInt64());
+                    else json.SetValue(key, jn.GetDouble());
+                }
+                else if (j is IJsonValue<bool> jb)
+                {
+                    json.SetValue(key, jb.Value);
+                }
+                else if (j is JsonObject jo)
+                {
+                    json.SetValue(key, jo);
+                }
+                else if (j is JsonArray ja)
+                {
+                    json.SetValue(key, ja);
+                }
+                else
+                {
+                    cont = true;
+                }
+
+                if (!cont) return;
+            }
+            else if (value.GetType().IsValueType)
+            {
+                if (value is int i)
+                {
+                    json.SetValue(key, i);
+                }
+                else if (value is long l)
+                {
+                    json.SetValue(key, l);
+                }
+                else if (value is double d)
+                {
+                    json.SetValue(key, d);
+                }
+                else if (value is float f)
+                {
+                    json.SetValue(key, f);
+                }
+                else if (value is bool b)
+                {
+                    json.SetValue(key, b);
+                }
+                else if (value is DateTime t)
+                {
+                    json.SetValue(key, t);
+                }
+                else if (value is Guid g)
+                {
+                    json.SetValue(key, g);
+                }
+                else if (value is uint ui)
+                {
+                    json.SetValue(key, ui);
+                }
+                else if (value is ulong ul)
+                {
+                    json.SetValue(key, ul);
+                }
+                else
+                {
+                    cont = true;
+                }
+
+                if (!cont) return;
+            }
+            else if (value is StringBuilder sb)
+            {
+                json.SetValue(key, sb.ToString());
+            }
+            else if (value is System.Security.SecureString ss)
+            {
+                json.SetValue(key, ss);
+            }
+            
+            try
+            {
+                var v = JsonObject.ConvertFrom(value);
+                json.SetValue(key, v);
+            }
+            catch (JsonException)
+            {
+                var a = JsonArray.ConvertFrom(value);
+                json.SetValue(key, a);
+            }
         }
 
         /// <summary>

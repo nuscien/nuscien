@@ -52,7 +52,8 @@ namespace NuScien.Security
         public abstract SecurityEntityTypes SecurityEntityType { get; }
 
         /// <summary>
-        /// Gets the security entity type.
+        /// Gets the security entity type in string.
+        /// This property is only used for JSON serialization.
         /// </summary>
         [NotMapped]
         [DataMember(Name = "security_type")]
