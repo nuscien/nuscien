@@ -521,6 +521,20 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="all">true if search all contents; otherise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, bool all, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            if (all) return ToListAsync(contents, ele => ele.OwnerSiteId == siteId, q, cancellationToken);
+            return ListContentAsync(siteId, null, q, cancellationToken);
+        }
+
+        /// <summary>
         /// Lists the revision entities.
         /// </summary>
         /// <param name="source">The source owner identifier.</param>
@@ -611,7 +625,7 @@ namespace NuScien.Security
         /// <returns>The entity list.</returns>
         public Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
         {
-            var col = contentComments.Where(ele => ele.SourceId == content);
+            var col = contentComments.Where(ele => ele.OwnerId == content);
             if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.ParentId));
             col = col.OrderByDescending(ele => ele.LastModificationTime);
             return ToListAsync(col, cancellationToken);

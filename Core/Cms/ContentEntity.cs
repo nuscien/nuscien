@@ -24,6 +24,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the introduction.
         /// </summary>
+        [DataMember(Name = "intro")]
         [JsonPropertyName("intro")]
         [Column("intro")]
         public string Introduction
@@ -35,6 +36,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the parent content identifier.
         /// </summary>
+        [DataMember(Name = "parent")]
         [JsonPropertyName("parent")]
         [Column("parent")]
         public string ParentId
@@ -46,6 +48,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the publisher identifier.
         /// </summary>
+        [DataMember(Name = "publisher")]
         [JsonPropertyName("publisher")]
         [Column("publisher")]
         public string PublisherId
@@ -57,6 +60,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the URL of thumbnail.
         /// </summary>
+        [DataMember(Name = "thumb")]
         [JsonPropertyName("thumb")]
         [Column("thumb")]
         public string Thumbnail
@@ -68,6 +72,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the template identifier.
         /// </summary>
+        [DataMember(Name = "templ")]
         [JsonPropertyName("templ")]
         [Column("templ")]
         public string TemplateId
@@ -79,6 +84,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the keywords.
         /// </summary>
+        [DataMember(Name = "keywords")]
         [JsonPropertyName("keywords")]
         [Column("keywords")]
         public string Keywords
@@ -90,6 +96,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the content body.
         /// </summary>
+        [DataMember(Name = "content")]
         [JsonPropertyName("content")]
         [Column("content")]
         public string Content
@@ -101,6 +108,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the customized template content.
         /// </summary>
+        [DataMember(Name = "templc")]
         [JsonPropertyName("templc")]
         [Column("templc")]
         public string TemplateContent
@@ -129,11 +137,13 @@ namespace NuScien.Cms
     /// The publish content entity.
     /// </summary>
     [Table("nscontents")]
+    [DataContract]
     public class ContentEntity : BaseContentEntity
     {
         /// <summary>
         /// Gets or sets the creator identifier.
         /// </summary>
+        [DataMember(Name = "creator")]
         [JsonPropertyName("creator")]
         [Column("creator")]
         public string CreatorId
@@ -178,12 +188,14 @@ namespace NuScien.Cms
     /// <summary>
     /// The revision entity of publish content.
     /// </summary>
+    [DataContract]
     [Table("nscontrev")]
     public class ContentRevisionEntity : BaseContentEntity
     {
         /// <summary>
         /// Gets or sets the owner source identifier.
         /// </summary>
+        [DataMember(Name = "owner")]
         [JsonPropertyName("owner")]
         [Column("owner")]
         public string SourceId
@@ -195,6 +207,7 @@ namespace NuScien.Cms
         /// <summary>
         /// Gets or sets the commit message.
         /// </summary>
+        [DataMember(Name = "message")]
         [JsonPropertyName("message")]
         [Column("message")]
         public string Message

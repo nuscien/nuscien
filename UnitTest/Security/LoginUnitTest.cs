@@ -55,6 +55,34 @@ namespace NuScien.UnitTest.Security
             Assert.IsFalse(resp.IsEmpty);
             Assert.IsNotNull(resp.AccessToken);
 
+            // Test for settings.
+            await client.SaveSettingsAsync("system", "site", (JsonObject)new Configurations.SystemSiteSettings
+            {
+                Name = "Sample official website",
+                Owner = "Kingcean Tuan"
+            });
+            client.ClearCache();
+            var settings = await client.GetSystemSettingsAsync("site");
+            Assert.AreEqual("Sample official website", settings.Name);
+
+            // Test for CMS.
+            var contents = await client.ListContentAsync("site", true, new QueryArgs());
+            Assert.AreEqual(0, contents.Count());
+            contents = await client.ListContentAsync("site", true, new QueryArgs
+            {
+                NameQuery = "Test content",
+                NameExactly = true,
+                State = ResourceEntityStates.Deleted
+            });
+            var content = contents.FirstOrDefault() ?? new Cms.ContentEntity
+            {
+                Name = "Test content",
+                OwnerSiteId = "site"
+            };
+            content.State = ResourceEntityStates.Normal;
+            await client.SaveAsync(content, "Test to submit a content.");
+            await client.UpdateContentStateAsync(content.Id, ResourceEntityStates.Deleted, "Remove the test content.");
+
             // Logout.
             var accessToken = resp.AccessToken;
             await client.SignOutAsync();

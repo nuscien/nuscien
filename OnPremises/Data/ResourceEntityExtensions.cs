@@ -158,6 +158,7 @@ namespace NuScien.Data
             if (q != null)
             {
                 if (!string.IsNullOrWhiteSpace(q.NameQuery)) col = q.NameExactly ? col.Where(ele => ele.Name == q.NameQuery) : col.Where(ele => ele.Name != null && ele.Name.Contains(q.NameQuery));
+                col = col.Where(ele => ele.StateCode == (int)q.State);
                 if (predicate != null) col = col.Where(predicate);
                 if (keySelector == null)
                 {
@@ -198,7 +199,7 @@ namespace NuScien.Data
             {
                 if (!string.IsNullOrWhiteSpace(q.NameQuery)) col = q.NameExactly ? col.Where(ele => ele.Name == q.NameQuery) : col.Where(ele => ele.Name != null && ele.Name.Contains(q.NameQuery));
                 if (predicate != null) col = col.Where(predicate);
-                col = OrderBy(col, q.Order == ResourceEntityOrders.Default ? defaultOrder : q.Order);
+                col = OrderBy(col.Where(ele => ele.StateCode == (int)q.State), q.Order == ResourceEntityOrders.Default ? defaultOrder : q.Order);
                 if (q.Offset > 0) col = col.Skip(q.Offset);
                 col = col.Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize);
             }

@@ -117,7 +117,8 @@ namespace NuScien.Configurations
             /// </summary>
             public T DeserializeSiteConfig<T>()
             {
-                return JsonSerializer.Deserialize<T>(SiteConfigString);
+                var s = SiteConfigString;
+                return string.IsNullOrWhiteSpace(s) ? default : JsonSerializer.Deserialize<T>(SiteConfigString);
             }
 
             /// <summary>
@@ -126,7 +127,8 @@ namespace NuScien.Configurations
             /// <param name="options">The options.</param>
             public T DeserializeSiteConfig<T>(JsonSerializerOptions options)
             {
-                return JsonSerializer.Deserialize<T>(SiteConfigString, options);
+                var s = SiteConfigString;
+                return string.IsNullOrWhiteSpace(s) ? default : JsonSerializer.Deserialize<T>(SiteConfigString, options);
             }
 
             /// <summary>
@@ -134,7 +136,8 @@ namespace NuScien.Configurations
             /// </summary>
             public T DeserializeGlobalConfig<T>()
             {
-                return JsonSerializer.Deserialize<T>(GlobalConfigString);
+                var s = GlobalConfigString;
+                return string.IsNullOrWhiteSpace(s) ? default : JsonSerializer.Deserialize<T>(GlobalConfigString);
             }
 
             /// <summary>
@@ -143,7 +146,8 @@ namespace NuScien.Configurations
             /// <param name="options">The options.</param>
             public T DeserializeGlobalConfig<T>(JsonSerializerOptions options)
             {
-                return JsonSerializer.Deserialize<T>(GlobalConfigString, options);
+                var s = GlobalConfigString;
+                return string.IsNullOrWhiteSpace(s) ? default : JsonSerializer.Deserialize<T>(GlobalConfigString, options);
             }
         }
     }

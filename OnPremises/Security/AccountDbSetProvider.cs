@@ -393,7 +393,7 @@ namespace NuScien.Security
         public async Task<UserPermissionItemEntity> GetUserPermissionsAsync(UserEntity user, string siteId, CancellationToken cancellationToken = default)
         {
             if (user == null) return null;
-            return await GetContext(true).UserPermissions.FirstOrDefaultAsync(ele => ele.TargetId == user.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.User && ele.SiteId == siteId, cancellationToken);
+            return await GetContext(true).UserPermissions.FirstOrDefaultAsync(ele => ele.TargetId == user.Id && ele.SiteId == siteId, cancellationToken);
         }
 
         /// <summary>
@@ -405,7 +405,7 @@ namespace NuScien.Security
         public IQueryable<UserGroupPermissionItemEntity> ListGroupPermissions(UserEntity user, string siteId)
         {
             var context = GetContext(true);
-            return context.GroupPermissions.Where(ele => ele.TargetTypeCode == (int)SecurityEntityTypes.UserGroup && ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode).Join(
+            return context.GroupPermissions.Where(ele => ele.SiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode).Join(
                 context.Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == ResourceEntityExtensions.NormalStateCode),
                 ele => ele.TargetId,
                 ele => ele.OwnerId,
@@ -445,7 +445,7 @@ namespace NuScien.Security
         public async Task<UserGroupPermissionItemEntity> GetGroupPermissionsAsync(UserGroupEntity group, string siteId, CancellationToken cancellationToken = default)
         {
             if (group == null) return null;
-            return await GetContext(true).GroupPermissions.FirstOrDefaultAsync(ele => ele.TargetId == group.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.UserGroup && ele.SiteId == siteId, cancellationToken);
+            return await GetContext(true).GroupPermissions.FirstOrDefaultAsync(ele => ele.TargetId == group.Id && ele.SiteId == siteId, cancellationToken);
         }
 
         /// <summary>
@@ -458,7 +458,7 @@ namespace NuScien.Security
         public Task<ClientPermissionItemEntity> GetClientPermissionsAsync(AccessingClientEntity client, string siteId, CancellationToken cancellationToken = default)
         {
             if (client == null) return null;
-            return GetContext(true).ClientPermissions.FirstOrDefaultAsync(ele => ele.TargetId == client.Id && ele.TargetTypeCode == (int)SecurityEntityTypes.ServiceClient && ele.SiteId == siteId, cancellationToken);
+            return GetContext(true).ClientPermissions.FirstOrDefaultAsync(ele => ele.TargetId == client.Id && ele.SiteId == siteId, cancellationToken);
         }
 
         /// <summary>
@@ -558,6 +558,20 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="all">true if search all contents; otherise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public async Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, bool all, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            if (all) return await GetContext(true).Contents.ToListAsync(q, ele => ele.OwnerSiteId == siteId, ResourceEntityOrders.Latest, cancellationToken);
+            return await ListContentAsync(siteId, null, q, cancellationToken);
+        }
+
+        /// <summary>
         /// Lists the revision entities.
         /// </summary>
         /// <param name="source">The source owner identifier.</param>
@@ -649,7 +663,7 @@ namespace NuScien.Security
         public async Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
         {
             var context = GetContext(true);
-            var col = context.ContentComments.Where(ele => ele.SourceId == content);
+            var col = context.ContentComments.Where(ele => ele.OwnerId == content);
             if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.SourceMessageId));
             col = col.OrderByDescending(ele => ele.LastModificationTime);
             return await col.ToListAsync(cancellationToken);
@@ -788,7 +802,7 @@ namespace NuScien.Security
         public async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
         {
             var context = GetContext();
-            var entity = await context.Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
+            var entity = await context.Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId, cancellationToken);
             if (entity == null)
             {
                 entity = new Configurations.SettingsEntity
@@ -804,6 +818,7 @@ namespace NuScien.Security
                 entity.Config = value;
             }
 
+            entity.State = ResourceEntityStates.Normal;
             return await DbResourceEntityExtensions.SaveAsync(context.Settings, context.SaveChangesAsync, entity, cancellationToken);
         }
 

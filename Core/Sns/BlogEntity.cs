@@ -20,6 +20,7 @@ namespace NuScien.Sns
     /// <summary>
     /// Blog entity.
     /// </summary>
+    [Table("nsblogs")]
     public class BlogEntity : BaseOwnerResourceEntity
     {
         /// <summary>
@@ -115,6 +116,7 @@ namespace NuScien.Sns
         {
             base.FillBaseProperties(entity);
             if (entity is not BlogEntity e) return;
+            OwnerType = e.OwnerType;
             Introduction = e.Introduction;
             PublisherId = e.PublisherId;
             Thumbnail = e.Thumbnail;

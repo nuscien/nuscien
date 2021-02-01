@@ -26,8 +26,11 @@ namespace NuScien.Security
         /// <summary>
         /// The split string for permission item.
         /// </summary>
-        public const string PermissionSplit = "\n";
+        public const string PermissionSplit = ";";
 
+        /// <summary>
+        /// The permission items cache.
+        /// </summary>
         private List<string> cache;
 
         /// <summary>
@@ -51,11 +54,11 @@ namespace NuScien.Security
 
         /// <summary>
         /// Gets the security entity type.
+        /// Please do not set the value to this property. The setter is only resvered for serialization.
         /// </summary>
         [NotMapped]
-        [DataMember(Name = "target_type")]
-        [JsonPropertyName("target_type")]
-        [Required]
+        [DataMember(Name = "targetype")]
+        [JsonPropertyName("targetype")]
         public int TargetTypeCode
         {
             get => (int)TargetType;

@@ -51,8 +51,8 @@ namespace NuScien.Reflection
         /// Gets or sets a value indicating whether the properties are slim.
         /// </summary>
         [NotMapped]
-        [JsonPropertyName("slim")]
-        public bool IsSlim { get; set; }
+        [JsonIgnore]
+        protected bool IsSlim { get; set; }
 
         /// <summary>
         /// Sets the properties read-only to access.

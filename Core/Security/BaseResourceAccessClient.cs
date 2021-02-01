@@ -52,7 +52,7 @@ namespace NuScien.Security
         /// <summary>
         /// The user groups.
         /// </summary>
-        private System.Collections.Concurrent.ConcurrentBag<UserGroupRelationshipEntity> groupsCache;
+        private ConcurrentBag<UserGroupRelationshipEntity> groupsCache;
 
         /// <summary>
         /// The permissions set.
@@ -768,13 +768,13 @@ namespace NuScien.Security
 
             if (!hasGlobal)
             {
-                globalModel = await GetSettingsJsonStringByKeyAsync(globalKey, null, cancellationToken);
+                globalModel = await GetSettingsJsonStringByKeyAsync(key, null, cancellationToken);
                 settings[globalKey] = globalModel;
             }
 
             if (!hasSite)
             {
-                siteModel = await GetSettingsJsonStringByKeyAsync(siteKey, null, cancellationToken);
+                siteModel = await GetSettingsJsonStringByKeyAsync(key, siteId, cancellationToken);
                 settings[siteKey] = siteModel;
             }
 
@@ -804,7 +804,8 @@ namespace NuScien.Security
             siteId = siteId.Trim();
             if (siteSettings.TryGet(siteId, out var s)) return s;
             var settings = await GetSettingsAsync("system", siteId, cancellationToken);
-            s = settings?.DeserializeGlobalConfig<SystemSiteSettings>();
+            s = settings?.DeserializeSiteConfig<SystemSiteSettings>();
+            if (s == null) return null;
             s.SetPropertiesReadonly();
             siteSettings[siteId] = s;
             return s;
@@ -821,6 +822,7 @@ namespace NuScien.Security
             if (s != null || globalSettingsExpiration > DateTime.Now) return s;
             var settings = await GetSettingsAsync("system", null, cancellationToken);
             s = settings?.DeserializeGlobalConfig<SystemGlobalSettings>();
+            if (s == null) return null;
             s.SetPropertiesReadonly();
             globalSettings = s;
             globalSettingsExpiration = DateTime.Now.AddMinutes(10);
@@ -1212,6 +1214,16 @@ namespace NuScien.Security
         public abstract Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, string parent = null, QueryArgs q = null, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="all">true if search all contents; otherise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public abstract Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, bool all, QueryArgs q, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Lists the revision entities.
         /// </summary>
         /// <param name="source">The source owner identifier.</param>
@@ -1559,7 +1571,7 @@ namespace NuScien.Security
         /// <returns>The change method.</returns>
         public async Task<ChangeMethodResult> SaveAsync(ContentCommentEntity comment, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(comment?.SourceId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a content comment and specify its owner source identifier.");
+            if (string.IsNullOrWhiteSpace(comment?.OwnerId)) return new ChangeMethodResult(ChangeErrorKinds.Argument, "Requires a content comment and specify its owner source identifier.");
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangeMethodResult(ChangeErrorKinds.Unauthorized, "Requires to sign in.");
             comment.PublisherId = UserId;
             try
@@ -1587,9 +1599,9 @@ namespace NuScien.Security
             var comment = await GetContentCommentAsync(id, cancellationToken);
             if (comment == null) return new ChangeMethodResult(ChangeErrorKinds.NotFound, "Cannot find the content comment.");
             if (comment.State == ResourceEntityStates.Deleted) return ChangeMethods.Unchanged;
-            if (comment.PublisherId != UserId && !string.IsNullOrWhiteSpace(comment.SourceId))
+            if (comment.PublisherId != UserId && !string.IsNullOrWhiteSpace(comment.OwnerId))
             {
-                var content = await GetContentAsync(comment.SourceId, cancellationToken);
+                var content = await GetContentAsync(comment.OwnerId, cancellationToken);
                 if (content?.OwnerSiteId != null && !await IsCmsAdminAsync(content.OwnerSiteId, cancellationToken) && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsComments))
                     return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to delete the content comment.");
             }
@@ -1653,6 +1665,20 @@ namespace NuScien.Security
             globalSettings = null;
             siteSettings.Clear();
         }
+
+        /// <summary>
+        /// Clears settings cache.
+        /// </summary>
+        public void ClearSettingsCache()
+        {
+            globalSettings = null;
+            siteSettings.Clear();
+        }
+
+        /// <summary>
+        /// Clears permission cache.
+        /// </summary>
+        public void ClearPermissionCache() => permissions.Clear();
 
         /// <summary>
         /// Gets a value indicating whether the group members can be visible.

@@ -585,6 +585,19 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="all">true if search all contents; otherise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, bool all, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return ListContentAsync(siteId, all ? "*" : null, q, cancellationToken);
+        }
+
+        /// <summary>
         /// Lists the revision entities.
         /// </summary>
         /// <param name="source">The source owner identifier.</param>

@@ -168,6 +168,17 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the properties are slim.
+        /// </summary>
+        [NotMapped]
+        [JsonPropertyName("slim")]
+        public new bool IsSlim
+        {
+            get => base.IsSlim;
+            set => base.IsSlim = value;
+        }
+
+        /// <summary>
         /// Gets or sets the extension data for JSON serialization.
         /// </summary>
         [JsonExtensionData]

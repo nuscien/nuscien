@@ -52,7 +52,10 @@ namespace NuScien.Web
         {
             var instance = await this.GetResourceAccessClientAsync();
             var q = Request?.Query?.GetQueryArgs();
-            var col = await instance.ListContentAsync(Request?.Query?["site"], Request?.Query?["parent"], q);
+            var parent = Request?.Query?["parent"].ToString();
+            var col = parent == "*"
+                ? await instance.ListContentAsync(Request?.Query?["site"], true, q)
+                : await instance.ListContentAsync(Request?.Query?["site"], parent, q);
             return this.ResourceEntityResult(col.Select(ele =>
             {
                 if (ele == null) return null;

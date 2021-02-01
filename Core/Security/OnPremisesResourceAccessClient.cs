@@ -490,6 +490,19 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Lists the publish contents.
+        /// </summary>
+        /// <param name="siteId">The owner site identifier.</param>
+        /// <param name="all">true if search all contents; otherise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public override Task<IEnumerable<ContentEntity>> ListContentAsync(string siteId, bool all, QueryArgs q = null, CancellationToken cancellationToken = default)
+        {
+            return DataProvider.ListContentAsync(siteId, all, q, cancellationToken);
+        }
+
+        /// <summary>
         /// Lists the revision entities.
         /// </summary>
         /// <param name="source">The source owner identifier.</param>
@@ -666,6 +679,7 @@ namespace NuScien.Security
                 if (!await IsSystemSettingsAdminAsync(siteId, cancellationToken)) return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to save the settings of the specific site.");
             }
 
+            ClearSettingsCache();
             return await DataProvider.SaveSettingsAsync(key, siteId, value, cancellationToken);
         }
 

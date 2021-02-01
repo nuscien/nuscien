@@ -286,6 +286,7 @@ CREATE TABLE [dbo].[nscontrev](
 	[publisher] [varchar](80) NOT NULL,
 	[thumb] [varchar](250) NULL,
 	[templ] [nvarchar](80) NULL,
+	[keywords] [nvarchar](250) NULL,
 	[content] [nvarchar](max) NULL,
 	[templc] [nvarchar](max) NULL,
 	[message] [varchar](250) NULL,
