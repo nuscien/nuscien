@@ -842,7 +842,7 @@ namespace NuScien.Security
         {
             var result = await DataProvider.SaveAsync(value, cancellationToken);
             if (ResourceEntityExtensions.IsSuccessful(result))
-                return new ChangeMethodResult<UserEntity>(result, value);
+                return new ChangeMethodResult<UserEntity>(result, value, result.ToString() + " user entity.");
             return result;
         }
 
@@ -856,7 +856,7 @@ namespace NuScien.Security
         {
             var result = await DataProvider.SaveAsync(value, cancellationToken);
             if (ResourceEntityExtensions.IsSuccessful(result))
-                return new ChangeMethodResult<UserGroupEntity>(result, value);
+                return new ChangeMethodResult<UserGroupEntity>(result, value, result.ToString() + " user group entity.");
             return result;
         }
 
@@ -868,7 +868,10 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         protected override async Task<ChangeMethodResult> SaveEntityAsync(UserGroupRelationshipEntity value, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.SaveAsync(value, cancellationToken);
+            var result = await DataProvider.SaveAsync(value, cancellationToken);
+            if (ResourceEntityExtensions.IsSuccessful(result))
+                return new ChangeMethodResult<UserGroupRelationshipEntity>(result, value, result.ToString() + " user group relationship entity.");
+            return result;
         }
 
         /// <summary>
@@ -882,7 +885,7 @@ namespace NuScien.Security
         {
             var result = await DataProvider.SaveAsync(content, message, cancellationToken);
             if (ResourceEntityExtensions.IsSuccessful(result))
-                return new ChangeMethodResult<ContentEntity>(result, content);
+                return new ChangeMethodResult<ContentEntity>(result, content, result.ToString() + " publish content entity.");
             return result;
         }
 
@@ -897,7 +900,7 @@ namespace NuScien.Security
         {
             var result = await DataProvider.SaveAsync(template, message, cancellationToken);
             if (ResourceEntityExtensions.IsSuccessful(result))
-                return new ChangeMethodResult<ContentTemplateEntity>(result, template);
+                return new ChangeMethodResult<ContentTemplateEntity>(result, template, result.ToString() + " publish content template entity.");
             return result;
         }
 
@@ -911,7 +914,7 @@ namespace NuScien.Security
         {
             var result = await DataProvider.SaveAsync(comment, cancellationToken);
             if (ResourceEntityExtensions.IsSuccessful(result))
-                return new ChangeMethodResult<ContentCommentEntity>(result, comment);
+                return new ChangeMethodResult<ContentCommentEntity>(result, comment, result.ToString() + " comment entity for publish content.");
             return result;
         }
 

@@ -321,8 +321,8 @@ namespace NuScien.Security
             if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
             if (!string.IsNullOrWhiteSpace(q.NameQuery))
             {
-                if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery);
-                else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
+                if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery || ele.Nickname == q.NameQuery);
+                else col = col.Where(ele => ele.Name.Contains(q.NameQuery) || (ele.Nickname != null && ele.Nickname.Contains(q.NameQuery)));
             }
 
             return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize), cancellationToken);
@@ -337,7 +337,7 @@ namespace NuScien.Security
         public IEnumerable<UserGroupEntity> ListGroups(string q, bool onlyPublic = false)
         {
             IEnumerable<UserGroupEntity> col = groups;
-            if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q));
+            if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q) || (ele.Nickname != null && ele.Nickname.Contains(q)));
             if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
             return col;
         }
@@ -356,8 +356,8 @@ namespace NuScien.Security
             if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
             if (!string.IsNullOrWhiteSpace(q.NameQuery))
             {
-                if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery);
-                else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
+                if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery || ele.Nickname == q.NameQuery);
+                else col = col.Where(ele => ele.Name.Contains(q.NameQuery) || (ele.Nickname != null && ele.Nickname.Contains(q.NameQuery)));
             }
 
             return ToListAsync(col.Where(ele => ele.State == q.State).Skip(q.Offset).Take(q.Count > 0 ? q.Count : ResourceEntityExtensions.PageSize), cancellationToken);

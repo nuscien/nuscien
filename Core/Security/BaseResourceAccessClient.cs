@@ -1061,7 +1061,9 @@ namespace NuScien.Security
 
             try
             {
-                return await SaveEntityAsync(rela, cancellationToken);
+                var result = await SaveEntityAsync(rela, cancellationToken);
+                if (result.IsSuccessful && rela.State == ResourceEntityStates.Normal) ClearCache();
+                return result;
             }
             catch (Exception ex)
             {
@@ -1146,7 +1148,9 @@ namespace NuScien.Security
             if (isAdmin) rela.Role = role;
             try
             {
-                return await SaveEntityAsync(rela, cancellationToken);
+                var result = await SaveEntityAsync(rela, cancellationToken);
+                if (result.IsSuccessful && rela.State == ResourceEntityStates.Normal && rela.TargetId == UserId) ClearCache();
+                return result;
             }
             catch (Exception ex)
             {
@@ -1371,6 +1375,20 @@ namespace NuScien.Security
             {
                 if (!await IsGroupsAdminAsync(value.OwnerSiteId, cancellationToken))
                     return new ChangeMethodResult(ChangeErrorKinds.Forbidden, "No permission to create the group.");
+                try
+                {
+                    return await SaveEntityAsync(value, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    var err = ResourceEntityExtensions.TryCatch(ex);
+                    if (err != null) return err;
+                    throw;
+                }
+            }
+
+            if (await IsGroupsAdminAsync(value.OwnerSiteId, cancellationToken))
+            {
                 try
                 {
                     return await SaveEntityAsync(value, cancellationToken);

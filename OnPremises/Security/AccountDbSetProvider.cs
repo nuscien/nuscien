@@ -218,7 +218,7 @@ namespace NuScien.Security
             var context = GetContext(true);
             var groups = string.IsNullOrWhiteSpace(q)
                 ? context.Groups.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
-                : context.Groups.Where(ele => ele.Name.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+                : context.Groups.Where(ele => (ele.Name.Contains(q) || (ele.Nickname != null && ele.Nickname.Contains(q))) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
             return await context.Relationships.Where(ele => ele.TargetId == user.Id && ele.StateCode == (int)relationshipState).Join(
                 groups,
                 ele => ele.OwnerId,
@@ -239,7 +239,7 @@ namespace NuScien.Security
             var context = GetContext(true);
             var users = string.IsNullOrWhiteSpace(q)
                 ? context.Users.Where(ele => ele.StateCode == ResourceEntityExtensions.NormalStateCode)
-                : context.Users.Where(ele => ele.Nickname.Contains(q) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
+                : context.Users.Where(ele => (ele.Name.Contains(q) || (ele.Nickname != null && ele.Nickname.Contains(q))) && ele.StateCode == ResourceEntityExtensions.NormalStateCode);
             var relationships = context.Relationships.Where(ele => ele.OwnerId == group.Id && ele.StateCode == (int)relationshipState);
             if (role.HasValue) relationships = relationships.Where(ele => ele.RoleCode == (int)role.Value);
             return relationships.Join(
@@ -329,11 +329,12 @@ namespace NuScien.Security
             IQueryable<UserGroupEntity> col = GetContext(true).Groups;
             if (!string.IsNullOrWhiteSpace(q.NameQuery))
             {
-                if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery);
-                else col = col.Where(ele => ele.Name.Contains(q.NameQuery));
+                if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery || ele.Nickname == q.NameQuery);
+                else col = col.Where(ele => ele.Name.Contains(q.NameQuery) || (ele.Nickname != null && ele.Nickname.Contains(q.NameQuery)));
             }
 
             if (onlyPublic) col = col.Where(ele => ele.VisibilityCode != (int)UserGroupVisibilities.Hidden);
+            col = col.Where(ele => ele.StateCode == (int)q.State);
             return await col.Where(ele => ele.OwnerSiteId == siteId && ele.StateCode == (int)q.State).ToListAsync(q, cancellationToken);
         }
 

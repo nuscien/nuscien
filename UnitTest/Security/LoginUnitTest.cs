@@ -61,7 +61,6 @@ namespace NuScien.UnitTest.Security
                 Name = "Sample official website",
                 Owner = "Kingcean Tuan"
             });
-            client.ClearCache();
             var settings = await client.GetSystemSettingsAsync("site");
             Assert.AreEqual("Sample official website", settings.Name);
 
@@ -77,11 +76,54 @@ namespace NuScien.UnitTest.Security
             var content = contents.FirstOrDefault() ?? new Cms.ContentEntity
             {
                 Name = "Test content",
-                OwnerSiteId = "site"
+                OwnerSiteId = "site",
             };
             content.State = ResourceEntityStates.Normal;
+            if (content.Config == null) content.Config = new JsonObject();
+            content.Config.SetValue("test", "Hellow world!");
             await client.SaveAsync(content, "Test to submit a content.");
+            contents = await client.ListContentAsync("site", true, new QueryArgs());
+            Assert.AreEqual(1, contents.Count());
+            Assert.IsTrue(contents.First().Config.ContainsKey("test"));
             await client.UpdateContentStateAsync(content.Id, ResourceEntityStates.Deleted, "Remove the test content.");
+
+            // Group.
+            var groups = await client.ListGroupsAsync(new QueryArgs
+            {
+                NameQuery = "TestGroup",
+                NameExactly = true
+            });
+            Assert.AreEqual(0, groups.Count());
+            groups = await client.ListGroupsAsync(new QueryArgs
+            {
+                NameQuery = "TestGroup",
+                NameExactly = true,
+                State = ResourceEntityStates.Deleted
+            }, "site");
+            var group = groups.FirstOrDefault() ?? new UserGroupEntity
+            {
+                Name = "TestGroup",
+                OwnerSiteId = "site",
+                Nickname = "Test Group",
+                MembershipPolicy = UserGroupMembershipPolicies.Application,
+                Visibility = UserGroupVisibilities.Visible
+            };
+            group.State = ResourceEntityStates.Normal;
+            await client.SaveAsync(group);
+            groups = await client.ListGroupsAsync(new QueryArgs
+            {
+                NameQuery = "TestGroup",
+                NameExactly = true
+            }, "site");
+            Assert.AreEqual(1, groups.Count());
+            group = groups.First();
+            var relaResult = await client.JoinAsync(group) as ChangeMethodResult<UserGroupRelationshipEntity>;
+            Assert.IsNotNull(relaResult);
+            Assert.AreEqual(UserGroupRelationshipEntity.Roles.Member, relaResult.Data.Role);
+            relaResult.Data.State = ResourceEntityStates.Deleted;
+            await client.SaveAsync(relaResult.Data);
+            group.State = ResourceEntityStates.Deleted;
+            await client.SaveAsync(group);
 
             // Logout.
             var accessToken = resp.AccessToken;
