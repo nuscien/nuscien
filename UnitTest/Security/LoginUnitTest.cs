@@ -117,7 +117,7 @@ namespace NuScien.UnitTest.Security
             }, "site");
             Assert.AreEqual(1, groups.Count());
             group = groups.First();
-            var relaResult = await client.JoinAsync(group) as ChangeMethodResult<UserGroupRelationshipEntity>;
+            var relaResult = await client.JoinAsync(group) as ChangingResultInfo<UserGroupRelationshipEntity>;
             Assert.IsNotNull(relaResult);
             Assert.AreEqual(UserGroupRelationshipEntity.Roles.Member, relaResult.Data.Role);
             relaResult.Data.State = ResourceEntityStates.Deleted;

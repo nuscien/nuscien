@@ -49,7 +49,7 @@ namespace NuScien.Data
         /// <param name="value">The entity to add or update.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public Task<ChangeMethodResult> SaveAsync(T value, CancellationToken cancellationToken = default);
+        public Task<ChangingResultInfo> SaveAsync(T value, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -162,10 +162,10 @@ namespace NuScien.Data
         /// <param name="value">The entity to add or update.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethodResult> SaveAsync(T value, CancellationToken cancellationToken = default)
+        public async Task<ChangingResultInfo> SaveAsync(T value, CancellationToken cancellationToken = default)
         {
-            var client = CreateHttp<ChangeMethodResult>();
-            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken) ?? new ChangeMethodResult(ChangeMethods.Invalid);
+            var client = CreateHttp<ChangingResultInfo>();
+            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
             Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
             return change;
         }
@@ -232,7 +232,7 @@ namespace NuScien.Data
         /// <returns>The result.</returns>
         public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, CancellationToken cancellationToken = default)
         {
-            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), cancellationToken);
+            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), null, cancellationToken);
         }
     }
 }

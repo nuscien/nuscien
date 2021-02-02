@@ -245,27 +245,27 @@ namespace NuScien.Security
         public DbSet<SettingsEntity> Settings { get; set; }
 
         /// <summary>
-        /// Gets the publish content database set.
+        /// Gets or sets the publish content database set.
         /// </summary>
         public DbSet<ContentEntity> Contents { get; set; }
 
         /// <summary>
-        /// Gets the publish content revision database set.
+        /// Gets or sets the publish content revision database set.
         /// </summary>
         public DbSet<ContentRevisionEntity> ContentRevisions { get; set; }
 
         /// <summary>
-        /// Gets the publish content template database set.
+        /// Gets or sets the publish content template database set.
         /// </summary>
         public DbSet<ContentTemplateEntity> ContentTemplates { get; set; }
 
         /// <summary>
-        /// Gets the publish content template revision database set.
+        /// Gets or sets the publish content template revision database set.
         /// </summary>
         public DbSet<ContentTemplateRevisionEntity> ContentTemplateRevisions { get; set; }
 
         /// <summary>
-        /// Gets the publish content comment database set.
+        /// Gets or sets the publish content comment database set.
         /// </summary>
         public DbSet<ContentCommentEntity> ContentComments { get; set; }
     }

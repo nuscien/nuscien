@@ -181,9 +181,9 @@ namespace NuScien.UnitTest.Data
         }
 
         /// <inheritdoc />
-        public override async Task<ChangeMethodResult> SaveAsync(GoodEntity value, CancellationToken cancellationToken = default)
+        public override async Task<ChangingResultInfo> SaveAsync(GoodEntity value, CancellationToken cancellationToken = default)
         {
-            if (!CoreResources.IsUserSignedIn) return new ChangeMethodResult(ChangeMethods.Invalid);
+            if (!CoreResources.IsUserSignedIn) return new ChangingResultInfo(ChangeMethods.Invalid);
             return await base.SaveAsync(value, cancellationToken);
         }
 

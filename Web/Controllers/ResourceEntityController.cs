@@ -114,7 +114,7 @@ namespace NuScien.Web
             {
                 if (entity is null) return this.ExceptionResult(400, "Require to send the entity in JSON format as request body.", "NoBody");
                 var provider = await GetProviderAsync();
-                var result = await provider.SaveAsync(entity) ?? new ChangeMethodResult(ChangeMethods.Invalid);
+                var result = await provider.SaveAsync(entity) ?? new ChangingResultInfo(ChangeMethods.Invalid);
                 Logger?.LogInformation(new EventId(17006003, "SaveEntity"), $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
                 return result.ToActionResult();
             }

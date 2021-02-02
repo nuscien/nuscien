@@ -249,7 +249,7 @@ namespace NuScien.Data
             return new CollectionResult<T>(await col.ToListAsync(cancellationToken), args.Offset);
         }
 
-        internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken)
+        internal static Task<List<T>> ToListAsync<T>(this IQueryable<T> col, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (q != null)
             {

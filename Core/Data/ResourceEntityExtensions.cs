@@ -157,15 +157,23 @@ namespace NuScien.Data
         /// <param name="source">A queryable resource entity collection to filter.</param>
         /// <param name="q">The query arguments.</param>
         /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="returnAllIfNoQuery">true if return all when the parameter of query argments is null; otherwise, false.</param>
         /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
         /// <exception cref="ArgumentNullException">source was null.</exception>
-        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, bool>> predicate = null) where T : BaseResourceEntity
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, bool>> predicate = null, bool returnAllIfNoQuery = false) where T : BaseResourceEntity
         {
             if (q == null)
             {
-                if (predicate == null) return source;
-                InternalAssertion.IsNotNull(source);
-                return source.Where(predicate);
+                if (returnAllIfNoQuery)
+                {
+                    if (predicate == null) return source;
+                    InternalAssertion.IsNotNull(source);
+                    return source.Where(predicate);
+                }
+                else
+                {
+                    q = new QueryArgs();
+                }
             }
 
             InternalAssertion.IsNotNull(source);
@@ -182,16 +190,39 @@ namespace NuScien.Data
         /// <typeparam name="T">The type of the resource entity.</typeparam>
         /// <param name="source">A queryable resource entity collection to filter.</param>
         /// <param name="q">The query arguments.</param>
-        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="returnAllIfNoQuery">true if return all when the parameter of query argments is null; otherwise, false.</param>
         /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
         /// <exception cref="ArgumentNullException">source was null.</exception>
-        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, int, bool>> predicate) where T : BaseResourceEntity
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, bool returnAllIfNoQuery) where T : BaseResourceEntity
+        {
+            return ListEntities(source, q, null as Expression<Func<T, bool>>, returnAllIfNoQuery);
+        }
+
+        /// <summary>
+        /// Filters a sequence of resource entities based on a predicate.
+        /// </summary>
+        /// <typeparam name="T">The type of the resource entity.</typeparam>
+        /// <param name="source">A queryable resource entity collection to filter.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="predicate">A function to test each element for a condition.</param>
+        /// <param name="returnAllIfNoQuery">true if return all when the parameter of query argments is null; otherwise, false.</param>
+        /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
+        /// <exception cref="ArgumentNullException">source was null.</exception>
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Expression<Func<T, int, bool>> predicate, bool returnAllIfNoQuery = false) where T : BaseResourceEntity
         {
             if (q == null)
             {
-                if (predicate == null) return source;
-                InternalAssertion.IsNotNull(source);
-                return source.Where(predicate);
+                if (returnAllIfNoQuery)
+                {
+                    if (predicate == null) return source;
+                    InternalAssertion.IsNotNull(source);
+                    return source.Where(predicate);
+                }
+                else
+                {
+                    q = new QueryArgs();
+                }
+
             }
 
             InternalAssertion.IsNotNull(source);
@@ -209,15 +240,23 @@ namespace NuScien.Data
         /// <param name="source">A queryable resource entity collection to filter.</param>
         /// <param name="q">The query arguments.</param>
         /// <param name="filter">A WHERE handler.</param>
+        /// <param name="returnAllIfNoQuery">true if return all when the parameter of query argments is null; otherwise, false.</param>
         /// <returns>A queryable resource entity collection that contains elements from the input sequence that satisfy the condition specified by predicate.</returns>
         /// <exception cref="ArgumentNullException">source was null.</exception>
-        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Func<IQueryable<T>, IQueryable<T>> filter) where T : BaseResourceEntity
+        public static IQueryable<T> ListEntities<T>(this IQueryable<T> source, QueryArgs q, Func<IQueryable<T>, IQueryable<T>> filter, bool returnAllIfNoQuery = false) where T : BaseResourceEntity
         {
             if (q == null)
             {
-                if (filter == null) return source;
-                InternalAssertion.IsNotNull(source);
-                return filter(source);
+                if (returnAllIfNoQuery)
+                {
+                    if (filter == null) return source;
+                    InternalAssertion.IsNotNull(source);
+                    return filter(source);
+                }
+                else
+                {
+                    q = new QueryArgs();
+                }
             }
 
             InternalAssertion.IsNotNull(source);
@@ -578,7 +617,7 @@ namespace NuScien.Data
             _ => false
         };
 
-        internal static ChangeMethodResult TryCatch(Exception ex)
+        internal static ChangingResultInfo TryCatch(Exception ex)
         {
             if (ex == null) return null;
             var isInvalid = false;
@@ -614,7 +653,7 @@ namespace NuScien.Data
                 || ex is InvalidCastException
                 || ex is FormatException
                 || ex is System.IO.InvalidDataException
-                ? new ChangeMethodResult(ex)
+                ? new ChangingResultInfo(ex)
                 : null;
         }
     }

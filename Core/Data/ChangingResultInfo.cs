@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ChangeMethodResult.cs" company="Nanchang Jinchen Software Co., Ltd.">
+// <copyright file="ChangingResultInfo.cs" company="Nanchang Jinchen Software Co., Ltd.">
 //   Copyright (c) 2010 Nanchang Jinchen Software Co., Ltd. All rights reserved.
 // </copyright>
 // <summary>
@@ -187,58 +187,58 @@ namespace NuScien.Data
     }
 
     /// <summary>
-    /// The change method result.
+    /// The changing result.
     /// </summary>
     [DataContract]
-    public class ChangeMethodResult
+    public class ChangingResultInfo
     {
         private readonly Exception exception;
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
-        public ChangeMethodResult()
+        public ChangingResultInfo()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
-        public ChangeMethodResult(ChangeMethods state)
+        public ChangingResultInfo(ChangeMethods state)
         {
             State = state;
             if (state == ChangeMethods.Invalid) ErrorCode = ChangeErrorKinds.Service;
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
         /// <param name="message">The message.</param>
-        public ChangeMethodResult(ChangeMethods state, string message)
+        public ChangingResultInfo(ChangeMethods state, string message)
             : this(state)
         {
             Message = message;
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
         /// <param name="ex">The exception.</param>
-        public ChangeMethodResult(ChangeMethods state, Exception ex)
+        public ChangingResultInfo(ChangeMethods state, Exception ex)
             : this(ex)
         {
             State = state;
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="code">The change eror kind.</param>
         /// <param name="message">The message.</param>
-        public ChangeMethodResult(ChangeErrorKinds code, string message)
+        public ChangingResultInfo(ChangeErrorKinds code, string message)
             : this()
         {
             State = ChangeMethods.Invalid;
@@ -247,12 +247,12 @@ namespace NuScien.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
         /// <param name="message">The message.</param>
         /// <param name="ex">The exception.</param>
-        public ChangeMethodResult(ChangeErrorKinds state, string message, Exception ex)
+        public ChangingResultInfo(ChangeErrorKinds state, string message, Exception ex)
             : this(state, message)
         {
             exception = ex;
@@ -260,10 +260,10 @@ namespace NuScien.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="ex">The exception.</param>
-        public ChangeMethodResult(Exception ex)
+        public ChangingResultInfo(Exception ex)
         {
             exception = ex;
             State = ChangeMethods.Invalid;
@@ -373,9 +373,9 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="value">The change method.</param>
         /// <returns>The change method result.</returns>
-        public static implicit operator ChangeMethodResult(ChangeMethods value)
+        public static implicit operator ChangingResultInfo(ChangeMethods value)
         {
-            return new ChangeMethodResult(value);
+            return new ChangingResultInfo(value);
         }
     }
 
@@ -383,44 +383,44 @@ namespace NuScien.Data
     /// The change method result.
     /// </summary>
     [DataContract]
-    public class ChangeMethodResult<T> : ChangeMethodResult
+    public class ChangingResultInfo<T> : ChangingResultInfo
     {
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
         /// <param name="data">The data.</param>
-        public ChangeMethodResult(ChangeMethods state, T data) : base(state)
+        public ChangingResultInfo(ChangeMethods state, T data) : base(state)
         {
             Data = data;
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
         /// <param name="data">The data.</param>
         /// <param name="message">The message.</param>
-        public ChangeMethodResult(ChangeMethods state, T data, string message) : base(state, message)
+        public ChangingResultInfo(ChangeMethods state, T data, string message) : base(state, message)
         {
             Data = data;
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="state">The change method result.</param>
         /// <param name="message">The message.</param>
         /// <param name="ex">The exception.</param>
-        public ChangeMethodResult(ChangeErrorKinds state, string message, Exception ex) : base(state, message, ex)
+        public ChangingResultInfo(ChangeErrorKinds state, string message, Exception ex) : base(state, message, ex)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the ChangeMethodResult class.
+        /// Initializes a new instance of the ChangingResultInfo class.
         /// </summary>
         /// <param name="ex">The exception.</param>
-        public ChangeMethodResult(Exception ex)
+        public ChangingResultInfo(Exception ex)
         {
         }
 

@@ -178,7 +178,7 @@ namespace NuScien.Web
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The action result.</returns>
-        public static ActionResult ToActionResult(this ChangeMethodResult value)
+        public static ActionResult ToActionResult(this ChangingResultInfo value)
         {
             if (value == null) return new NotFoundResult();
             var ex = value.GetException();
@@ -208,7 +208,7 @@ namespace NuScien.Web
         /// <returns>The action result.</returns>
         public static ActionResult ToActionResult(this ChangeMethods value)
         {
-            return ToActionResult(new ChangeMethodResult(value));
+            return ToActionResult(new ChangingResultInfo(value));
         }
 
         /// <summary>

@@ -20,6 +20,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Trivial.Collection;
 using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Text;
@@ -42,8 +43,8 @@ namespace NuScien.Data
         /// <summary>
         /// Gets or sets a value indicating whether the name is exact to search.
         /// </summary>
-        [DataMember(Name = "eq_name")]
-        [JsonPropertyName("eq_name")]
+        [DataMember(Name = "eqname")]
+        [JsonPropertyName("eqname")]
         public bool NameExactly { get; set; }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace NuScien.Data
             if (!string.IsNullOrWhiteSpace(NameQuery))
             {
                 writer.WriteString("q", NameQuery);
-                writer.WriteBoolean("eq_name", NameExactly);
+                writer.WriteBoolean("eqname", NameExactly);
             }
 
             writer.WriteNumber("offset", Offset);
@@ -163,10 +164,16 @@ namespace NuScien.Data
             var result = new QueryArgs
             {
                 NameQuery = q.GetValue("q") ?? q.GetValue("name"),
-                NameExactly = q.GetValue("eq_name")?.ToLowerInvariant() == JsonBoolean.TrueString,
+                NameExactly = q.GetValue("eqname")?.ToLowerInvariant() == JsonBoolean.TrueString,
                 Offset = q.TryGetInt32Value("offset") ?? 0,
                 Count = q.TryGetInt32Value("count") ?? ResourceEntityExtensions.PageSize
             };
+            if (!q.ContainsKey("offset"))
+            {
+                var pgIndex = q.TryGetInt32Value("pgno");
+                if (pgIndex.HasValue && pgIndex > 0) result.Offset = pgIndex.Value * result.Count;
+            }
+
             var stateNum = q.TryGetInt32Value("state");
             if (stateNum.HasValue)
             {
@@ -205,7 +212,7 @@ namespace NuScien.Data
             return new QueryData
             {
                 { "q", q.NameQuery },
-                { "eq_name", q.NameExactly },
+                { "eqname", q.NameExactly },
                 { "offset", q.Offset.ToString("g") },
                 { "count", q.Count.ToString("g") },
                 { "state", ((int)q.State).ToString("g") },
@@ -224,7 +231,7 @@ namespace NuScien.Data
             return new JsonObject
             {
                 { "q", q.NameQuery },
-                { "eq_name", q.NameExactly },
+                { "eqname", q.NameExactly },
                 { "offset", q.Offset.ToString("g") },
                 { "count", q.Count.ToString("g") },
                 { "state", ((int)q.State).ToString("g") },
@@ -300,15 +307,18 @@ namespace NuScien.Data
         /// <returns>An instance of query arguments</returns>
         public static QueryArgs Parse(JsonObject json)
         {
-            return new QueryArgs
+            var q = new QueryArgs
             {
                 NameQuery = json.GetStringValue("q") ?? json.GetStringValue("name"),
-                NameExactly = json.TryGetBooleanValue("eq_name") ?? false,
+                NameExactly = json.TryGetBooleanValue("eqname") ?? false,
                 Offset = json.TryGetInt32Value("offset") ?? 0,
                 Count = json.TryGetInt32Value("count") ?? ResourceEntityExtensions.PageSize,
                 State = json.TryGetEnumValue<ResourceEntityStates>("state", true) ?? ResourceEntityStates.Normal,
                 Order = json.TryGetEnumValue<ResourceEntityOrders>("order", true) ?? ResourceEntityOrders.Default
             };
+            if (!json.ContainsKey("offset") && json.TryGetInt32Value("pgno", out var pgIndex) && pgIndex > 0)
+                q.Offset = pgIndex * q.Count;
+            return q;
         }
     }
 
@@ -340,7 +350,7 @@ namespace NuScien.Data
             if (!string.IsNullOrWhiteSpace(value.NameQuery))
             {
                 writer.WriteString("q", value.NameQuery);
-                writer.WriteBoolean("eq_name", value.NameExactly);
+                writer.WriteBoolean("eqname", value.NameExactly);
             }
 
             writer.WriteNumber("offset", value.Offset);

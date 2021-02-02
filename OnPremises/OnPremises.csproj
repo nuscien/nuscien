@@ -8,9 +8,9 @@
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>0.3.2</Version>
-    <AssemblyVersion>0.3.2.0</AssemblyVersion>
-    <FileVersion>0.3.2.0</FileVersion>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
     <Description>The NuScien on-premises library. It implements the resource access client and base business context by Entity Framework Core.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -130,15 +130,15 @@ namespace NuScien.Data
         /// <param name="value">The entity to add or update.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<ChangeMethodResult> SaveAsync(T value, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> SaveAsync(T value, CancellationToken cancellationToken = default)
         {
-            if (value == null) return new ChangeMethodResult(ChangeMethods.Unchanged);
+            if (value == null) return new ChangingResultInfo(ChangeMethods.Unchanged);
             var isNew = value.IsNew;
             if (isNew) OnAdd(value);
             else OnUpdate(value);
             var change = await DbResourceEntityExtensions.SaveAsync(Set, SaveChangesAsync, value, cancellationToken);
             Saved?.Invoke(this, new ChangeEventArgs<T>(isNew ? null : value, value, change));
-            return new ChangeMethodResult(change);
+            return new ChangingResultInfo(change);
         }
 
         /// <summary>
