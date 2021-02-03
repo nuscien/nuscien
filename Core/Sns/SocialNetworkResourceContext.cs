@@ -154,6 +154,22 @@ namespace NuScien.Sns
         public abstract Task<IEnumerable<UserGroupActivityEntity>> ListUserGroupActivitiesAsync(Users.UserGroupEntity owner, QueryArgs q, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets a specific mail received.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity result.</returns>
+        public abstract Task<ReceivedMailEntity> GetReceivedMailAsync(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets a specific mail sent or draft.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity result.</returns>
+        public abstract Task<SentMailEntity> GetSentMailAsync(string id, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Lists mails received.
         /// </summary>
         /// <param name="folder">The folder name.</param>
@@ -174,7 +190,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(ContactEntity entity, CancellationToken cancellationToken);
@@ -182,7 +198,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(BlogEntity entity, CancellationToken cancellationToken);
@@ -190,7 +206,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(BlogCommentEntity entity, CancellationToken cancellationToken);
@@ -198,7 +214,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(UserActivityEntity entity, CancellationToken cancellationToken);
@@ -206,7 +222,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(UserGroupActivityEntity entity, CancellationToken cancellationToken);
@@ -214,7 +230,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(ReceivedMailEntity entity, CancellationToken cancellationToken);
@@ -222,73 +238,165 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public abstract Task<ChangingResultInfo> SaveAsync(SentMailEntity entity, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="state">The state to change.</param>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateContactStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetContactAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<ContactEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, cancellationToken);
+        }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateBlogStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public virtual Task<ChangingResultInfo> UpdateContactAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        {
+            return UpdateContactAsync(id, new JsonObject
+            {
+                { "state", state.ToString() }
+            }, cancellationToken);
+        }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="state">The state to change.</param>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateBlogCommentStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetBlogAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<BlogEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, cancellationToken);
+        }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateUserActivityStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public virtual Task<ChangingResultInfo> UpdateBlogAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        {
+            return UpdateBlogAsync(id, new JsonObject
+            {
+                { "state", state.ToString() }
+            }, cancellationToken);
+        }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateUserGroupActivityStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> UpdateBlogCommentAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateReceivedMailStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> UpdateUserActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateSentMailStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> UpdateUserGroupActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The changing result information.</returns>
+        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetReceivedMailAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<ReceivedMailEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="state">The state to change.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The changing result information.</returns>
+        public virtual Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        {
+            return UpdateReceivedMailAsync(id, new JsonObject
+            {
+                { "state", state.ToString() }
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The changing result information.</returns>
+        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetSentMailAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<SentMailEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="state">The state to change.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The changing result information.</returns>
+        public virtual Task<ChangingResultInfo> UpdateSentMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        {
+            return UpdateSentMailAsync(id, new JsonObject
+            {
+                { "state", state.ToString() }
+            }, cancellationToken);
+        }
 
         /// <summary>
         /// Fills the resource access client by default instance.
@@ -458,6 +566,28 @@ namespace NuScien.Sns
         }
 
         /// <summary>
+        /// Gets a specific mail received.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity result.</returns>
+        public override Task<ReceivedMailEntity> GetReceivedMailAsync(string id, CancellationToken cancellationToken)
+        {
+            return GetDataAsync<ReceivedMailEntity>(HttpMethod.Get, $"{RootFolderName}mail/i/m/{id}", cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets a specific mail sent or draft.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity result.</returns>
+        public override Task<SentMailEntity> GetSentMailAsync(string id, CancellationToken cancellationToken)
+        {
+            return GetDataAsync<SentMailEntity>(HttpMethod.Get, $"{RootFolderName}mail/o/m/{id}", cancellationToken);
+        }
+
+        /// <summary>
         /// Lists mails received.
         /// </summary>
         /// <param name="folder">The folder name.</param>
@@ -466,7 +596,7 @@ namespace NuScien.Sns
         /// <returns>The collection of result.</returns>
         public override Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken)
         {
-            return QueryAsync<ReceivedMailEntity>($"{RootFolderName}mail/i/{folder ?? string.Empty}", q, cancellationToken);
+            return QueryAsync<ReceivedMailEntity>($"{RootFolderName}mail/i/f/{folder ?? string.Empty}", q, cancellationToken);
         }
 
         /// <summary>
@@ -478,13 +608,13 @@ namespace NuScien.Sns
         /// <returns>The collection of result.</returns>
         public override Task<IEnumerable<SentMailEntity>> ListSentMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken)
         {
-            return QueryAsync<SentMailEntity>($"{RootFolderName}mail/o/{folder ?? string.Empty}", q, cancellationToken);
+            return QueryAsync<SentMailEntity>($"{RootFolderName}mail/o/f/{folder ?? string.Empty}", q, cancellationToken);
         }
 
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(ContactEntity entity, CancellationToken cancellationToken)
@@ -495,7 +625,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(BlogEntity entity, CancellationToken cancellationToken)
@@ -506,7 +636,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(BlogCommentEntity entity, CancellationToken cancellationToken)
@@ -517,7 +647,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(UserActivityEntity entity, CancellationToken cancellationToken)
@@ -528,7 +658,7 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(UserGroupActivityEntity entity, CancellationToken cancellationToken)
@@ -539,128 +669,116 @@ namespace NuScien.Sns
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(ReceivedMailEntity entity, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/i", null, entity, cancellationToken);
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/i/m", null, entity, cancellationToken);
         }
 
         /// <summary>
         /// Saves an entity.
         /// </summary>
-        /// <param name="entity">The entity to save.</param>
+        /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
         public override Task<ChangingResultInfo> SaveAsync(SentMailEntity entity, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/o", null, entity, cancellationToken);
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/o/m", null, entity, cancellationToken);
         }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The changing result information.</returns>
+        public override Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        {
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}passport/contact/{id}", null, delta, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The changing result information.</returns>
+        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        {
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/c/{id}", null, delta, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateContactStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateBlogCommentAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}passport/contact/{id}", null, new QueryData
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/cc/{id}", null, new JsonObject
             {
                 { "state", state.ToString() }
             }, cancellationToken);
         }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateBlogStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateUserActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/c/{id}", null, new QueryData
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activit/u/{id}", null, new JsonObject
             {
                 { "state", state.ToString() }
             }, cancellationToken);
         }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
+        /// <param name="id">The resource entity identifier.</param>
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateBlogCommentStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateUserGroupActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/cc/{id}", null, new QueryData
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activit/g/{id}", null, new JsonObject
             {
                 { "state", state.ToString() }
             }, cancellationToken);
         }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="state">The state to change.</param>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateUserActivityStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activit/u/{id}", null, new QueryData
-            {
-                { "state", state.ToString() }
-            }, cancellationToken);
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/i/{id}", null, delta, cancellationToken);
         }
 
         /// <summary>
-        /// Saves an entity.
+        /// Updates a specific entity.
         /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="state">The state to change.</param>
+        /// <param name="id">The resource entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateUserGroupActivityStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
         {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activit/g/{id}", null, new QueryData
-            {
-                { "state", state.ToString() }
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Saves an entity.
-        /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="state">The state to change.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateReceivedMailStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
-        {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/i/{id}", null, new QueryData
-            {
-                { "state", state.ToString() }
-            }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Saves an entity.
-        /// </summary>
-        /// <param name="id">The entity identifier.</param>
-        /// <param name="state">The state to change.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateSentMailStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
-        {
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/o/{id}", null, new QueryData
-            {
-                { "state", state.ToString() }
-            }, cancellationToken);
+            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/o/{id}", null, delta, cancellationToken);
         }
 
         /// <summary>

@@ -261,11 +261,31 @@ namespace NuScien.Web
         [Route("passport/user")]
         public async Task<IActionResult> SaveUserAsync([FromBody] UserEntity entity)
         {
-            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
             Logger?.LogInformation(new EventId(17001011, "SaveUserInfo"), "Save user information {0}.", entity.Name ?? entity.Id);
             return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("passport/user/{id}")]
+        public Task<IActionResult> SaveUserAsync(string id)
+        {
+            return this.SaveEntityAsync(async (i, instance) =>
+            {
+                return await instance.GetUserByIdAsync(id);
+            }, async (entity, instance, delta) =>
+            {
+                var result = await instance.SaveAsync(entity);
+                Logger?.LogInformation(new EventId(17001012, "SaveUserInfo"), "Save user information {0}.", entity.Name ?? entity.Id);
+                return result;
+            }, id);
         }
 
         /// <summary>
@@ -277,11 +297,31 @@ namespace NuScien.Web
         [Route("passport/group")]
         public async Task<IActionResult> SaveGroupAsync([FromBody] UserGroupEntity entity)
         {
-            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
-            Logger?.LogInformation(new EventId(17001012, "SaveUserGroupInfo"), "Save user group information {0}.", entity.Name ?? entity.Id);
+            Logger?.LogInformation(new EventId(17001013, "SaveUserGroupInfo"), "Save user group information {0}.", entity.Name ?? entity.Id);
             return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("passport/group/{id}")]
+        public Task<IActionResult> SaveGroupAsync(string id)
+        {
+            return this.SaveEntityAsync(async (i, instance) =>
+            {
+                return await instance.GetUserGroupByIdAsync(id);
+            }, async (entity, instance, delta) =>
+            {
+                var result = await instance.SaveAsync(entity);
+                Logger?.LogInformation(new EventId(17001014, "SaveUserGroupInfo"), "Save user group information {0}.", entity.Name ?? entity.Id);
+                return result;
+            }, id);
         }
 
         /// <summary>
@@ -293,10 +333,10 @@ namespace NuScien.Web
         [Route("passport/rela")]
         public async Task<IActionResult> SaveRelationshipAsync([FromBody] UserGroupRelationshipEntity entity)
         {
-            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
-            Logger?.LogInformation(new EventId(17001016, "SaveUserGroupRela"), "Save user group relationship {0}, owner {1}, target {2}.", entity.Id, entity.OwnerId, entity.TargetId);
+            Logger?.LogInformation(new EventId(17001017, "SaveUserGroupRela"), "Save user group relationship {0}, owner {1}, target {2}.", entity.Id, entity.OwnerId, entity.TargetId);
             return result.ToActionResult();
         }
     }

@@ -505,6 +505,20 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Updates a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The publish content entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public override Task<ChangingResultInfo> UpdateUserAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
+            if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
+            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}passport/user/{id}", delta, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a user group entity by given identifier.
         /// </summary>
         /// <param name="id">The user group identifier.</param>
@@ -514,6 +528,20 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
             return SendAsync<UserGroupEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/group/" + id), cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The publish content entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public override Task<ChangingResultInfo> UpdateUserGroupAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
+            if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
+            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}passport/group/{id}", delta, cancellationToken);
         }
 
         /// <summary>
@@ -622,6 +650,20 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Updates a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The publish content entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public override Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
+            if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
+            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}cms/c/{id}", delta, cancellationToken);
+        }
+
+        /// <summary>
         /// Gets a specific publish content template.
         /// </summary>
         /// <param name="id">The identifier of the publish content template.</param>
@@ -668,6 +710,19 @@ namespace NuScien.Security
         public override Task<ContentTemplateRevisionEntity> GetContentTemplateRevisionAsync(string id, CancellationToken cancellationToken = default)
         {
             return SendAsync<ContentTemplateRevisionEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/tr/" + id), cancellationToken);
+        }
+        /// <summary>
+        /// Updates a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The publish content entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public override Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
+            if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
+            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}cms/t/{id}", delta, cancellationToken);
         }
 
         /// <summary>

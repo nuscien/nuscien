@@ -145,30 +145,30 @@ namespace NuScien.Data
         /// Saves.
         /// </summary>
         /// <param name="id">The entity identifier.</param>
-        /// <param name="changes">The data to change.</param>
+        /// <param name="delta">The data to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<T> SaveAsync(string id, JsonObject changes, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> SaveAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                if (changes == null) return null;
+                if (delta == null) return null;
                 try
                 {
-                    var newEntity = changes.Deserialize<T>();
-                    var result = await SaveAsync(newEntity, cancellationToken);
-                    return result != null && ResourceEntityExtensions.IsSuccessful(result.State) ? newEntity : null;
+                    var newEntity = delta.Deserialize<T>();
+                    return await SaveAsync(newEntity, cancellationToken) ?? new ChangingResultInfo(ChangeErrorKinds.Service, "No response.");
                 }
                 catch (System.Text.Json.JsonException)
                 {
-                    return null;
+                    return new ChangingResultInfo(ChangeErrorKinds.Argument, "Failed to convert the JSON object."); ;
                 }
             }
 
             var entity = await GetAsync(id, true, cancellationToken);
-            if (changes == null || changes.Count == 0) return entity;
-            if (FillProperties(entity, changes)) await SaveAsync(entity, cancellationToken);
-            return entity;
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity, "Update properties."); ;
+            entity.SetProperties(delta);
+            await SaveAsync(entity, cancellationToken);
+            return new ChangingResultInfo<T>(ChangeMethods.MemberModify, entity, "Update properties.");
         }
 
         /// <summary>
@@ -194,21 +194,6 @@ namespace NuScien.Data
         /// <param name="predication">The query predication.</param>
         /// <returns>The result.</returns>
         protected abstract void MapQuery(QueryPredication<T> predication);
-
-        /// <summary>
-        /// Fills the data into the entity.
-        /// </summary>
-        /// <param name="entity">The target entity.</param>
-        /// <param name="changes">The data to change.</param>
-        /// <returns>true if the change set is valid; otherwise, false.</returns>
-        protected virtual bool FillProperties(T entity, JsonObject changes)
-        {
-            var state = changes.TryGetEnumValue<ResourceEntityStates>("state", true);
-            if (state.HasValue) entity.State = state.Value;
-            var name = changes.TryGetStringValue("name");
-            entity.Name = name;
-            return true;
-        }
 
         /// <summary>
         /// Tests if the new entity is valid.

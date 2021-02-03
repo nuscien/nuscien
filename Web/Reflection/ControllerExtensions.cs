@@ -215,6 +215,17 @@ namespace NuScien.Web
         /// Convert to an action result.
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="message">The error message.</param>
+        /// <returns>The action result.</returns>
+        public static ActionResult ToActionResult(this ChangeErrorKinds value, string message)
+        {
+            return ToActionResult(new ChangingResultInfo(value, message));
+        }
+
+        /// <summary>
+        /// Convert to an action result.
+        /// </summary>
+        /// <param name="value">The value.</param>
         /// <returns>The action result.</returns>
         public static ContentResult ToActionResult(this JsonObject value)
         {
@@ -417,6 +428,21 @@ namespace NuScien.Web
             // Return result.
             return r;
         }
+
+        internal static async Task<IActionResult> SaveEntityAsync<T>(this ControllerBase controller, Func<string, BaseResourceAccessClient, Task<T>> entityResolver, Func<T, BaseResourceAccessClient, JsonObject, Task<ChangingResultInfo>> save, string id) where T : BaseResourceEntity
+        {
+            if (string.IsNullOrWhiteSpace(id)) return ChangeErrorKinds.Argument.ToActionResult("Requires entity identifier.");
+            var instance = await controller.GetResourceAccessClientAsync();
+            var entity = await entityResolver(id, instance);
+            if (controller.Request.Body == null) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity).ToActionResult();
+            if (entity == null) return ChangeErrorKinds.NotFound.ToActionResult("The resource does not exist.");
+            var delta = await JsonObject.ParseAsync(controller.Request.Body);
+            if (delta.Count == 0) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity, "Nothing update request.").ToActionResult();
+            entity.SetProperties(delta);
+            var result = await save(entity, instance, delta);
+            return result.ToActionResult();
+        }
+
 
         /// <summary>
         /// Gets the resource access client.

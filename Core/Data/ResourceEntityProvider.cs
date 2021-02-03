@@ -126,7 +126,7 @@ namespace NuScien.Data
         public async Task<T> GetAsync(string id, bool includeAllStates = false, CancellationToken cancellationToken = default)
         {
             var client = CreateHttp<T>();
-            var entity = await client.GetAsync(GetUri(id), cancellationToken);
+            var entity = await client.GetAsync(GetUri("e/" + id), cancellationToken);
             return entity;
         }
 
@@ -164,10 +164,46 @@ namespace NuScien.Data
         /// <returns>The change method.</returns>
         public async Task<ChangingResultInfo> SaveAsync(T value, CancellationToken cancellationToken = default)
         {
+            if (value == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity.");
             var client = CreateHttp<ChangingResultInfo>();
             var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
             Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
             return change;
+        }
+
+        /// <summary>
+        /// Saves.
+        /// </summary>
+        /// <param name="id">The entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangingResultInfo> SaveAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires identifier.");
+            if (delta == null) return new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing need to update.");
+            var client = CreateHttp<ChangingResultInfo>();
+            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri("e/" + id), delta, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
+            T value = null;
+            if (change is ChangingResultInfo<T> r) value = r.Data;
+            if (value == null && change.IsSuccessful && change.State != ChangeMethods.Remove) value = await GetAsync(id, true, cancellationToken);
+            Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
+            return change;
+        }
+
+        /// <summary>
+        /// Updates the entity state.
+        /// </summary>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangingResultInfo> UpdateStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
+        {
+            return SaveAsync(id, new JsonObject
+            {
+                { "state", state.ToString() }
+            }, cancellationToken);
         }
 
         /// <summary>

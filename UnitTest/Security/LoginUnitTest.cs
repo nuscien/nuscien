@@ -85,7 +85,7 @@ namespace NuScien.UnitTest.Security
             contents = await client.ListContentAsync("site", true, new QueryArgs());
             Assert.AreEqual(1, contents.Count());
             Assert.IsTrue(contents.First().Config.ContainsKey("test"));
-            await client.UpdateContentStateAsync(content.Id, ResourceEntityStates.Deleted, "Remove the test content.");
+            await client.UpdateContentAsync(content.Id, ResourceEntityStates.Deleted, "Remove the test content.");
 
             // Group.
             var groups = await client.ListGroupsAsync(new QueryArgs

@@ -138,16 +138,17 @@ namespace NuScien.Web
         /// <returns>The changing state.</returns>
         [HttpPut]
         [Route("e/{id}")]
-        public virtual async Task<IActionResult> UpdateAsync(string id)
+        public virtual async Task<IActionResult> SaveAsync(string id)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(id)) return this.ExceptionResult(400, "An entity identifier is required in path.", "NoBody");
                 var provider = await GetProviderAsync();
                 var content = await JsonObject.ParseAsync(Request.Body);
-                var entity = await provider.SaveAsync(id, content);
+                var r = await provider.SaveAsync(id, content);
+                var entity = (r as ChangingResultInfo<TEntity>)?.Data;
                 Logger?.LogInformation(new EventId(17006004, "UpdateEntity"), entity != null ? $"Update entity {entity.GetType().Name} {entity.Name} ({entity.Id})." : $"Failed update entity {id} because of non-existing.");
-                return this.ResourceEntityResult(entity);
+                return r.ToActionResult();
             }
             catch (Exception ex)
             {

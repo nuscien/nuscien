@@ -915,6 +915,23 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Updates a specific publish content template entity.
+        /// </summary>
+        /// <param name="id">The publish content template entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public virtual async Task<ChangingResultInfo> UpdateUserAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetUserByIdAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<UserEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, cancellationToken);
+        }
+
+        /// <summary>
         /// Searches user groups.
         /// </summary>
         /// <param name="q">The optional query request information.</param>
@@ -930,6 +947,23 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         public abstract Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Updates a specific publish content template entity.
+        /// </summary>
+        /// <param name="id">The publish content template entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public virtual async Task<ChangingResultInfo> UpdateUserGroupAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetUserGroupByIdAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<UserGroupEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, cancellationToken);
+        }
 
         /// <summary>
         /// Gets a collection of user groups joined in.
@@ -1522,6 +1556,37 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Updates a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The publish content entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, string message, CancellationToken cancellationToken = default)
+        {
+            if (message != null && delta != null) delta.SetValue("message", message);
+            return UpdateContentAsync(id, delta, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific publish content entity.
+        /// </summary>
+        /// <param name="id">The publish content entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public virtual async Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetContentAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<ContentEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, delta.TryGetStringValue("message"), cancellationToken);
+        }
+
+        /// <summary>
         /// Updates the state of a specific publish content entity.
         /// </summary>
         /// <param name="id">The identifier of the publish content entity.</param>
@@ -1529,28 +1594,11 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangingResultInfo> UpdateContentStateAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
+        public async Task<ChangingResultInfo> UpdateContentAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
         {
             var content = await GetContentAsync(id, cancellationToken);
             if (content == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The content does not exist.");
             if (content.State == state) return new ChangingResultInfo<ContentEntity>(ChangeMethods.Unchanged, content, $"The state is already {state}.");
-            content.State = state;
-            return await SaveAsync(content, message, cancellationToken);
-        }
-
-        /// <summary>
-        /// Updates the state of a specific publish content template entity.
-        /// </summary>
-        /// <param name="id">The identifier of the publish content entity.</param>
-        /// <param name="state">The resource entity state.</param>
-        /// <param name="message">The commit message.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The change method.</returns>
-        public async Task<ChangingResultInfo> UpdateContentTemplateStateAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
-        {
-            var content = await GetContentTemplateAsync(id, cancellationToken);
-            if (content == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The content does not exist.");
-            if (content.State == state) return new ChangingResultInfo<ContentTemplateEntity>(ChangeMethods.Unchanged, content, $"The state is already {state}.");
             content.State = state;
             return await SaveAsync(content, message, cancellationToken);
         }
@@ -1579,6 +1627,54 @@ namespace NuScien.Security
                 if (err != null) return err;
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Updates a specific publish content template entity.
+        /// </summary>
+        /// <param name="id">The publish content template entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObject delta, string message, CancellationToken cancellationToken = default)
+        {
+            if (message != null && delta != null) delta.SetValue("message", message);
+            return UpdateContentTemplateAsync(id, delta, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates a specific publish content template entity.
+        /// </summary>
+        /// <param name="id">The publish content template entity identifier.</param>
+        /// <param name="delta">The changeset.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public virtual async Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
+            var entity = await GetContentTemplateAsync(id, cancellationToken);
+            if (delta == null || delta.Count == 0) return new ChangingResultInfo<ContentTemplateEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
+            entity.SetProperties(delta);
+            return await SaveAsync(entity, delta.TryGetStringValue("message"), cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates the state of a specific publish content template entity.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content entity.</param>
+        /// <param name="state">The resource entity state.</param>
+        /// <param name="message">The commit message.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The change method.</returns>
+        public async Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
+        {
+            var content = await GetContentTemplateAsync(id, cancellationToken);
+            if (content == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The content does not exist.");
+            if (content.State == state) return new ChangingResultInfo<ContentTemplateEntity>(ChangeMethods.Unchanged, content, $"The state is already {state}.");
+            content.State = state;
+            return await SaveAsync(content, message, cancellationToken);
         }
 
         /// <summary>

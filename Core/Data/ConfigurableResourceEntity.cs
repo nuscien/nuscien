@@ -492,6 +492,34 @@ namespace NuScien.Data
             else writer.WriteNullValue();
         }
 
+        /// <summary>
+        /// Sets properites.
+        /// </summary>
+        /// <param name="value">The JSON object to fill the member of this instance.</param>
+        /// <param name="blacklist">The blacklist of the entity property name.</param>
+        public override void SetProperties(JsonObject value, IEnumerable<string> blacklist)
+        {
+            if (value == null) return;
+            base.SetProperties(value, blacklist);
+            foreach (var prop in value)
+            {
+                if (prop.Key == null || !prop.Key.StartsWith("config.")) continue;
+                var key = prop.Key[..7]?.Trim();
+                if (string.IsNullOrEmpty(key)) continue;
+                var config = Config;
+                if (config == null) config = Config = new JsonObject();
+                config[key] = prop.Value;
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not ConfigurableResourceEntity e) return;
+            ConfigString = e.ConfigString;
+        }
+
         private static JsonObject ParseJson(string s)
         {
             try
@@ -514,14 +542,6 @@ namespace NuScien.Data
             {
                 return new JsonObject();
             }
-        }
-
-        /// <inheritdoc />
-        protected override void FillBaseProperties(BaseResourceEntity entity)
-        {
-            base.FillBaseProperties(entity);
-            if (entity is not ConfigurableResourceEntity e) return;
-            ConfigString = e.ConfigString;
         }
     }
 

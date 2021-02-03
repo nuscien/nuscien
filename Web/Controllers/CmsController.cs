@@ -109,7 +109,7 @@ namespace NuScien.Web
         [Route("cms/c")]
         public async Task<IActionResult> SaveContentAsync([FromBody] ContentEntity entity)
         {
-            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             string message = null;
             if (entity.ExtensionSerializationData != null && entity.ExtensionSerializationData.TryGetValue("message", out var msg) && msg.ValueKind == JsonValueKind.String)
@@ -117,6 +117,27 @@ namespace NuScien.Web
             var result = await instance.SaveAsync(entity, message);
             Logger?.LogInformation(new EventId(17002011, "SaveContentInfo"), "Save publish content information {0}. {1}", entity.Name ?? entity.Id, message);
             return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The entity to save.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("cms/c/{id}")]
+        public Task<IActionResult> SaveContentAsync(string id)
+        {
+            return this.SaveEntityAsync(async (i, instance) =>
+            {
+                return await instance.GetContentAsync(id);
+            }, async (entity, instance, delta) =>
+            {
+                var message = delta.TryGetStringValue("message");
+                var result = await instance.SaveAsync(entity, message);
+                Logger?.LogInformation(new EventId(17002012, "SaveUserInfo"), "Save user information {0}.", entity.Name ?? entity.Id);
+                return result;
+            }, id);
         }
 
         /// <summary>
@@ -196,16 +217,37 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("cms/t")]
-        public async Task<IActionResult> SaveContentAsync([FromBody] ContentTemplateEntity entity)
+        public async Task<IActionResult> SaveContentTemplateAsync([FromBody] ContentTemplateEntity entity)
         {
-            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             string message = null;
             if (entity.ExtensionSerializationData != null && entity.ExtensionSerializationData.TryGetValue("message", out var msg) && msg.ValueKind == JsonValueKind.String)
                 message = msg.GetString();
             var result = await instance.SaveAsync(entity, message);
-            Logger?.LogInformation(new EventId(17002021, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
+            Logger?.LogInformation(new EventId(17002013, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
             return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The entity to save.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("cms/t/{id}")]
+        public Task<IActionResult> SaveContentTemplateAsync(string id)
+        {
+            return this.SaveEntityAsync(async (i, instance) =>
+            {
+                return await instance.GetContentTemplateAsync(id);
+            }, async (entity, instance, delta) =>
+            {
+                var message = delta.TryGetStringValue("message");
+                var result = await instance.SaveAsync(entity, message);
+                Logger?.LogInformation(new EventId(17002014, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
+                return result;
+            }, id);
         }
 
         /// <summary>
@@ -276,13 +318,33 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("cms/cc")]
-        public async Task<IActionResult> SaveContentAsync([FromBody] ContentCommentEntity entity)
+        public async Task<IActionResult> SaveContentCommentAsync([FromBody] ContentCommentEntity entity)
         {
-            if (entity == null) return ChangeMethods.Invalid.ToActionResult();
+            if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
-            Logger?.LogInformation(new EventId(17002031, "PostContentComment"), "Post a comment to a publish content.");
+            Logger?.LogInformation(new EventId(17002017, "PostContentComment"), "Post a comment to a publish content.");
             return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Updates a specific entity.
+        /// </summary>
+        /// <param name="id">The entity to save.</param>
+        /// <returns>The status of changing result.</returns>
+        [HttpPut]
+        [Route("cms/cc/{id}")]
+        public Task<IActionResult> SaveContentCommentAsync(string id)
+        {
+            return this.SaveEntityAsync(async (i, instance) =>
+            {
+                return await instance.GetContentCommentAsync(id);
+            }, async (entity, instance, delta) =>
+            {
+                var result = await instance.SaveAsync(entity);
+                Logger?.LogInformation(new EventId(17002018, "PostContentComment"), "Post a comment to a publish content.");
+                return result;
+            }, id);
         }
     }
 }
