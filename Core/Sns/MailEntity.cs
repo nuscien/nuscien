@@ -73,16 +73,22 @@ namespace NuScien.Sns
         public IEnumerable<string> Cc { get; set; }
 
         /// <summary>
-        /// Gets or sets the address list to secret carbon copy.
-        /// </summary>
-        [JsonPropertyName("bcc")]
-        public IEnumerable<string> Bcc { get; set; }
-
-        /// <summary>
         /// Gets or sets the reply address.
         /// </summary>
         [JsonPropertyName("re")]
         public string Reply { get; set; }
+    }
+
+    /// <summary>
+    /// The information for mail sending.
+    /// </summary>
+    public class MailSendingInfo
+    {
+        /// <summary>
+        /// Gets or sets the address list to secret carbon copy.
+        /// </summary>
+        [JsonPropertyName("bcc")]
+        public IEnumerable<string> Bcc { get; set; }
     }
 
     /// <summary>
@@ -232,14 +238,25 @@ namespace NuScien.Sns
         }
 
         /// <summary>
+        /// Gets or sets the sending information.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public MailSendingInfo SendingInfo
+        {
+            get => TryDeserializeConfigValue<MailSendingInfo>("send");
+            set => SetConfigValue("send", value);
+        }
+
+        /// <summary>
         /// Gets or sets the mail attachment list.
         /// </summary>
         [JsonIgnore]
         [NotMapped]
         public IEnumerable<MailAttachmentInfo> Attachment
         {
-            get => TryDeserializeConfigValue<IEnumerable<MailAttachmentInfo>>("addr");
-            set => SetConfigValue("addr", value);
+            get => TryDeserializeConfigValue<IEnumerable<MailAttachmentInfo>>("attach");
+            set => SetConfigValue("attach", value);
         }
 
         /// <inheritdoc />
@@ -263,6 +280,71 @@ namespace NuScien.Sns
     public class SentMailEntity : BaseMailEntity
     {
         /// <summary>
+        /// Gets or sets the sender identifier.
+        /// </summary>
+        [DataMember(Name = "app")]
+        [JsonPropertyName("app")]
+        [Column("app")]
+        public string ApplicationName
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        internal IEnumerable<ReceivedMailEntity> ToReceiveMails()
+        {
+            var col = new List<ReceivedMailEntity>();
+            var addr = AddressList;
+            if (addr == null) return col;
+
+            return col;
+        }
+
+        /// <inheritdoc />
+        protected override void FillBaseProperties(BaseResourceEntity entity)
+        {
+            base.FillBaseProperties(entity);
+            if (entity is not SentMailEntity e) return;
+            ApplicationName = e.ApplicationName;
+        }
+    }
+
+    /// <summary>
+    /// Mail entity for received.
+    /// </summary>
+    [DataContract]
+    [Table("nsmails2")]
+    public class ReceivedMailEntity : BaseMailEntity
+    {
+        /// <summary>
+        /// Initializes a new instance of the ReceivedMailEntity class.
+        /// </summary>
+        public ReceivedMailEntity()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ReceivedMailEntity class.
+        /// </summary>
+        internal ReceivedMailEntity(SentMailEntity m, string ownerId)
+        {
+            FillBaseProperties(m);
+            CopyConfigItself("send", "preference");
+        }
+
+        /// <summary>
+        /// Gets or sets the sender identifier.
+        /// </summary>
+        [DataMember(Name = "res")]
+        [JsonPropertyName("res")]
+        [Column("res")]
+        public string TargetId
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
         /// Gets or sets the priority.
         /// </summary>
         [JsonIgnore]
@@ -285,33 +367,6 @@ namespace NuScien.Sns
             set => Flag = (MailFlags)value;
         }
 
-        /// <inheritdoc />
-        protected override void FillBaseProperties(BaseResourceEntity entity)
-        {
-            base.FillBaseProperties(entity);
-            if (entity is not SentMailEntity e) return;
-            Flag = e.Flag;
-        }
-    }
-
-    /// <summary>
-    /// Mail entity for received.
-    /// </summary>
-    [DataContract]
-    [Table("nsmails2")]
-    public class ReceivedMailEntity : BaseMailEntity
-    {
-        /// <summary>
-        /// Gets or sets the sender identifier.
-        /// </summary>
-        [DataMember(Name = "res")]
-        [JsonPropertyName("res")]
-        [Column("res")]
-        public string TargetId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
 
         /// <inheritdoc />
         protected override void FillBaseProperties(BaseResourceEntity entity)
@@ -319,6 +374,7 @@ namespace NuScien.Sns
             base.FillBaseProperties(entity);
             if (entity is not ReceivedMailEntity e) return;
             TargetId = e.TargetId;
+            Flag = e.Flag;
         }
     }
 }

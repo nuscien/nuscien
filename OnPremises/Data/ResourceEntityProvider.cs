@@ -76,6 +76,11 @@ namespace NuScien.Data
         protected Users.UserEntity User => CoreResources.User;
 
         /// <summary>
+        /// Gets the current user identifier.
+        /// </summary>
+        protected string UserId => CoreResources?.User?.Id;
+
+        /// <summary>
         /// Gets the current client identifier.
         /// </summary>
         protected string ClientId => CoreResources.ClientId;

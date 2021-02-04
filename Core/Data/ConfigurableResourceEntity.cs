@@ -520,6 +520,24 @@ namespace NuScien.Data
             ConfigString = e.ConfigString;
         }
 
+        /// <summary>
+        /// Copy the config object to itself.
+        /// </summary>
+        /// <param name="propertiesToSkip">The optional properties that need skip to copy.</param>
+        protected void CopyConfigItself(params string[] propertiesToSkip)
+        {
+            var c = Config;
+            if (c == null) return;
+            c = c.Clone();
+            c.Remove("private");
+            Config = c;
+            if (propertiesToSkip == null) return;
+            foreach (var p in propertiesToSkip)
+            {
+                if (!string.IsNullOrWhiteSpace(p)) c.Remove(p);
+            }
+        }
+
         private static JsonObject ParseJson(string s)
         {
             try
