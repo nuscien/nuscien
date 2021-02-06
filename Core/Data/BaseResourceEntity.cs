@@ -97,7 +97,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "state")]
         [JsonPropertyName("state")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<ResourceEntityStates>))]
         [NotMapped]
         public ResourceEntityStates State
         {

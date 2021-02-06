@@ -238,17 +238,6 @@ namespace NuScien.Sns
         }
 
         /// <summary>
-        /// Gets or sets the sending information.
-        /// </summary>
-        [JsonIgnore]
-        [NotMapped]
-        public MailSendingInfo SendingInfo
-        {
-            get => TryDeserializeConfigValue<MailSendingInfo>("send");
-            set => SetConfigValue("send", value);
-        }
-
-        /// <summary>
         /// Gets or sets the mail attachment list.
         /// </summary>
         [JsonIgnore]
@@ -258,6 +247,13 @@ namespace NuScien.Sns
             get => TryDeserializeConfigValue<IEnumerable<MailAttachmentInfo>>("attach");
             set => SetConfigValue("attach", value);
         }
+
+        /// <summary>
+        /// Gets the MIME of the content.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public string Mime => TryGetStringConfigValue("mime");
 
         /// <inheritdoc />
         protected override void FillBaseProperties(BaseResourceEntity entity)
@@ -300,6 +296,17 @@ namespace NuScien.Sns
             return col;
         }
 
+        /// <summary>
+        /// Gets or sets the sending information.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public MailSendingInfo SendingInfo
+        {
+            get => TryDeserializeConfigValue<MailSendingInfo>("send");
+            set => SetConfigValue("send", value);
+        }
+
         /// <inheritdoc />
         protected override void FillBaseProperties(BaseResourceEntity entity)
         {
@@ -329,6 +336,7 @@ namespace NuScien.Sns
         internal ReceivedMailEntity(SentMailEntity m, string ownerId)
         {
             FillBaseProperties(m);
+            OwnerId = ownerId;
             CopyConfigItself("send", "preference");
         }
 
@@ -347,8 +355,9 @@ namespace NuScien.Sns
         /// <summary>
         /// Gets or sets the priority.
         /// </summary>
-        [JsonIgnore]
         [NotMapped]
+        [JsonPropertyName("flag")]
+        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<MailFlags>))]
         public MailFlags Flag
         {
             get => GetCurrentProperty<MailFlags>();
@@ -358,8 +367,8 @@ namespace NuScien.Sns
         /// <summary>
         /// Gets or sets the flag code.
         /// </summary>
+        [JsonIgnore]
         [DataMember(Name = "flag")]
-        [JsonPropertyName("flag")]
         [Column("flag")]
         public int FlagCode
         {

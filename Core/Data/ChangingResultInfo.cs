@@ -288,7 +288,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "state")]
         [JsonPropertyName("state")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<ChangeMethods>))]
         public ChangeMethods State { get; set; }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "code")]
         [JsonPropertyName("code")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<ChangeErrorKinds>))]
         public ChangeErrorKinds ErrorCode { get; set; }
 
         /// <summary>

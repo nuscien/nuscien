@@ -117,6 +117,13 @@ namespace NuScien.Cms
             set => SetCurrentProperty(value);
         }
 
+        /// <summary>
+        /// Gets the MIME of the content.
+        /// </summary>
+        [JsonIgnore]
+        [NotMapped]
+        public string Mime => TryGetStringConfigValue("mime");
+
         /// <inheritdoc />
         protected override void FillBaseProperties(BaseResourceEntity entity)
         {

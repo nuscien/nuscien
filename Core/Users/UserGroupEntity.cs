@@ -62,7 +62,8 @@ namespace NuScien.Users
         /// <summary>
         /// Gets or sets the membership policy.
         /// </summary>
-        [JsonIgnore]
+        [JsonPropertyName("membership")]
+        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<UserGroupMembershipPolicies>))]
         [NotMapped]
         public UserGroupMembershipPolicies MembershipPolicy
         {
@@ -74,7 +75,7 @@ namespace NuScien.Users
         /// Gets or sets the membership policy code.
         /// </summary>
         [DataMember(Name = "membership")]
-        [JsonPropertyName("membership")]
+        [JsonIgnore]
         [Column("membership")]
         public int MembershipPolicyCode
         {
@@ -85,7 +86,8 @@ namespace NuScien.Users
         /// <summary>
         /// Gets or sets the visibility.
         /// </summary>
-        [JsonIgnore]
+        [JsonPropertyName("visible")]
+        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<UserGroupVisibilities>))]
         [NotMapped]
         public UserGroupVisibilities Visibility
         {
@@ -97,7 +99,7 @@ namespace NuScien.Users
         /// Gets or sets the visibility code.
         /// </summary>
         [DataMember(Name = "visible")]
-        [JsonPropertyName("visible")]
+        [JsonIgnore]
         [Column("visible")]
         public int VisibilityCode
         {
