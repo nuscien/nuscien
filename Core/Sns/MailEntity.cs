@@ -19,103 +19,6 @@ using Trivial.Text;
 namespace NuScien.Sns
 {
     /// <summary>
-    /// Mail flags.
-    /// </summary>
-    public enum MailFlags
-    {
-        /// <summary>
-        /// Unread.
-        /// </summary>
-        Unread = 0,
-
-        /// <summary>
-        /// Has been read.
-        /// </summary>
-        Read = 1,
-
-        /// <summary>
-        /// Marked as flag.
-        /// </summary>
-        Flagged = 2,
-
-        /// <summary>
-        /// Not important.
-        /// </summary>
-        Unimportant = 3,
-
-        /// <summary>
-        /// Junk.
-        /// </summary>
-        Spam = 4
-    }
-
-    /// <summary>
-    /// The mail address list.
-    /// </summary>
-    public class MailAddressListInfo
-    {
-        /// <summary>
-        /// Gets or sets the sender address.
-        /// </summary>
-        [JsonPropertyName("from")]
-        public string Sender { get; set; }
-
-        /// <summary>
-        /// Gets or sets the receiver address list.
-        /// </summary>
-        [JsonPropertyName("to")]
-        public IEnumerable<string> To { get; set; }
-
-        /// <summary>
-        /// Gets or sets the address list to carbon copy.
-        /// </summary>
-        [JsonPropertyName("cc")]
-        public IEnumerable<string> Cc { get; set; }
-
-        /// <summary>
-        /// Gets or sets the reply address.
-        /// </summary>
-        [JsonPropertyName("re")]
-        public string Reply { get; set; }
-    }
-
-    /// <summary>
-    /// The information for mail sending.
-    /// </summary>
-    public class MailSendingInfo
-    {
-        /// <summary>
-        /// Gets or sets the address list to secret carbon copy.
-        /// </summary>
-        [JsonPropertyName("bcc")]
-        public IEnumerable<string> Bcc { get; set; }
-    }
-
-    /// <summary>
-    /// The mail attachment information.
-    /// </summary>
-    public class MailAttachmentInfo
-    {
-        /// <summary>
-        /// Gets or sets the reference identifier.
-        /// </summary>
-        [JsonPropertyName("id")]
-        public string ReferenceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the MIME of the attachment.
-        /// </summary>
-        [JsonPropertyName("mime")]
-        public string Mime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path of the attachment.
-        /// </summary>
-        [JsonPropertyName("url")]
-        public string Path { get; set; }
-    }
-
-    /// <summary>
     /// Base mail entity.
     /// </summary>
     public class BaseMailEntity : BaseOwnerResourceEntity
@@ -168,12 +71,24 @@ namespace NuScien.Sns
         }
 
         /// <summary>
-        /// Gets or sets the sender address.
+        /// Gets or sets the sender display name.
         /// </summary>
         [DataMember(Name = "sender")]
         [JsonPropertyName("sender")]
         [Column("sender")]
-        public string Sender
+        public string SenderName
+        {
+            get => GetCurrentProperty<string>();
+            set => SetCurrentProperty(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the sender address.
+        /// </summary>
+        [DataMember(Name = "addr")]
+        [JsonPropertyName("addr")]
+        [Column("addr")]
+        public string SenderAddress
         {
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
@@ -261,7 +176,8 @@ namespace NuScien.Sns
             base.FillBaseProperties(entity);
             if (entity is not BaseMailEntity e) return;
             Folder = e.Folder;
-            Sender = e.Sender;
+            SenderName = e.SenderName;
+            SenderAddress = e.SenderAddress;
             SendTime = e.SendTime;
             Priority = e.Priority;
             Content = e.Content;
@@ -276,6 +192,24 @@ namespace NuScien.Sns
     public class SentMailEntity : BaseMailEntity
     {
         /// <summary>
+        /// Initializes a new instance of the ReceivedMailEntity class.
+        /// </summary>
+        public SentMailEntity()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ReceivedMailEntity class.
+        /// </summary>
+        internal SentMailEntity(ReceivedMailEntity m, string ownerId)
+        {
+            FillBaseProperties(m);
+            OwnerId = ownerId;
+            SendTime = DateTime.Now;
+            CopyConfigItself("send", "receive", "links", "preference");
+        }
+
+        /// <summary>
         /// Gets or sets the sender identifier.
         /// </summary>
         [DataMember(Name = "app")]
@@ -287,15 +221,6 @@ namespace NuScien.Sns
             set => SetCurrentProperty(value);
         }
 
-        internal IEnumerable<ReceivedMailEntity> ToReceiveMails()
-        {
-            var col = new List<ReceivedMailEntity>();
-            var addr = AddressList;
-            if (addr == null) return col;
-
-            return col;
-        }
-
         /// <summary>
         /// Gets or sets the sending information.
         /// </summary>
@@ -305,6 +230,25 @@ namespace NuScien.Sns
         {
             get => TryDeserializeConfigValue<MailSendingInfo>("send");
             set => SetConfigValue("send", value);
+        }
+
+        /// <summary>
+        /// Creates the receive mails.
+        /// </summary>
+        /// <returns>A collection of receive mail.</returns>
+        public IEnumerable<ReceivedMailEntity> ToReceiveMails()
+        {
+            var addr = AddressList?.GetAllMailAddresses();
+            var currentUserId = OwnerId;
+            if (addr == null || string.IsNullOrWhiteSpace(currentUserId)) return new List<ReceivedMailEntity>();
+            return addr.Select(ele =>
+            {
+                if (string.IsNullOrWhiteSpace(ele.UserId)) return null;
+                return new ReceivedMailEntity(this, ele.UserId)
+                {
+                    TargetId = currentUserId
+                };
+            }).Where(ele => ele != null);
         }
 
         /// <inheritdoc />
@@ -337,7 +281,8 @@ namespace NuScien.Sns
         {
             FillBaseProperties(m);
             OwnerId = ownerId;
-            CopyConfigItself("send", "preference");
+            SendTime = DateTime.Now;
+            CopyConfigItself("send", "receive", "links", "preference");
         }
 
         /// <summary>
@@ -376,6 +321,47 @@ namespace NuScien.Sns
             set => Flag = (MailFlags)value;
         }
 
+        /// <summary>
+        /// Creates the sent mails.
+        /// </summary>
+        /// <param name="clearRecipients">true if for foward; otherwise, false.</param>
+        /// <returns>A collection of sent mail.</returns>
+        public SentMailEntity ToSentMails(bool clearRecipients)
+        {
+            var m = new SentMailEntity(this, TargetId);
+            if (clearRecipients)
+            {
+                m.AddressList = new MailAddressListInfo();
+                return m;
+            }
+
+            if (m.AddressList == null) m.AddressList = new MailAddressListInfo();
+            var reply = m.AddressList.Reply;
+            var to = m.AddressList.To?.ToList() ?? new List<MailAddressInfo>();
+            m.AddressList.To = to;
+            var sender = new MailAddressInfo
+            {
+                Name = m.SenderName,
+                Address = m.SenderAddress,
+                UserId = TargetId
+            };
+            to.Insert(0, sender);
+            m.AddressList.Reply = null;
+            if (!string.IsNullOrWhiteSpace(reply))
+            {
+                var containReply = false;
+                foreach (var ele in to)
+                {
+                    if (ele?.Address != reply) continue;
+                    containReply = true;
+                    break;
+                }
+
+                if (!containReply) sender.Address = reply;
+            }
+
+            return m;
+        }
 
         /// <inheritdoc />
         protected override void FillBaseProperties(BaseResourceEntity entity)

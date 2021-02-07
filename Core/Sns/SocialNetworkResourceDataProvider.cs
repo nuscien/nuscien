@@ -503,7 +503,7 @@ namespace NuScien.Sns
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (entity.IsNew)
             {
-                var mailList = entity.ToReceiveMails();
+                var mailList = entity.ToReceiveMails().ToList();
                 _ = Task.Run(async () =>
                 {
                     foreach (var m in mailList)
