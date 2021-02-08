@@ -76,7 +76,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<ContactEntity>> ListContactsAsync(QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<ContactEntity>> ListContactsAsync(QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a specific contact.
@@ -84,7 +84,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public abstract Task<ContactEntity> GetContactAsync(string id, CancellationToken cancellationToken);
+        public abstract Task<ContactEntity> GetContactAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists blogs.
@@ -93,7 +93,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<BlogEntity>> ListBlogsAsync(bool currentUser, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<BlogEntity>> ListBlogsAsync(bool currentUser, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists blogs.
@@ -102,7 +102,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public Task<IEnumerable<BlogEntity>> ListBlogsAsync(BaseSecurityEntity owner, QueryArgs q, CancellationToken cancellationToken)
+        public Task<IEnumerable<BlogEntity>> ListBlogsAsync(BaseSecurityEntity owner, QueryArgs q, CancellationToken cancellationToken = default)
             => owner == null ? Task.FromResult<IEnumerable<BlogEntity>>(new List<BlogEntity>().AsReadOnly()) : ListBlogsAsync(owner.SecurityEntityType, owner.Id, q, cancellationToken);
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<BlogEntity>> ListBlogsAsync(SecurityEntityTypes ownerType, string owner, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<BlogEntity>> ListBlogsAsync(SecurityEntityTypes ownerType, string owner, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a specific blogs.
@@ -121,7 +121,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public abstract Task<BlogEntity> GetBlogAsync(string id, CancellationToken cancellationToken);
+        public abstract Task<BlogEntity> GetBlogAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists blog comments.
@@ -130,7 +130,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists blog comments.
@@ -138,7 +138,7 @@ namespace NuScien.Sns
         /// <param name="blog">The blog identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, CancellationToken cancellationToken)
+        public Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, CancellationToken cancellationToken = default)
             => ListBlogCommentsAsync(blog, null, cancellationToken);
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<UserActivityEntity>> ListUserActivitiesAsync(Users.UserEntity owner, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<UserActivityEntity>> ListUserActivitiesAsync(Users.UserEntity owner, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists user group activities.
@@ -157,7 +157,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<UserGroupActivityEntity>> ListUserGroupActivitiesAsync(Users.UserGroupEntity owner, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<UserGroupActivityEntity>> ListUserGroupActivitiesAsync(Users.UserGroupEntity owner, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a specific mail received.
@@ -165,7 +165,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public abstract Task<ReceivedMailEntity> GetReceivedMailAsync(string id, CancellationToken cancellationToken);
+        public abstract Task<ReceivedMailEntity> GetReceivedMailAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a specific mail sent or draft.
@@ -173,7 +173,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public abstract Task<SentMailEntity> GetSentMailAsync(string id, CancellationToken cancellationToken);
+        public abstract Task<SentMailEntity> GetSentMailAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists mails received.
@@ -182,7 +182,16 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists mails received.
+        /// </summary>
+        /// <param name="thread">The mail thread identifier.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The collection of result.</returns>
+        public abstract Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailThreadAsync(string thread, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists mails sent or draft.
@@ -191,7 +200,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public abstract Task<IEnumerable<SentMailEntity>> ListSentMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<SentMailEntity>> ListSentMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves an entity.
@@ -199,7 +208,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(ContactEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(ContactEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves an entity.
@@ -207,7 +216,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(BlogEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(BlogEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves an entity.
@@ -215,7 +224,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(BlogCommentEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(BlogCommentEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves an entity.
@@ -223,7 +232,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(UserActivityEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(UserActivityEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves an entity.
@@ -231,7 +240,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(UserGroupActivityEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(UserGroupActivityEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a specific entity.
@@ -239,7 +248,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(ReceivedMailEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(ReceivedMailEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a specific entity.
@@ -247,7 +256,7 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> SaveAsync(SentMailEntity entity, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> SaveAsync(SentMailEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a specific entity.
@@ -256,7 +265,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetContactAsync(id, cancellationToken);
@@ -273,7 +282,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetContactAsync(id, cancellationToken);
@@ -289,7 +298,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetBlogAsync(id, cancellationToken);
@@ -306,7 +315,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetBlogAsync(id, cancellationToken);
@@ -322,7 +331,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateBlogCommentAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> UpdateBlogCommentAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a specific entity.
@@ -331,7 +340,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateUserActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> UpdateUserActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a specific entity.
@@ -340,7 +349,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public abstract Task<ChangingResultInfo> UpdateUserGroupActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken);
+        public abstract Task<ChangingResultInfo> UpdateUserGroupActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a specific entity.
@@ -349,7 +358,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetReceivedMailAsync(id, cancellationToken);
@@ -366,7 +375,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetReceivedMailAsync(id, cancellationToken);
@@ -382,7 +391,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetSentMailAsync(id, cancellationToken);
@@ -399,7 +408,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetSentMailAsync(id, cancellationToken);
@@ -522,7 +531,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<ContactEntity>> ListContactsAsync(QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<ContactEntity>> ListContactsAsync(QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
             return QueryAsync<ContactEntity>(RootFolderName + "passport/contact", q, cancellationToken);
@@ -534,7 +543,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public override Task<ContactEntity> GetContactAsync(string id, CancellationToken cancellationToken)
+        public override Task<ContactEntity> GetContactAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
             return GetDataAsync<ContactEntity>(HttpMethod.Get, $"{RootFolderName}passport/contact/{id}", cancellationToken);
@@ -547,7 +556,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<BlogEntity>> ListBlogsAsync(bool currentUser, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<BlogEntity>> ListBlogsAsync(bool currentUser, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (!currentUser) return QueryAsync<BlogEntity>(RootFolderName + "sns/blog/all", q, cancellationToken);
             var userId = UserId;
@@ -563,7 +572,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<BlogEntity>> ListBlogsAsync(SecurityEntityTypes ownerType, string owner, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<BlogEntity>> ListBlogsAsync(SecurityEntityTypes ownerType, string owner, QueryArgs q, CancellationToken cancellationToken = default)
         {
             return ownerType switch
             {
@@ -574,12 +583,12 @@ namespace NuScien.Sns
         }
 
         /// <summary>
-        /// Gets a specific blogs.
+        /// Gets a specific blog.
         /// </summary>
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public override Task<BlogEntity> GetBlogAsync(string id, CancellationToken cancellationToken)
+        public override Task<BlogEntity> GetBlogAsync(string id, CancellationToken cancellationToken = default)
         {
             return GetDataAsync<BlogEntity>(HttpMethod.Get, $"{RootFolderName}sns/blog/c/{id}", cancellationToken);
         }
@@ -591,7 +600,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken = default)
         {
             return QueryAsync<BlogCommentEntity>($"{RootFolderName}sns/blog/c/{blog}/comments", q, cancellationToken);
         }
@@ -603,7 +612,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<UserActivityEntity>> ListUserActivitiesAsync(Users.UserEntity owner, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<UserActivityEntity>> ListUserActivitiesAsync(Users.UserEntity owner, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (owner == null) return QueryAsync<UserActivityEntity>();
             return QueryAsync<UserActivityEntity>($"{RootFolderName}sns/activity/u/{owner.Id}", q, cancellationToken);
@@ -616,7 +625,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<UserGroupActivityEntity>> ListUserGroupActivitiesAsync(Users.UserGroupEntity owner, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<UserGroupActivityEntity>> ListUserGroupActivitiesAsync(Users.UserGroupEntity owner, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (owner == null) return QueryAsync<UserGroupActivityEntity>();
             return QueryAsync<UserGroupActivityEntity>($"{RootFolderName}sns/activity/g/{owner.Id}", q, cancellationToken);
@@ -628,7 +637,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public override Task<ReceivedMailEntity> GetReceivedMailAsync(string id, CancellationToken cancellationToken)
+        public override Task<ReceivedMailEntity> GetReceivedMailAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
             return GetDataAsync<ReceivedMailEntity>(HttpMethod.Get, $"{RootFolderName}mail/i/m/{id}", cancellationToken);
@@ -640,7 +649,7 @@ namespace NuScien.Sns
         /// <param name="id">The entity identifier.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity result.</returns>
-        public override Task<SentMailEntity> GetSentMailAsync(string id, CancellationToken cancellationToken)
+        public override Task<SentMailEntity> GetSentMailAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
             return GetDataAsync<SentMailEntity>(HttpMethod.Get, $"{RootFolderName}mail/o/m/{id}", cancellationToken);
@@ -653,10 +662,24 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
             return QueryAsync<ReceivedMailEntity>($"{RootFolderName}mail/i/f/{folder ?? string.Empty}", q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists mails received.
+        /// </summary>
+        /// <param name="thread">The mail thread identifier.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The collection of result.</returns>
+        public override Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailThreadAsync(string thread, QueryArgs q, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(thread)) throw new ArgumentNullException("thread", "thread should not be null or empty.");
+            if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
+            return QueryAsync<ReceivedMailEntity>($"{RootFolderName}mail/i/thread/{thread}", q, cancellationToken);
         }
 
         /// <summary>
@@ -666,7 +689,7 @@ namespace NuScien.Sns
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override Task<IEnumerable<SentMailEntity>> ListSentMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken)
+        public override Task<IEnumerable<SentMailEntity>> ListSentMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) throw new UnauthorizedAccessException(LoginErrorTips);
             return QueryAsync<SentMailEntity>($"{RootFolderName}mail/o/f/{folder ?? string.Empty}", q, cancellationToken);
@@ -678,10 +701,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(ContactEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(ContactEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}passport/contact", null, entity, cancellationToken);
         }
 
@@ -691,10 +715,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(BlogEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(BlogEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/c", null, entity, cancellationToken);
         }
 
@@ -704,10 +729,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(BlogCommentEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(BlogCommentEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.PublisherId) && entity.IsNew) entity.PublisherId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/cc", null, entity, cancellationToken);
         }
 
@@ -717,10 +743,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(UserActivityEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(UserActivityEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activity/u", null, entity, cancellationToken);
         }
 
@@ -730,10 +757,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(UserGroupActivityEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(UserGroupActivityEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activity/g", null, entity, cancellationToken);
         }
 
@@ -743,10 +771,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(ReceivedMailEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(ReceivedMailEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/i/m", null, entity, cancellationToken);
         }
 
@@ -756,10 +785,11 @@ namespace NuScien.Sns
         /// <param name="entity">The resource entity to save.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> SaveAsync(SentMailEntity entity, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> SaveAsync(SentMailEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
+            if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/o/m", null, entity, cancellationToken);
         }
 
@@ -770,7 +800,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}passport/contact/{id}", null, delta, cancellationToken);
@@ -783,7 +813,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateContactAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateContactAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             return UpdateContactAsync(id, new JsonObject
@@ -799,7 +829,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/c/{id}", null, delta, cancellationToken);
@@ -812,7 +842,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             return UpdateBlogAsync(id, new JsonObject
@@ -828,7 +858,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateBlogCommentAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateBlogCommentAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
@@ -845,7 +875,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateUserActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateUserActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
@@ -862,7 +892,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateUserGroupActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateUserGroupActivityAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
@@ -879,7 +909,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/i/{id}", null, delta, cancellationToken);
@@ -892,7 +922,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             return UpdateReceivedMailAsync(id, new JsonObject
@@ -908,7 +938,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/o/{id}", null, delta, cancellationToken);
@@ -921,7 +951,7 @@ namespace NuScien.Sns
         /// <param name="state">The state to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken)
+        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));

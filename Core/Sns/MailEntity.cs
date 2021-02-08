@@ -246,7 +246,8 @@ namespace NuScien.Sns
                 if (string.IsNullOrWhiteSpace(ele.UserId)) return null;
                 return new ReceivedMailEntity(this, ele.UserId)
                 {
-                    TargetId = currentUserId
+                    TargetId = currentUserId,
+                    ThreadId = ThreadId ?? Id
                 };
             }).Where(ele => ele != null);
         }
@@ -328,7 +329,10 @@ namespace NuScien.Sns
         /// <returns>A collection of sent mail.</returns>
         public SentMailEntity ToSentMails(bool clearRecipients)
         {
-            var m = new SentMailEntity(this, TargetId);
+            var m = new SentMailEntity(this, TargetId)
+            {
+                ThreadId = ThreadId ?? Id
+            };
             if (clearRecipients)
             {
                 m.AddressList = new MailAddressListInfo();
