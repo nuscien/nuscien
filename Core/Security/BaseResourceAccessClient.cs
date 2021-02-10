@@ -1317,9 +1317,20 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="content">The owner content identifier.</param>
         /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public abstract Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default);
+        public abstract Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, QueryArgs q, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the publish content templates.
+        /// </summary>
+        /// <param name="content">The owner content identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public virtual Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+            => ListContentCommentsAsync(content, plain, null, cancellationToken);
 
         /// <summary>
         /// Gets a specific publish content comment.
@@ -1328,14 +1339,24 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to delete.</returns>
         public abstract Task<ContentCommentEntity> GetContentCommentAsync(string id, CancellationToken cancellationToken = default);
-        
+
         /// <summary>
         /// Lists the child comments of a specific publish content comment.
         /// </summary>
-        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="commentId">The parent identifier of the content comment.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public abstract Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default);
+        public abstract Task<IEnumerable<ContentCommentEntity>> ListContentChildCommentsAsync(string commentId, QueryArgs q, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists the child comments of a specific publish content comment.
+        /// </summary>
+        /// <param name="commentId">The parent identifier of the content comment.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity list.</returns>
+        public virtual Task<IEnumerable<ContentCommentEntity>> ListContentChildCommentsAsync(string commentId, CancellationToken cancellationToken = default)
+            => ListContentChildCommentsAsync(commentId, null, cancellationToken);
 
         /// <summary>
         /// Registers a new user or update current user.

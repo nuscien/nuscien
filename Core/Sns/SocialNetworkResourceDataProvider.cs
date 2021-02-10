@@ -80,10 +80,20 @@ namespace NuScien.Sns
         /// Lists blog comments.
         /// </summary>
         /// <param name="blog">The blog identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken = default);
+        public Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, bool plain, QueryArgs q, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists blog comments.
+        /// </summary>
+        /// <param name="commentId">The identifier of the parent comment.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The collection of result.</returns>
+        public Task<IEnumerable<BlogCommentEntity>> ListBlogChildCommentsAsync(string commentId, QueryArgs q, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a specific user activity.
@@ -143,9 +153,10 @@ namespace NuScien.Sns
         /// <param name="user">The user identifier.</param>
         /// <param name="folder">The folder name.</param>
         /// <param name="q">The query arguments.</param>
+        /// <param name="filter">The filter information.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string user, string folder, QueryArgs q, CancellationToken cancellationToken = default);
+        public Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string user, string folder, QueryArgs q, MailAdditionalFilterInfo filter, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists mails received.
@@ -231,6 +242,18 @@ namespace NuScien.Sns
     {
         private const string LoginErrorTips = "Requires login firstly.";
         private const string EntityNullTips = "The entity was null.";
+
+        /// <summary>
+        /// Initializes a new instance of the OnPremisesSocialNetworkResourceContext class.
+        /// </summary>
+        /// <param name="client">The resource access client.</param>
+        /// <param name="snsDataProvider">The social network resource data provider.</param>
+        internal OnPremisesSocialNetworkResourceContext(BaseResourceAccessClient client, ISocialNetworkResourceDataProvider snsDataProvider)
+            : base(client ?? new OnPremisesResourceAccessClient(null))
+        {
+            CoreResources = base.CoreResources as OnPremisesResourceAccessClient;
+            DataProvider = snsDataProvider;
+        }
 
         /// <summary>
         /// Initializes a new instance of the OnPremisesSocialNetworkResourceContext class.
@@ -334,12 +357,25 @@ namespace NuScien.Sns
         /// Lists blog comments.
         /// </summary>
         /// <param name="blog">The blog identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override async Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken = default)
+        public override async Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
-            return await DataProvider.ListBlogCommentsAsync(blog, q, cancellationToken);
+            return await DataProvider.ListBlogCommentsAsync(blog, plain, q, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists blog comments.
+        /// </summary>
+        /// <param name="commentId">The identifier of the parent comment.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The collection of result.</returns>
+        public override async Task<IEnumerable<BlogCommentEntity>> ListBlogChildCommentsAsync(string commentId, QueryArgs q, CancellationToken cancellationToken = default)
+        {
+            return await DataProvider.ListBlogChildCommentsAsync(commentId, q, cancellationToken);
         }
 
         /// <summary>
@@ -396,14 +432,15 @@ namespace NuScien.Sns
         /// Lists mails received.
         /// </summary>
         /// <param name="folder">The folder name.</param>
+        /// <param name="filter">The filter information.</param>
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public override async Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, CancellationToken cancellationToken = default)
+        public override async Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string folder, QueryArgs q, MailAdditionalFilterInfo filter, CancellationToken cancellationToken = default)
         {
             var userId = UserId;
             if (string.IsNullOrWhiteSpace(userId)) throw new UnauthorizedAccessException(LoginErrorTips);
-            return await DataProvider.ListReceivedMailAsync(userId, folder, q, cancellationToken);
+            return await DataProvider.ListReceivedMailAsync(userId, folder, q, filter, cancellationToken);
         }
 
         /// <summary>

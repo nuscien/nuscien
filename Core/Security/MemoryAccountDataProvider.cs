@@ -621,27 +621,29 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="content">The owner content comment identifier.</param>
         /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
             var col = contentComments.Where(ele => ele.OwnerId == content);
             if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.ParentId));
             col = col.OrderByDescending(ele => ele.LastModificationTime);
-            return ToListAsync(col, cancellationToken);
+            return ToListAsync(col, null, q, cancellationToken);
         }
 
         /// <summary>
         /// Lists the child comments of a specific publish content comment.
         /// </summary>
         /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<ContentCommentEntity>> ListContentChildCommentsAsync(string id, QueryArgs q, CancellationToken cancellationToken = default)
         {
             var col = contentComments.Where(ele => ele.SourceMessageId == id);
             col = col.OrderByDescending(ele => ele.LastModificationTime);
-            return ToListAsync(col, cancellationToken);
+            return ToListAsync(col, null, q, cancellationToken);
         }
 
         /// <summary>

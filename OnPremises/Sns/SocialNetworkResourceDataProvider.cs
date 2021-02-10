@@ -123,12 +123,29 @@ namespace NuScien.Sns
         /// Lists blog comments.
         /// </summary>
         /// <param name="blog">The blog identifier.</param>
+        /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
         /// <param name="q">The query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public async Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, QueryArgs q, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
-            return await GetContext(true).BlogComments.ListEntities(q, ele => ele.OwnerId == blog).ToListAsync(cancellationToken);
+            var context = GetContext(true);
+            var col = context.BlogComments.Where(ele => ele.OwnerId == blog);
+            if (!plain) col = col.Where(ele => ele.SourceMessageId == null || ele.SourceMessageId == string.Empty);
+            return await col.ToListAsync(q, null, ResourceEntityOrders.Latest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists the child comments of a specific blog comment.
+        /// </summary>
+        /// <param name="commentId">The identifier of the parent comment.</param>
+        /// <param name="q">The query arguments.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The collection of result.</returns>
+        public async Task<IEnumerable<BlogCommentEntity>> ListBlogChildCommentsAsync(string commentId, QueryArgs q, CancellationToken cancellationToken = default)
+        {
+            var context = GetContext(true);
+            return await context.BlogComments.ToListAsync(q, ele => ele.SourceMessageId == commentId, ResourceEntityOrders.Latest, cancellationToken);
         }
 
         /// <summary>
@@ -209,11 +226,16 @@ namespace NuScien.Sns
         /// <param name="user">The user identifier.</param>
         /// <param name="folder">The folder name.</param>
         /// <param name="q">The query arguments.</param>
+        /// <param name="filter">The filter information.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The collection of result.</returns>
-        public async Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string user, string folder, QueryArgs q, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ReceivedMailEntity>> ListReceivedMailAsync(string user, string folder, QueryArgs q, MailAdditionalFilterInfo filter, CancellationToken cancellationToken = default)
         {
-            return await GetContext(true).ReceivedMails.ListEntities(q, ele => ele.OwnerId == user && ele.Folder == folder).ToListAsync(cancellationToken);
+            var col = GetContext(true).ReceivedMails.Where(ele => ele.OwnerId == user);
+            if (folder == "_" || string.IsNullOrWhiteSpace(folder)) col = col.Where(ele => ele.Folder == null || ele.Folder == string.Empty);
+            else if (folder != "*" && folder?.ToLowerInvariant() != "_all") col = col.Where(ele => ele.Folder == folder);
+            if (filter != null) col = filter.Where(col);
+            return await col.ListEntities(q).ToListAsync(cancellationToken);
         }
 
         /// <summary>

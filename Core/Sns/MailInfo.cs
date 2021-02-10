@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
@@ -13,8 +14,12 @@ using System.Threading.Tasks;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Tasks;
+using Trivial.Collection;
+using Trivial.Data;
+using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Text;
+using Trivial.Web;
 
 namespace NuScien.Sns
 {
@@ -188,5 +193,117 @@ namespace NuScien.Sns
         /// </summary>
         [JsonPropertyName("url")]
         public string Path { get; set; }
+    }
+
+    /// <summary>
+    /// The additional filter for mail.
+    /// </summary>
+    public class MailAdditionalFilterInfo
+    {
+        /// <summary>
+        /// Gets or sets the mail thread identifier.
+        /// </summary>
+        [JsonPropertyName("thread")]
+        public string ThreadId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sender address.
+        /// </summary>
+        [JsonPropertyName("addr")]
+        public string SenderAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time when send.
+        /// </summary>
+        [JsonPropertyName("start")]
+        public DateTime? SendStartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time when send.
+        /// </summary>
+        [JsonPropertyName("end")]
+        public DateTime? SendEndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the priority.
+        /// </summary>
+        [JsonPropertyName("priority")]
+        public BasicPriorities? Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag.
+        /// </summary>
+        [JsonPropertyName("flag")]
+        public MailFlags? Flag { get; set; }
+
+        /// <summary>
+        /// Converts to query data.
+        /// </summary>
+        /// <returns>The query data.</returns>
+        public virtual QueryData ToQueryData(QueryData q)
+        {
+            if (q == null) q = new QueryData();
+            if (string.IsNullOrWhiteSpace(ThreadId)) q.Set("thread", ThreadId);
+            if (string.IsNullOrWhiteSpace(SenderAddress)) q.Set("addr", SenderAddress);
+            if (SendStartTime.HasValue) q.Set("start", WebFormat.ParseDate(SendStartTime.Value).ToString("g", CultureInfo.InvariantCulture));
+            if (SendEndTime.HasValue) q.Set("end", WebFormat.ParseDate(SendEndTime.Value).ToString("g", CultureInfo.InvariantCulture));
+            if (Priority.HasValue) q.Set("priority", ((int)Priority.Value).ToString("g", CultureInfo.InvariantCulture));
+            if (Flag.HasValue) q.Set("flag", ((int)Flag.Value).ToString("g", CultureInfo.InvariantCulture));
+            return q;
+        }
+
+        /// <summary>
+        /// Converts to query data.
+        /// </summary>
+        /// <returns>The query data.</returns>
+        public virtual QueryData ToQueryData(QueryArgs q)
+        {
+            return ToQueryData(q != null ? (QueryData)q : null);
+        }
+
+        /// <summary>
+        /// Converts to query data.
+        /// </summary>
+        /// <returns>The query data.</returns>
+        public virtual QueryData ToQueryData()
+        {
+            return ToQueryData(new QueryData());
+        }
+
+        /// <summary>
+        /// Filters the collection.
+        /// </summary>
+        /// <param name="col">The collection.</param>
+        /// <returns>A collection after filter.</returns>
+        public virtual IQueryable<ReceivedMailEntity> Where(IQueryable<ReceivedMailEntity> col)
+        {
+            if (string.IsNullOrWhiteSpace(ThreadId)) col = col.Where(ele => ele.ThreadId == ThreadId);
+            if (string.IsNullOrWhiteSpace(SenderAddress)) col = col.Where(ele => ele.SenderAddress == SenderAddress);
+            if (SendStartTime.HasValue)
+            {
+                var d = SendStartTime.Value;
+                col = col.Where(ele => ele.SendTime >= d);
+            }
+
+            if (SendEndTime.HasValue)
+            {
+                var d = SendEndTime.Value;
+                col = col.Where(ele => ele.SendTime <= d);
+            }
+
+            if (Priority.HasValue)
+            {
+                var i = (int)Priority.Value;
+                col = col.Where(ele => ele.PriorityCode == i);
+            }
+
+            if (Flag.HasValue)
+            {
+                var i = (int)Flag.Value;
+                col = col.Where(ele => ele.FlagCode == i);
+            }
+
+            return col;
+        }
     }
 }

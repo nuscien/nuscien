@@ -109,7 +109,7 @@ namespace NuScien.Data
         /// Write as UTF-8 JSON.
         /// </summary>
         /// <param name="writer">The UTF-8 JSON writer.</param>
-        public void WriteTo(Utf8JsonWriter writer)
+        public virtual void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (!string.IsNullOrWhiteSpace(NameQuery))
@@ -143,7 +143,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>
         /// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-        public bool Equals(QueryArgs obj)
+        public virtual bool Equals(QueryArgs obj)
         {
             if (obj is null) return false;
             return obj.NameQuery == NameQuery && obj.NameExactly == NameExactly && obj.Offset == Offset && obj.Count == Count && obj.State == State && obj.Order == Order;

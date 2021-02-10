@@ -5,13 +5,16 @@ using System.Linq;
 using System.Security;
 using System.Security.Claims;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using NuScien.Data;
 using NuScien.Security;
+using NuScien.Sns;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
@@ -443,6 +446,12 @@ namespace NuScien.Web
             return result.ToActionResult();
         }
 
+        internal static bool? TryGetBoolean(this IQueryCollection request)
+        {
+            var plain = request?.GetFirstStringValue("plain", true)?.ToLowerInvariant();
+            var isPlain = JsonBoolean.TryParse(plain);
+            return isPlain?.Value;
+        }
 
         /// <summary>
         /// Gets the resource access client.
@@ -514,6 +523,49 @@ namespace NuScien.Web
                 ContentType = WebFormat.JsonMIME,
                 Content = json
             };
+        }
+
+        internal static async Task<IActionResult> SaveSnsEntityAsync<T>(this ControllerBase controller, T entity, Func<BaseSocialNetworkResourceContext, T, CancellationToken, Task<ChangingResultInfo>> save, ILogger logger, EventId eventId, CancellationToken cancellationToken = default)
+            where T : BaseResourceEntity
+        {
+            var instance = await controller.GetResourceAccessClientAsync();
+            var sns = await SocialNetworkResources.CreateAsync(instance);
+            if (sns?.CoreResources == null) return new ChangingResultInfo(ChangeErrorKinds.Unsupported, "Do not support this feature.").ToActionResult();
+            if (!sns.CoreResources.IsUserSignedIn) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, "Requires login firstly.").ToActionResult();
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity body.").ToActionResult();
+            var result = await save(sns, entity, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
+            logger?.LogInformation(eventId, $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
+            return result.ToActionResult();
+        }
+
+        internal static async Task<IActionResult> UpdateSnsEntityAsync<T>(this ControllerBase controller, string id, Func<BaseSocialNetworkResourceContext, string, CancellationToken, Task<T>> resolver, Func<BaseSocialNetworkResourceContext, T, CancellationToken, Task<ChangingResultInfo>> save, ILogger logger, EventId eventId, CancellationToken cancellationToken = default)
+            where T : BaseResourceEntity
+        {
+            var instance = await controller.GetResourceAccessClientAsync();
+            var sns = await SocialNetworkResources.CreateAsync(instance);
+            if (sns?.CoreResources == null) return new ChangingResultInfo(ChangeErrorKinds.Unsupported, "Do not support this feature.").ToActionResult();
+            if (!sns.CoreResources.IsUserSignedIn) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, "Requires login firstly.").ToActionResult();
+            var content = await JsonObject.ParseAsync(controller.Request.Body, default, cancellationToken);
+            var entity = await resolver(sns, id, cancellationToken);
+            if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The entity does not exist.").ToActionResult();
+            if (content == null || content.Count < 1) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity, "Nothing need update.").ToActionResult();
+            entity.SetProperties(content);
+            var result = await save(sns, entity, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
+            logger?.LogInformation(eventId, $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
+            return result.ToActionResult();
+        }
+
+        internal static async Task<IActionResult> UpdateSnsEntityAsync(this ControllerBase controller, string id, Func<BaseSocialNetworkResourceContext, string, ResourceEntityStates, CancellationToken, Task<ChangingResultInfo>> save, ILogger logger, EventId eventId, CancellationToken cancellationToken = default)
+        {
+            var instance = await controller.GetResourceAccessClientAsync();
+            var sns = await SocialNetworkResources.CreateAsync(instance);
+            if (sns?.CoreResources == null) return new ChangingResultInfo(ChangeErrorKinds.Unsupported, "Do not support this feature.").ToActionResult();
+            if (!sns.CoreResources.IsUserSignedIn) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, "Requires login firstly.").ToActionResult();
+            var content = await JsonObject.ParseAsync(controller.Request.Body, default, cancellationToken);
+            if (content == null || content.Count < 1 || !content.TryGetEnumValue<ResourceEntityStates>("state", out var state)) return new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing need update.").ToActionResult();
+            var result = await save(sns, id, state, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
+            logger?.LogInformation(eventId, $"Update state to {state} ({result.State}) of an entity ({id}).");
+            return result.ToActionResult();
         }
 
         /// <summary>

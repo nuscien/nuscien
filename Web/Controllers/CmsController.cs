@@ -115,7 +115,7 @@ namespace NuScien.Web
             if (entity.ExtensionSerializationData != null && entity.ExtensionSerializationData.TryGetValue("message", out var msg) && msg.ValueKind == JsonValueKind.String)
                 message = msg.GetString();
             var result = await instance.SaveAsync(entity, message);
-            Logger?.LogInformation(new EventId(17002011, "SaveContentInfo"), "Save publish content information {0}. {1}", entity.Name ?? entity.Id, message);
+            Logger?.LogInformation(new EventId(17001211, "SaveContentInfo"), "Save publish content information {0}. {1}", entity.Name ?? entity.Id, message);
             return result.ToActionResult();
         }
 
@@ -135,7 +135,7 @@ namespace NuScien.Web
             {
                 var message = delta.TryGetStringValue("message");
                 var result = await instance.SaveAsync(entity, message);
-                Logger?.LogInformation(new EventId(17002012, "SaveUserInfo"), "Save user information {0}.", entity.Name ?? entity.Id);
+                Logger?.LogInformation(new EventId(17001212, "SaveUserInfo"), "Save user information {0}.", entity.Name ?? entity.Id);
                 return result;
             }, id);
         }
@@ -225,7 +225,7 @@ namespace NuScien.Web
             if (entity.ExtensionSerializationData != null && entity.ExtensionSerializationData.TryGetValue("message", out var msg) && msg.ValueKind == JsonValueKind.String)
                 message = msg.GetString();
             var result = await instance.SaveAsync(entity, message);
-            Logger?.LogInformation(new EventId(17002013, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
+            Logger?.LogInformation(new EventId(17001213, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
             return result.ToActionResult();
         }
 
@@ -245,7 +245,7 @@ namespace NuScien.Web
             {
                 var message = delta.TryGetStringValue("message");
                 var result = await instance.SaveAsync(entity, message);
-                Logger?.LogInformation(new EventId(17002014, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
+                Logger?.LogInformation(new EventId(17001214, "SaveContentTemplateInfo"), "Save publish content template information {0}. {1}", entity.Name ?? entity.Id, message);
                 return result;
             }, id);
         }
@@ -303,11 +303,11 @@ namespace NuScien.Web
         /// <returns>The entity list.</returns>
         [HttpGet]
         [Route("cms/cc/{id}/children")]
-        public async Task<IActionResult> ListChildContentCommentsAsync(string id)
+        public async Task<IActionResult> ListContentChildCommentsAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var m = await instance.ListChildContentCommentsAsync(id);
+            var m = await instance.ListContentChildCommentsAsync(id);
             return this.ResourceEntityResult(m);
         }
 
@@ -323,7 +323,7 @@ namespace NuScien.Web
             if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SaveAsync(entity);
-            Logger?.LogInformation(new EventId(17002017, "PostContentComment"), "Post a comment to a publish content.");
+            Logger?.LogInformation(new EventId(17001217, "PostContentComment"), "Post a comment to a publish content.");
             return result.ToActionResult();
         }
 
@@ -342,7 +342,7 @@ namespace NuScien.Web
             }, async (entity, instance, delta) =>
             {
                 var result = await instance.SaveAsync(entity);
-                Logger?.LogInformation(new EventId(17002018, "PostContentComment"), "Post a comment to a publish content.");
+                Logger?.LogInformation(new EventId(17001218, "PostContentComment"), "Post a comment to a publish content.");
                 return result;
             }, id);
         }

@@ -659,29 +659,28 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="content">The owner content comment identifier.</param>
         /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public async Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
             var context = GetContext(true);
             var col = context.ContentComments.Where(ele => ele.OwnerId == content);
-            if (!plain) col = col.Where(ele => string.IsNullOrWhiteSpace(ele.SourceMessageId));
-            col = col.OrderByDescending(ele => ele.LastModificationTime);
-            return await col.ToListAsync(cancellationToken);
+            if (!plain) col = col.Where(ele => ele.SourceMessageId == null || ele.SourceMessageId == string.Empty);
+            return await col.ToListAsync(q, null, ResourceEntityOrders.Latest, cancellationToken);
         }
 
         /// <summary>
         /// Lists the child comments of a specific publish content comment.
         /// </summary>
-        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="commentId">The parent identifier of the content comment.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public async Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ContentCommentEntity>> ListContentChildCommentsAsync(string commentId, QueryArgs q, CancellationToken cancellationToken = default)
         {
             var context = GetContext(true);
-            var col = context.ContentComments.Where(ele => ele.SourceMessageId == id);
-            col = col.OrderByDescending(ele => ele.LastModificationTime);
-            return await col.ToListAsync(cancellationToken);
+            return await context.ContentComments.ToListAsync(q, ele => ele.SourceMessageId == commentId, ResourceEntityOrders.Latest, cancellationToken);
         }
 
         /// <summary>

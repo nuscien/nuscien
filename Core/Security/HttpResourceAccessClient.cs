@@ -19,6 +19,7 @@ using NuScien.Configurations;
 using NuScien.Data;
 using NuScien.Sns;
 using NuScien.Users;
+using Trivial.Collection;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Reflection;
@@ -730,15 +731,13 @@ namespace NuScien.Security
         /// </summary>
         /// <param name="content">The owner content comment identifier.</param>
         /// <param name="plain">true if returns from all in plain mode; otherwise, false.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public override Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, CancellationToken cancellationToken = default)
+        public override Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
-            QueryData query = null;
-            if (plain) query = new QueryData
-            {
-                { "plain", true }
-            };
+            var query = q != null ? (QueryData)q : new QueryData();
+            if (plain) query.Set("plain", JsonBoolean.TrueString);
             return QueryAsync<ContentCommentEntity>($"{coreResPath}cms/c/{content}/comments", query, cancellationToken);
         }
 
@@ -756,12 +755,13 @@ namespace NuScien.Security
         /// <summary>
         /// Lists the child comments of a specific publish content comment.
         /// </summary>
-        /// <param name="id">The parent identifier of the content comment.</param>
+        /// <param name="commentId">The parent identifier of the content comment.</param>
+        /// <param name="q">The optional query arguments.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity list.</returns>
-        public override Task<IEnumerable<ContentCommentEntity>> ListChildContentCommentsAsync(string id, CancellationToken cancellationToken = default)
+        public override Task<IEnumerable<ContentCommentEntity>> ListContentChildCommentsAsync(string commentId, QueryArgs q, CancellationToken cancellationToken = default)
         {
-            return QueryAsync<ContentCommentEntity>($"{coreResPath}cms/cc/{id}/children", null, cancellationToken);
+            return QueryAsync<ContentCommentEntity>($"{coreResPath}cms/cc/{commentId}/children", (QueryData)q, cancellationToken);
         }
 
         /// <summary>
