@@ -1033,7 +1033,9 @@ namespace NuScien.Security
             var url = GetUri(path);
             try
             {
-                var result = await SendJsonAsync<ChangingResultInfo>(method, url, content, cancellationToken);
+                var client = Create<ChangingResultInfo>();
+                client.SerializeEvenIfFailed = true;
+                var result = await client.SendJsonAsync(method, url, content, cancellationToken);
                 if (result == null) return ChangeMethods.Unknown;
                 return result;
             }

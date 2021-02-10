@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -171,9 +173,17 @@ namespace NuScien.Data
         {
             if (value == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity.");
             var client = CreateHttp<ChangingResultInfo>();
-            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
-            Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
-            return change;
+            client.SerializeEvenIfFailed = true;
+            try
+            {
+                var change = await client.SendJsonAsync(HttpMethod.Put, GetUri(), value, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
+                Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
+                return change;
+            }
+            catch (JsonException ex)
+            {
+                return new ChangingResultInfo(ChangeErrorKinds.Provider, "Cannot serialize the response.", ex);
+            }
         }
 
         /// <summary>
@@ -188,12 +198,51 @@ namespace NuScien.Data
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires identifier.");
             if (delta == null) return new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing need to update.");
             var client = CreateHttp<ChangingResultInfo>();
-            var change = await client.SendJsonAsync(HttpMethod.Put, GetUri("e/" + id), delta, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
-            T value = null;
-            if (change is ChangingResultInfo<T> r) value = r.Data;
-            if (value == null && change.IsSuccessful && change.State != ChangeMethods.Remove) value = await GetAsync(id, true, cancellationToken);
-            Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
-            return change;
+            client.SerializeEvenIfFailed = true;
+            try
+            {
+                var change = await client.SendJsonAsync(HttpMethod.Put, GetUri("e/" + id), delta, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
+                T value = null;
+                if (change is ChangingResultInfo<T> r) value = r.Data;
+                if (value == null && change.IsSuccessful && change.State != ChangeMethods.Remove)
+                {
+                    try
+                    {
+                        value = await GetAsync(id, true, cancellationToken);
+                    }
+                    catch (FailedHttpException)
+                    {
+                    }
+                    catch (JsonException)
+                    {
+                    }
+                    catch (ArgumentException)
+                    {
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
+                    catch (SecurityException)
+                    {
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+                    catch (NotSupportedException)
+                    {
+                    }
+                }
+
+                Saved?.Invoke(this, new ChangeEventArgs<T>(change.State == ChangeMethods.Add ? null : value, value, change.State));
+                return change;
+            }
+            catch (JsonException ex)
+            {
+                return new ChangingResultInfo(ChangeErrorKinds.Provider, "Cannot serialize the response.", ex);
+            }
         }
 
         /// <summary>

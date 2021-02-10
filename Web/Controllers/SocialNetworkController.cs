@@ -274,7 +274,7 @@ namespace NuScien.Web
             {
                 var filter = new MailAdditionalFilterInfo();
                 return sns.ListReceivedMailAsync(folder, q, filter);
-            }, new EventId(17001411, "ListContacts"), $"List received mails.", null, true);
+            }, new EventId(17001411, "ListReceivedMails"), $"List received mails.", null, true);
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace NuScien.Web
         [Route("mail/m/{id}")]
         public Task<IActionResult> GetReceivedMailAsync(string id)
         {
-            return FromSnsResourcesAsync((sns, id, eventId) => sns.GetReceivedMailAsync(id), id, new EventId(17001410, "GetBlog"), "Get a mail received.");
+            return FromSnsResourcesAsync((sns, id, eventId) => sns.GetReceivedMailAsync(id), id, new EventId(17001410, "GetReceivedMail"), "Get a mail received.");
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace NuScien.Web
         [Route("mail/o/{folder}")]
         public Task<IActionResult> ListSentMailAsync(string folder)
         {
-            return FromSnsResourcesAsync((sns, q, eventId) => sns.ListSentMailAsync(folder, q), new EventId(17001411, "ListContacts"), $"List received mails.", null, true);
+            return FromSnsResourcesAsync((sns, q, eventId) => sns.ListSentMailAsync(folder, q), new EventId(17001421, "ListSentMails"), $"List sent mails.", null, true);
         }
 
         /// <summary>
@@ -341,7 +341,7 @@ namespace NuScien.Web
         [Route("mail/e/{id}")]
         public Task<IActionResult> GetSentMailAsync(string id)
         {
-            return FromSnsResourcesAsync((sns, id, eventId) => sns.GetSentMailAsync(id), id, new EventId(17001410, "GetBlog"), "Get a mail received.");
+            return FromSnsResourcesAsync((sns, id, eventId) => sns.GetSentMailAsync(id), id, new EventId(17001420, "GetSentMail"), "Get a mail sent.");
         }
 
         /// <summary>
@@ -352,7 +352,7 @@ namespace NuScien.Web
         [Route("mail/e")]
         public Task<IActionResult> SaveAsync([FromBody] SentMailEntity entity)
         {
-            return this.SaveSnsEntityAsync(entity, (sns, e, cancellationToken) => sns.SaveAsync(entity, cancellationToken), Logger, new EventId(17001416, "SaveEntity"));
+            return this.SaveSnsEntityAsync(entity, (sns, e, cancellationToken) => sns.SaveAsync(entity, cancellationToken), Logger, new EventId(17001426, "SaveEntity"));
         }
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace NuScien.Web
         [Route("mail/e/{id}")]
         public Task<IActionResult> UpdateSentMailAsync(string id)
         {
-            return this.UpdateSnsEntityAsync(id, (sns, s, cancellationToken) => sns.GetSentMailAsync(id, cancellationToken), (sns, e, cancellationToken) => sns.SaveAsync(e, cancellationToken), Logger, new EventId(17001417, "SaveEntity"));
+            return this.UpdateSnsEntityAsync(id, (sns, s, cancellationToken) => sns.GetSentMailAsync(id, cancellationToken), (sns, e, cancellationToken) => sns.SaveAsync(e, cancellationToken), Logger, new EventId(17001427, "SaveEntity"));
         }
 
         private async Task<IActionResult> FromSnsResourcesAsync<T>(Func<BaseSocialNetworkResourceContext, EventId, Task<T>> h, Func<T, IActionResult> toActionResult, EventId eventId, string message = null, Action<Exception, bool, EventId> onError = null, bool noNeedLogin = false)

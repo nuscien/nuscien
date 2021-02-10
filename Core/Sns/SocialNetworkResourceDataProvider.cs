@@ -483,7 +483,19 @@ namespace NuScien.Sns
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips);
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<ContactEntity>(result, entity, result.ToString() + " contact entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -497,7 +509,19 @@ namespace NuScien.Sns
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips);
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<BlogEntity>(result, entity, result.ToString() + " blog entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -511,7 +535,19 @@ namespace NuScien.Sns
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips);
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (string.IsNullOrWhiteSpace(entity.PublisherId) && entity.IsNew) entity.PublisherId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<BlogCommentEntity>(result, entity, result.ToString() + " blog comment entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -525,7 +561,19 @@ namespace NuScien.Sns
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips);
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<UserActivityEntity>(result, entity, result.ToString() + " user activity entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -539,7 +587,19 @@ namespace NuScien.Sns
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips);
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<UserGroupActivityEntity>(result, entity, result.ToString() + " user group activity entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -553,7 +613,19 @@ namespace NuScien.Sns
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips);
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<ReceivedMailEntity>(result, entity, result.ToString() + " received mail entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -579,7 +651,19 @@ namespace NuScien.Sns
             }
 
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<SentMailEntity>(result, entity, result.ToString() + " sent mail entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -595,7 +679,19 @@ namespace NuScien.Sns
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             var entity = await DataProvider.GetBlogCommentAsync(id, cancellationToken);
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The entity does not exist.");
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<BlogCommentEntity>(result, entity, result.ToString() + " blog comment entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -611,7 +707,19 @@ namespace NuScien.Sns
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             var entity = await DataProvider.GetUserActivityAsync(id, cancellationToken);
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The entity does not exist.");
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<UserActivityEntity>(result, entity, result.ToString() + " user activity entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>
@@ -627,7 +735,19 @@ namespace NuScien.Sns
             if (string.IsNullOrWhiteSpace(UserId)) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips);
             var entity = await DataProvider.GetUserGroupActivityAsync(id, cancellationToken);
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The entity does not exist.");
-            return await DataProvider.SaveAsync(entity, cancellationToken);
+            try
+            {
+                var result = await DataProvider.SaveAsync(entity, cancellationToken);
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<UserGroupActivityEntity>(result, entity, result.ToString() + " user group activity entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = ResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
     }
 }

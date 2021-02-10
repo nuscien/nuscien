@@ -141,9 +141,20 @@ namespace NuScien.Data
             var isNew = value.IsNew;
             if (isNew) OnAdd(value);
             else OnUpdate(value);
-            var change = await DbResourceEntityExtensions.SaveAsync(Set, SaveChangesAsync, value, cancellationToken);
-            Saved?.Invoke(this, new ChangeEventArgs<T>(isNew ? null : value, value, change));
-            return new ChangingResultInfo(change);
+            try
+            {
+                var result = await DbResourceEntityExtensions.SaveAsync(Set, SaveChangesAsync, value, cancellationToken);
+                Saved?.Invoke(this, new ChangeEventArgs<T>(isNew ? null : value, value, result));
+                if (ResourceEntityExtensions.IsSuccessful(result))
+                    return new ChangingResultInfo<T>(result, value, $"{result} {typeof(T).Name} entity.");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var err = DbResourceEntityExtensions.TryCatch(ex);
+                if (err != null) return err;
+                throw;
+            }
         }
 
         /// <summary>

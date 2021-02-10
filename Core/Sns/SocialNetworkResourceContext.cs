@@ -802,7 +802,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}passport/contact", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}passport/contact", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -816,7 +816,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/c", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}sns/blog/c", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -830,7 +830,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.PublisherId) && entity.IsNew) entity.PublisherId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/cc", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}sns/blog/cc", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -844,7 +844,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activity/u", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}sns/activity/u", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -858,7 +858,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activity/g", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}sns/activity/g", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -872,7 +872,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/m", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}mail/m", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -886,7 +886,7 @@ namespace NuScien.Sns
             if (entity == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EntityNullTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             if (string.IsNullOrWhiteSpace(entity.OwnerId) && entity.IsNew) entity.OwnerId = UserId;
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/e", null, entity, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}mail/e", null, entity, cancellationToken);
         }
 
         /// <summary>
@@ -899,7 +899,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}passport/contact/{id}", null, delta, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}passport/contact/{id}", null, delta, cancellationToken);
         }
 
         /// <summary>
@@ -928,7 +928,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/c/{id}", null, delta, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}sns/blog/c/{id}", null, delta, cancellationToken);
         }
 
         /// <summary>
@@ -958,7 +958,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/blog/cc/{id}", null, new JsonObject
+            return GetChangingResultAsync($"{RootFolderName}sns/blog/cc/{id}", null, new JsonObject
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -975,7 +975,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activit/u/{id}", null, new JsonObject
+            return GetChangingResultAsync($"{RootFolderName}sns/activit/u/{id}", null, new JsonObject
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -992,7 +992,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}sns/activit/g/{id}", null, new JsonObject
+            return GetChangingResultAsync($"{RootFolderName}sns/activit/g/{id}", null, new JsonObject
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -1008,7 +1008,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/m/{id}", null, delta, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}mail/m/{id}", null, delta, cancellationToken);
         }
 
         /// <summary>
@@ -1037,7 +1037,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetDataAsync<ChangingResultInfo>(HttpMethod.Put, $"{RootFolderName}mail/e/{id}", null, delta, cancellationToken);
+            return GetChangingResultAsync($"{RootFolderName}mail/e/{id}", null, delta, cancellationToken);
         }
 
         /// <summary>
@@ -1099,6 +1099,28 @@ namespace NuScien.Sns
         public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, object content, CancellationToken cancellationToken = default)
         {
             return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), content, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets data via network.
+        /// </summary>
+        /// <param name="relativePath">The relative path.</param>
+        /// <param name="q">The query data.</param>
+        /// <param name="content">The body.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The result.</returns>
+        public Task<ChangingResultInfo> GetChangingResultAsync(string relativePath, QueryData q, object content, CancellationToken cancellationToken = default)
+        {
+            var client = CreateHttp<ChangingResultInfo>();
+            client.SerializeEvenIfFailed = true;
+            try
+            {
+                return client.SendJsonAsync(HttpMethod.Put, GetUri(relativePath, q), content, cancellationToken);
+            }
+            catch (JsonException ex)
+            {
+                return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Provider, "Cannot serialize the response.", ex));
+            }
         }
 
         /// <summary>
