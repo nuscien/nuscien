@@ -23,10 +23,11 @@ CREATE TABLE [dbo].[testcustomers](
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-GO
 
 CREATE INDEX IX_testcustomers
 ON [dbo].[testcustomers] ([name], [state], [lastupdate] DESC, [site])
+
+GO
 
 
 /* Goods */
@@ -44,8 +45,8 @@ CREATE TABLE [dbo].[testgoods](
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-GO
 
 CREATE INDEX IX_testgoods
 ON [dbo].[testgoods] ([name], [state], [lastupdate] DESC, [site])
 
+GO

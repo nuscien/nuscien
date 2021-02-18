@@ -35,7 +35,7 @@ namespace NuScien.Web
             var login = false;
             try
             {
-                login = Request?.Body != null && Request.Body.Length > 0;
+                login = Request?.Body != null && Request.Body.Length > 1;
             }
             catch (NotSupportedException)
             {
