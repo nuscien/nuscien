@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outFile": "./core.js",
+        "outFile": "../dist/core.js",
         "noImplicitAny": true,
         "target": "es2015",
         "declaration": true,

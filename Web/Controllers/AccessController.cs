@@ -57,7 +57,21 @@ namespace NuScien.Web
             var fileProvider = new Microsoft.Extensions.FileProviders.EmbeddedFileProvider(Assembly.GetExecutingAssembly());
             var file = fileProvider.GetFileInfo("core.js");
             if (!file.Exists) return NotFound();
-            return File(file.CreateReadStream(), WebFormat.JavaScriptMIME, "nuscien.js");
+            return File(file.CreateReadStream(), WebFormat.JavaScriptMIME, "nuscien.core.js");
+        }
+
+        /// <summary>
+        /// Gets the core client script file.
+        /// </summary>
+        /// <returns>A JavaScript file result.</returns>
+        [HttpGet]
+        [Route("js/nuscien.d.ts")]
+        public IActionResult GetClientScriptDefinition()
+        {
+            var fileProvider = new Microsoft.Extensions.FileProviders.EmbeddedFileProvider(Assembly.GetExecutingAssembly());
+            var file = fileProvider.GetFileInfo("core.d.ts");
+            if (!file.Exists) return NotFound();
+            return File(file.CreateReadStream(), "application/x-typescript", "nuscien.core.d.ts");
         }
     }
 }
