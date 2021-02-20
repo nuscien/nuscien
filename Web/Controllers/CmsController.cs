@@ -38,7 +38,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var m = await instance.GetContentAsync(id);
+            var m = await instance.GetContentAsync(id, Request.Query.TryGetBoolean("all") == true);
             return this.ResourceEntityResult(m);
         }
 
@@ -51,11 +51,11 @@ namespace NuScien.Web
         public async Task<IActionResult> ListContentById()
         {
             var instance = await this.GetResourceAccessClientAsync();
-            var q = Request?.Query?.GetQueryArgs();
-            var parent = Request?.Query?["parent"].ToString();
+            var q = Request.Query?.GetQueryArgs();
+            var parent = Request.Query?["parent"].ToString();
             var col = parent == "*"
-                ? await instance.ListContentAsync(Request?.Query?["site"], true, q)
-                : await instance.ListContentAsync(Request?.Query?["site"], parent, q);
+                ? await instance.ListContentAsync(Request.Query?["site"], true, q)
+                : await instance.ListContentAsync(Request.Query?["site"], parent, q);
             return this.ResourceEntityResult(col.Select(ele =>
             {
                 if (ele == null) return null;
@@ -75,7 +75,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var q = Request?.Query?.GetQueryArgs();
+            var q = Request.Query?.GetQueryArgs();
             var col = await instance.ListContentRevisionAsync(id, q);
             return this.ResourceEntityResult(col.Select(ele =>
             {
@@ -151,7 +151,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var m = await instance.GetContentTemplateAsync(id);
+            var m = await instance.GetContentTemplateAsync(id, Request.Query?.TryGetBoolean("all") == true);
             return this.ResourceEntityResult(m);
         }
 
@@ -164,8 +164,8 @@ namespace NuScien.Web
         public async Task<IActionResult> ListContentTemplateById()
         {
             var instance = await this.GetResourceAccessClientAsync();
-            var q = Request?.Query?.GetQueryArgs();
-            var col = await instance.ListContentTemplateAsync(Request?.Query?["site"], q);
+            var q = Request.Query?.GetQueryArgs();
+            var col = await instance.ListContentTemplateAsync(Request.Query?["site"], q);
             return this.ResourceEntityResult(col.Select(ele =>
             {
                 if (ele == null) return null;
@@ -185,7 +185,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var q = Request?.Query?.GetQueryArgs();
+            var q = Request.Query?.GetQueryArgs();
             var col = await instance.ListContentTemplateRevisionAsync(id, q);
             return this.ResourceEntityResult(col.Select(ele =>
             {
@@ -261,7 +261,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var plain = JsonBoolean.TryParse(Request?.Query?["plain"]);
+            var plain = JsonBoolean.TryParse(Request.Query?["plain"]);
             var m = await instance.ListContentCommentsAsync(id, plain == true);
             return this.ResourceEntityResult(m);
         }

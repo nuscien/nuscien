@@ -1239,7 +1239,16 @@ namespace NuScien.Security
         /// <param name="id">The identifier of the publish content.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to get.</returns>
-        public abstract Task<ContentEntity> GetContentAsync(string id, CancellationToken cancellationToken = default);
+        public Task<ContentEntity> GetContentAsync(string id, CancellationToken cancellationToken = default) => GetContentAsync(id, false, cancellationToken);
+
+        /// <summary>
+        /// Gets a specific publish content.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public abstract Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists the publish contents.
@@ -1284,7 +1293,16 @@ namespace NuScien.Security
         /// <param name="id">The identifier of the publish content template.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to get.</returns>
-        public abstract Task<ContentTemplateEntity> GetContentTemplateAsync(string id, CancellationToken cancellationToken = default);
+        public Task<ContentTemplateEntity> GetContentTemplateAsync(string id, CancellationToken cancellationToken = default) => GetContentTemplateAsync(id, false, cancellationToken);
+
+        /// <summary>
+        /// Gets a specific publish content template.
+        /// </summary>
+        /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The entity to get.</returns>
+        public abstract Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists the publish content templates.
@@ -1600,7 +1618,7 @@ namespace NuScien.Security
         public virtual async Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
-            var entity = await GetContentAsync(id, cancellationToken);
+            var entity = await GetContentAsync(id, true, cancellationToken);
             if (delta == null || delta.Count == 0) return new ChangingResultInfo<ContentEntity>(ChangeMethods.Unchanged, entity, "Nothing request to update.");
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The resource does not exist.");
             entity.SetProperties(delta);
@@ -1617,7 +1635,7 @@ namespace NuScien.Security
         /// <returns>The change method.</returns>
         public async Task<ChangingResultInfo> UpdateContentAsync(string id, ResourceEntityStates state, string message, CancellationToken cancellationToken = default)
         {
-            var content = await GetContentAsync(id, cancellationToken);
+            var content = await GetContentAsync(id, true, cancellationToken);
             if (content == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The content does not exist.");
             if (content.State == state) return new ChangingResultInfo<ContentEntity>(ChangeMethods.Unchanged, content, $"The state is already {state}.");
             content.State = state;
@@ -1736,7 +1754,7 @@ namespace NuScien.Security
             if (comment.State == ResourceEntityStates.Deleted) return ChangeMethods.Unchanged;
             if (comment.PublisherId != UserId && !string.IsNullOrWhiteSpace(comment.OwnerId))
             {
-                var content = await GetContentAsync(comment.OwnerId, cancellationToken);
+                var content = await GetContentAsync(comment.OwnerId, true, cancellationToken);
                 if (content?.OwnerSiteId != null && !await IsCmsAdminAsync(content.OwnerSiteId, cancellationToken) && !await HasPermissionAsync(content.OwnerSiteId, PermissionItems.CmsComments))
                     return new ChangingResultInfo(ChangeErrorKinds.Forbidden, "No permission to delete the content comment.");
             }

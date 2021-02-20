@@ -469,11 +469,12 @@ namespace NuScien.Security
         /// Gets a specific publish content.
         /// </summary>
         /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to get.</returns>
-        public override Task<ContentEntity> GetContentAsync(string id, CancellationToken cancellationToken = default)
+        public override Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
         {
-            return DataProvider.GetContentAsync(id, true, cancellationToken);
+            return DataProvider.GetContentAsync(id, includeAllStates, cancellationToken);
         }
 
         /// <summary>
@@ -529,11 +530,12 @@ namespace NuScien.Security
         /// Gets a specific publish content template.
         /// </summary>
         /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to get.</returns>
-        public override Task<ContentTemplateEntity> GetContentTemplateAsync(string id, CancellationToken cancellationToken = default)
+        public override Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
         {
-            return DataProvider.GetContentTemplateAsync(id, true, cancellationToken);
+            return DataProvider.GetContentTemplateAsync(id, includeAllStates, cancellationToken);
         }
 
         /// <summary>

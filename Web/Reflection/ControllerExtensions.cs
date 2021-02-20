@@ -446,9 +446,9 @@ namespace NuScien.Web
             return result.ToActionResult();
         }
 
-        internal static bool? TryGetBoolean(this IQueryCollection request)
+        internal static bool? TryGetBoolean(this IQueryCollection request, string key)
         {
-            var plain = request?.GetFirstStringValue("plain", true)?.ToLowerInvariant();
+            var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();
             var isPlain = JsonBoolean.TryParse(plain);
             return isPlain?.Value;
         }

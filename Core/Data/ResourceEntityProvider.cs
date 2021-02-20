@@ -32,10 +32,18 @@ namespace NuScien.Data
         /// Gets by a specific entity identifier.
         /// </summary>
         /// <param name="id">The identifier of the entity to get.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An entity instance.</returns>
+        public Task<T> GetAsync(string id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets by a specific entity identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the entity to get.</param>
         /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An entity instance.</returns>
-        public Task<T> GetAsync(string id, bool includeAllStates = false, CancellationToken cancellationToken = default);
+        public Task<T> GetAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Searches.
@@ -127,13 +135,24 @@ namespace NuScien.Data
         /// Gets by a specific entity identifier.
         /// </summary>
         /// <param name="id">The identifier of the entity to get.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An entity instance.</returns>
+        public Task<T> GetAsync(string id, CancellationToken cancellationToken = default) => GetAsync(id, false, cancellationToken);
+
+        /// <summary>
+        /// Gets by a specific entity identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the entity to get.</param>
         /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An entity instance.</returns>
-        public async Task<T> GetAsync(string id, bool includeAllStates = false, CancellationToken cancellationToken = default)
+        public async Task<T> GetAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
         {
             var client = CreateHttp<T>();
-            var entity = await client.GetAsync(GetUri("e/" + id), cancellationToken);
+            var entity = await client.GetAsync(GetUri("e/" + id, includeAllStates ? new QueryData
+            {
+                { "all", JsonBoolean.TrueString }
+            } : null), cancellationToken);
             return entity;
         }
 

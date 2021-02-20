@@ -59,7 +59,7 @@ namespace NuScien.Web
             try
             {
                 var provider = await GetProviderAsync();
-                var entity = await provider.GetAsync(id, true);
+                var entity = await provider.GetAsync(id, Request.Query.TryGetBoolean("all") == true);
                 return this.ResourceEntityResult(entity);
             }
             catch (Exception ex)

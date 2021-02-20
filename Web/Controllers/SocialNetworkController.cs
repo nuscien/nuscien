@@ -145,7 +145,7 @@ namespace NuScien.Web
         [Route("sns/blog/c/{id}/comments")]
         public Task<IActionResult> ListBlogCommentsAsync(string id)
         {
-            return FromSnsResourcesAsync((sns, q, eventId) => sns.ListBlogCommentsAsync(id, Request.Query.TryGetBoolean() ?? false, q), new EventId(17001326, "ListBlogComments"), "List blog comments.", null, true);
+            return FromSnsResourcesAsync((sns, q, eventId) => sns.ListBlogCommentsAsync(id, Request.Query.TryGetBoolean("plain") ?? false, q), new EventId(17001326, "ListBlogComments"), "List blog comments.", null, true);
         }
 
         /// <summary>

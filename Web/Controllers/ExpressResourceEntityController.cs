@@ -85,10 +85,18 @@ namespace NuScien.Web
         /// Gets by a specific entity identifier.
         /// </summary>
         /// <param name="id">The identifier of the entity to get.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>An entity instance.</returns>
+        public Task<TEntity> GetAsync(string id, CancellationToken cancellationToken = default) => GetAsync(id, false, cancellationToken);
+
+        /// <summary>
+        /// Gets by a specific entity identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the entity to get.</param>
         /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>An entity instance.</returns>
-        public virtual async Task<TEntity> GetAsync(string id, bool includeAllStates = false, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> GetAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
         {
             var set = await GetDbSetAsync();
             return await set.GetByIdAsync(id, includeAllStates, cancellationToken);

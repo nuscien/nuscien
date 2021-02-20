@@ -8,9 +8,9 @@
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>0.5.0</Version>
-    <AssemblyVersion>0.5.0.0</AssemblyVersion>
-    <FileVersion>0.5.0.0</FileVersion>
+    <Version>5.0.0-preview1</Version>
+    <AssemblyVersion>0.5.0.2021</AssemblyVersion>
+    <FileVersion>0.5.0.2021</FileVersion>
     <Description>A web library of NuScien framework to provide web API controllers, components, extensions, etc.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -38,6 +38,8 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Include="..\Js\dist\core.d.ts" Link="Js\core.d.ts" />
+    <None Include="..\Js\dist\core.js" Link="Js\core.js" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
@@ -54,6 +56,10 @@
     <Compile Include="..\Core\Reflection\Assertion.cs">
       <Link>Reflection\Assertion.cs</Link>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Js\" />
   </ItemGroup>
 
 </Project>

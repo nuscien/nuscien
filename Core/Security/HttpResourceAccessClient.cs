@@ -590,11 +590,15 @@ namespace NuScien.Security
         /// Gets a specific publish content.
         /// </summary>
         /// <param name="id">The identifier of the publish content.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to get.</returns>
-        public override Task<ContentEntity> GetContentAsync(string id, CancellationToken cancellationToken = default)
+        public override Task<ContentEntity> GetContentAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
         {
-            return SendAsync<ContentEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/c/" + id), cancellationToken);
+            return SendAsync<ContentEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/c/" + id, includeAllStates ? new QueryData
+            {
+                { "all", JsonBoolean.TrueString }
+            } : null), cancellationToken);
         }
 
         /// <summary>
@@ -668,11 +672,15 @@ namespace NuScien.Security
         /// Gets a specific publish content template.
         /// </summary>
         /// <param name="id">The identifier of the publish content template.</param>
+        /// <param name="includeAllStates">true if includes all states but not only normal one; otherwise, false.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The entity to get.</returns>
-        public override Task<ContentTemplateEntity> GetContentTemplateAsync(string id, CancellationToken cancellationToken = default)
+        public override Task<ContentTemplateEntity> GetContentTemplateAsync(string id, bool includeAllStates, CancellationToken cancellationToken = default)
         {
-            return SendAsync<ContentTemplateEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/t/" + id), cancellationToken);
+            return SendAsync<ContentTemplateEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/t/" + id, includeAllStates ? new QueryData
+            {
+                { "all", JsonBoolean.TrueString }
+            } : null), cancellationToken);
         }
 
         /// <summary>
