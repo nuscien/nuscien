@@ -66,7 +66,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "state")]
         [JsonPropertyName("state")]
-        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<ResourceEntityStates>))]
+        [JsonConverter(typeof(JsonIntegerEnumConverter<ResourceEntityStates>))]
         public ResourceEntityStates State { get; set; } = ResourceEntityStates.Normal;
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "order")]
         [JsonPropertyName("order")]
-        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<ResourceEntityOrders>))]
+        [JsonConverter(typeof(JsonIntegerEnumConverter<ResourceEntityOrders>))]
         public ResourceEntityOrders Order { get; set; } = ResourceEntityOrders.Default;
 
         /// <summary>

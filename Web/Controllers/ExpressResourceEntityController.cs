@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using NuScien.Collection;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Users;

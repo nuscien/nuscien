@@ -83,7 +83,7 @@ namespace NuScien.Users
         /// </summary>
         [DataMember(Name = "gender")]
         [JsonPropertyName("gender")]
-        [JsonConverter(typeof(Text.JsonIntegerEnumConverter<Genders>))]
+        [JsonConverter(typeof(JsonIntegerEnumConverter<Genders>))]
         [NotMapped]
         public Genders Gender
         {
@@ -181,7 +181,7 @@ namespace NuScien.Users
         /// Returns an enumerator that iterates through the user.
         /// </summary>
         /// <returns>The claim enumerator.</returns>
-        public new IEnumerator<Claim> GetEnumerator()
+        public IEnumerator<Claim> EnumerateClaims()
         {
             return GetClaims().GetEnumerator();
         }
