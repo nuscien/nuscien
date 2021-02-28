@@ -75,25 +75,10 @@ namespace NuScien.Reflection
         }
 
         /// <summary>
-        /// Gets the property in JSON format string.
-        /// </summary>
-        /// <typeparam name="T">The type of the propery value.</typeparam>
-        /// <param name="key">The property key.</param>
-        /// <param name="options">The optional JSON serializer options.</param>
-        /// <returns>The propery value in JSON format string.</returns>
-        protected string GetPropertyJson<T>(string key, JsonSerializerOptions options = null)
-        {
-            var v = GetProperty<T>(key);
-            if (v is null) return null;
-            if (v is string s) return JsonString.ToJson(s);
-            return JsonSerializer.Serialize(v, options);
-        }
-
-        /// <summary>
         /// Writes this instance to the specified writer as a JSON value.
         /// </summary>
         /// <param name="writer">The writer to which to write this instance.</param>
-        public virtual void WriteTo(Utf8JsonWriter writer) => JsonObject.ConvertFrom(this).WriteTo(writer);
+        public new virtual void WriteTo(Utf8JsonWriter writer) => JsonObject.ConvertFrom(this).WriteTo(writer);
 
         internal T GetPropertySerialized<T>(string key, string s, Func<T> maker) where T : class
         {
