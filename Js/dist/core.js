@@ -1,5 +1,124 @@
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+};
+/**
+ * NuScien core library for front-end (web client).
+ * https://github.com/nuscien/trivial
+ * Copyright (c) 2020 Kingcean Tuan. All rights reserved.
+ */
 var NuScien;
 (function (NuScien) {
+    class Assert {
+        /**
+         * Converts to string. Or returns null for unsupported type.
+         * @param obj  The source object.
+         * @param level  The options.
+         *  - "default" or null, to convert the object to string in normal way;
+         *  - "text" to convert string, number or symbol only;
+         *  - "compatible" to convert basic types and stringify object and array;
+         *  - "json" to stringify in JSON format;
+         *  - "query" to stringify in URI query component format;
+         *  - "url" to stringify in URI query format;
+         *  - "string" to pass only for string.
+         */
+        static toStr(obj, level) {
+            if (typeof obj === "undefined")
+                return null;
+            if (!level)
+                level = "d";
+            else
+                level = level.toLowerCase();
+            if (level === "json" || level === "j")
+                return JSON.stringify(obj) || null;
+            if (typeof obj === "string")
+                return obj;
+            if (obj === null || level === "string" || level === "s")
+                return null;
+            if (typeof obj === "number")
+                return isNaN(obj) ? null : obj.toString(10);
+            if (typeof obj === "symbol")
+                return obj.toString();
+            if (level === "text" || level === "t")
+                return null;
+            if (typeof obj === "boolean")
+                return obj.toString();
+            if (level === "compatible" || level === "c")
+                return JSON.stringify(obj) || null;
+            if (level === "query" || level === "q") {
+                if (obj instanceof Array)
+                    return obj.filter(ele => typeof ele !== "undefined").map(ele => encodeURIComponent(Assert.toStr(obj[ele], "c") || "")).join(",");
+                return Object.keys(obj).map(ele => `${encodeURIComponent(ele)}=${encodeURIComponent(Assert.toStr(obj[ele], "c") || "")}`).join("&");
+            }
+            if (level === "url" || level === "u") {
+                if (obj instanceof Array)
+                    return obj.filter(ele => typeof ele !== "undefined").map(ele => encodeURIComponent(Assert.toStr(obj[ele], "c") || "")).join(",");
+                return Object.keys(obj).map(ele => `${encodeURIComponent(ele)}=${encodeURIComponent(Assert.toStr(obj[ele], "q") || "")}`).join("&");
+            }
+            return obj instanceof Array && obj.length === 1 ? Assert.toStr(obj[0]) : null;
+        }
+        static isNoNull(input, throwIfFailure = false) {
+            var isNull = typeof input === "undefined" || input === null || (typeof input === "number" && isNaN(input));
+            if (!isNull)
+                return true;
+            if (throwIfFailure)
+                throw throwIfFailure === true ? new Error("input is null or undefined.") : throwIfFailure;
+            return false;
+        }
+        static isString(input, throwIfFailure = false) {
+            var isStr = typeof input === "string";
+            if (isStr)
+                return true;
+            if (throwIfFailure)
+                throw throwIfFailure === true ? new Error("input is not a string.") : throwIfFailure;
+            return false;
+        }
+        static isStrOrNull(input, throwIfFailure = false) {
+            var isStr = typeof input === "string" || typeof input === "undefined" || input === null;
+            if (isStr)
+                return true;
+            if (throwIfFailure)
+                throw throwIfFailure === true ? new TypeError("input is not a string.") : throwIfFailure;
+            return false;
+        }
+        static isValidNumber(input, throwIfFailure = false) {
+            var isNum = typeof input === "number" && !isNaN(input);
+            if (isNum)
+                return true;
+            if (throwIfFailure)
+                throw throwIfFailure === true ? new TypeError("input is not a valid number.") : throwIfFailure;
+            return false;
+        }
+        static isSafeInteger(input, throwIfFailure = false) {
+            if (Number.isSafeInteger(input))
+                return true;
+            if (throwIfFailure)
+                throw throwIfFailure === true ? new TypeError("input is not a safe integer.") : throwIfFailure;
+            return false;
+        }
+    }
+    NuScien.Assert = Assert;
+})(NuScien || (NuScien = {}));
+/// <reference path="./core.ts" />
+// For asynchronous modules loaders.
+(function () {
+    if (typeof define === 'function') {
+        if (define.amd || typeof __webpack_require__ !== "undefined") {
+            define(["exports"], function (exports) {
+                return NuScien;
+            });
+        }
+    }
+    else if (typeof require === "function" && typeof exports === "object" && typeof module === "object") {
+        module["exports"] = NuScien;
+    }
+})();
+/// <reference path="./main.ts" />
+var NuScien;
+(function (NuScien) {
+    var _internalModelServices;
     function defineObjectProperty(obj, key, value) {
         Object.defineProperty(obj, key, { value, enumerable: false });
     }
@@ -50,9 +169,9 @@ var NuScien;
          * @param secretKey  The secret key of the client.
          */
         constructor(host, clientId, secretKey) {
-            this.internalModelServices = {
+            _internalModelServices.set(this, {
                 reqInit: {}
-            };
+            });
             clientId = NuScien.Assert.toStr(clientId, "t");
             secretKey = NuScien.Assert.toStr(secretKey, "t");
             host = NuScien.Assert.toStr(host, "t");
@@ -61,9 +180,9 @@ var NuScien;
             let getLoginInit = (body) => {
                 let s = NuScien.Assert.toStr(body, "u") || "";
                 if (secretKey)
-                    s = "client_secret=" + encodeURIComponent(secretKey) + s;
+                    s = "client_secret=" + encodeURIComponent(secretKey) + "&" + s;
                 if (clientId)
-                    s = "client_id=" + encodeURIComponent(clientId) + s;
+                    s = "client_id=" + encodeURIComponent(clientId) + "&" + s;
                 let init = {
                     method: "POST",
                     body: s,
@@ -77,7 +196,7 @@ var NuScien;
                 let resp = fetchImpl(appendUrl(host, pathes.passport || "nuscien5/passport", "login", null), init);
                 return resp;
             };
-            defineObjectProperty(this., internalModelServices, "app", {
+            defineObjectProperty(__classPrivateFieldGet(this, _internalModelServices), "app", {
                 id() {
                     return clientId;
                 },
@@ -141,17 +260,16 @@ var NuScien;
             });
         }
         get onreqinit() {
-            return this.;
-            internalModelServices.reqInit;
+            return __classPrivateFieldGet(this, _internalModelServices).reqInit;
         }
         /**
          * Signs in.
          */
         get login() {
-            let m = this., internalModelServices, login;
+            let m = __classPrivateFieldGet(this, _internalModelServices).login;
             if (m)
                 return m;
-            let appInfo = this., internalModelServices, app;
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             m = ((req) => appInfo.login(req));
             m.alive = () => appInfo.login(undefined);
             m.password = (username, password, options) => appInfo.login(Object.assign({ grant_type: "password", username,
@@ -175,14 +293,13 @@ var NuScien;
             m.logout = () => {
                 return appInfo.logout();
             };
-            return this.;
-            internalModelServices.login = m;
+            return __classPrivateFieldGet(this, _internalModelServices).login = m;
         }
         /**
          * Gets a specific path.
          */
         get path() {
-            let appInfo = this., internalModelServices, app;
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             let p = function (key, value, skipIfExist) {
                 if (arguments.length > 1)
                     return appInfo.path(key, value, skipIfExist);
@@ -217,8 +334,8 @@ var NuScien;
          * User resources.
          */
         get user() {
-            let appInfo = this., internalModelServices, app;
-            let m = this., internalModelServices, user;
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
+            let m = __classPrivateFieldGet(this, _internalModelServices).user;
             if (m)
                 return m;
             m = function (id) {
@@ -233,14 +350,13 @@ var NuScien;
                     path: "user/exist" + (NuScien.Assert.toStr(id, "t") || "0")
                 });
             };
-            return this.;
-            internalModelServices.user = m;
+            return __classPrivateFieldGet(this, _internalModelServices).user = m;
         }
         /**
          * Signs out.
          */
         logout() {
-            let appInfo = this., internalModelServices, app;
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             return appInfo.logout();
         }
         /**
@@ -249,7 +365,7 @@ var NuScien;
          * @param query  The query data.
          */
         url(path, query) {
-            let appInfo = this., internalModelServices, app;
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             return appInfo.url(path, query);
         }
         /**
@@ -258,7 +374,7 @@ var NuScien;
          * @param reqInit  The options.
          */
         fetch(path, reqInit) {
-            let appInfo = this., internalModelServices, app;
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             if (typeof this.onreqinit.fetch === "function")
                 this.onreqinit.fetch(reqInit);
             return appInfo.fetch(path, reqInit);
@@ -268,9 +384,10 @@ var NuScien;
          * @param path  The relative root path.
          */
         resProvider(path) {
-            return new ResourceEntityProvider(this., internalModelServices.app, path);
+            return new ResourceEntityProvider(__classPrivateFieldGet(this, _internalModelServices).app, path);
         }
     }
+    _internalModelServices = new WeakMap();
     NuScien.Client = Client;
     /**
      * The resource entity provider.
@@ -364,109 +481,4 @@ var NuScien;
     }
     NuScien.ResourceEntityProvider = ResourceEntityProvider;
 })(NuScien || (NuScien = {}));
-var NuScien;
-(function (NuScien) {
-    class Assert {
-        /**
-         * Converts to string. Or returns null for unsupported type.
-         * @param obj  The source object.
-         * @param level  The options.
-         *  - "default" or null, to convert the object to string in normal way;
-         *  - "text" to convert string, number or symbol only;
-         *  - "compatible" to convert basic types and stringify object and array;
-         *  - "json" to stringify in JSON format;
-         *  - "query" to stringify in URI query component format;
-         *  - "url" to stringify in URI query format;
-         *  - "string" to pass only for string.
-         */
-        static toStr(obj, level) {
-            if (typeof obj === "undefined")
-                return null;
-            if (!level)
-                level = "d";
-            else
-                level = level.toLowerCase();
-            if (level === "json" || level === "j")
-                return JSON.stringify(obj) || null;
-            if (typeof obj === "string")
-                return obj;
-            if (obj === null || isNaN(obj) || level === "string" || level === "s")
-                return null;
-            if (typeof obj === "number")
-                return obj.toString(10);
-            if (typeof obj === "symbol")
-                return obj.toString();
-            if (level === "text" || level === "t")
-                return null;
-            if (typeof obj === "boolean")
-                return obj.toString();
-            if (level === "compatible" || level === "c")
-                return JSON.stringify(obj) || null;
-            if (level === "query" || level === "q") {
-                if (obj instanceof Array)
-                    return obj.filter(ele => typeof ele !== "undefined").map(ele => encodeURIComponent(Assert.toStr(obj[ele], "c") || "")).join(",");
-                return Object.keys(obj).map(ele => `${encodeURIComponent(ele)}=${encodeURIComponent(Assert.toStr(obj[ele], "c") || "")}`).join("&");
-            }
-            if (level === "url" || level === "u") {
-                if (obj instanceof Array)
-                    return obj.filter(ele => typeof ele !== "undefined").map(ele => encodeURIComponent(Assert.toStr(obj[ele], "c") || "")).join(",");
-                return Object.keys(obj).map(ele => `${encodeURIComponent(ele)}=${encodeURIComponent(Assert.toStr(obj[ele], "q") || "")}`).join("&");
-            }
-            return obj instanceof Array && obj.length === 1 ? Assert.toStr(obj[0]) : null;
-        }
-        static isNoNull(input, throwIfFailure = false) {
-            var isNull = typeof input === "undefined" || input === null || isNaN(input);
-            if (!isNull)
-                return true;
-            if (throwIfFailure)
-                throw throwIfFailure === true ? new Error("input is null or undefined.") : throwIfFailure;
-            return false;
-        }
-        static isString(input, throwIfFailure = false) {
-            var isStr = typeof input === "string";
-            if (isStr)
-                return true;
-            if (throwIfFailure)
-                throw throwIfFailure === true ? new Error("input is not a string.") : throwIfFailure;
-            return false;
-        }
-        static isStrOrNull(input, throwIfFailure = false) {
-            var isStr = typeof input === "string" || typeof input === "undefined" || input === null;
-            if (isStr)
-                return true;
-            if (throwIfFailure)
-                throw throwIfFailure === true ? new TypeError("input is not a string.") : throwIfFailure;
-            return false;
-        }
-        static isValidNumber(input, throwIfFailure = false) {
-            var isNum = typeof input === "number" && !isNaN(input);
-            if (isNum)
-                return true;
-            if (throwIfFailure)
-                throw throwIfFailure === true ? new TypeError("input is not a valid number.") : throwIfFailure;
-            return false;
-        }
-        static isSafeInteger(input, throwIfFailure = false) {
-            if (Number.isSafeInteger(input))
-                return true;
-            if (throwIfFailure)
-                throw throwIfFailure === true ? new TypeError("input is not a safe integer.") : throwIfFailure;
-            return false;
-        }
-    }
-    NuScien.Assert = Assert;
-})(NuScien || (NuScien = {}));
-// For asynchronous modules loaders.
-(function () {
-    if (typeof define === 'function') {
-        if (define.amd || typeof __webpack_require__ !== "undefined") {
-            define(["exports"], function (exports) {
-                return NuScien;
-            });
-        }
-    }
-    else if (typeof require === "function" && typeof exports === "object" && typeof module === "object") {
-        module["exports"] = NuScien;
-    }
-})();
 //# sourceMappingURL=core.js.map

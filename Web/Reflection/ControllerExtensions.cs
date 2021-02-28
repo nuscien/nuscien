@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Sns;
+using Trivial.Collection;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
@@ -370,7 +371,8 @@ namespace NuScien.Web
             {
                 q.Add(item.Key, item.Value as IEnumerable<string>);
             }
-            
+
+            q.Remove("random");
             return q;
         }
 

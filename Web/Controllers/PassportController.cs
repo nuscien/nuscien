@@ -21,7 +21,7 @@ namespace NuScien.Web
     /// <summary>
     /// The passport and settings controller.
     /// </summary>
-    public partial class ResourceAccessController : ControllerBase
+    public partial class ResourceAccessControllerBase : ControllerBase
     {
         /// <summary>
         /// Signs in.
@@ -35,7 +35,7 @@ namespace NuScien.Web
             var login = false;
             try
             {
-                login = Request?.Body != null && Request.Body.Length > 1;
+                login = Request.Body != null && Request.ContentLength.HasValue && Request.ContentLength.Value > 0;
             }
             catch (NotSupportedException)
             {

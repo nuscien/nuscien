@@ -38,8 +38,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="..\Js\dist\core.d.ts" Link="Js\core.d.ts" />
-    <None Include="..\Js\dist\core.js" Link="Js\core.js" />
+    <EmbeddedResource Include="..\Js\dist\core.d.ts" Link="Js\core.d.ts" />
+    <EmbeddedResource Include="..\Js\dist\core.js" Link="Js\core.js" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>

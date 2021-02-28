@@ -1,3 +1,30 @@
+/**
+ * NuScien core library for front-end (web client).
+ * https://github.com/nuscien/trivial
+ * Copyright (c) 2020 Kingcean Tuan. All rights reserved.
+ */
+declare namespace NuScien {
+    class Assert {
+        /**
+         * Converts to string. Or returns null for unsupported type.
+         * @param obj  The source object.
+         * @param level  The options.
+         *  - "default" or null, to convert the object to string in normal way;
+         *  - "text" to convert string, number or symbol only;
+         *  - "compatible" to convert basic types and stringify object and array;
+         *  - "json" to stringify in JSON format;
+         *  - "query" to stringify in URI query component format;
+         *  - "url" to stringify in URI query format;
+         *  - "string" to pass only for string.
+         */
+        static toStr(obj: any, level?: undefined | "d" | "default" | "DEFAULT" | "t" | "text" | "TEXT" | "c" | "compatible" | "COMPATIBLE" | "j" | "json" | "JSON" | "q" | "query" | "QUERY" | "u" | "url" | "URL" | "s" | "string" | "STRING"): string | null;
+        static isNoNull(input: any, throwIfFailure?: boolean | string): boolean;
+        static isString(input: any, throwIfFailure?: boolean | string): input is string;
+        static isStrOrNull(input: any, throwIfFailure?: boolean | string): input is string | null | undefined;
+        static isValidNumber(input: any, throwIfFailure?: boolean | string): input is number;
+        static isSafeInteger(input: any, throwIfFailure?: boolean | string): input is number;
+    }
+}
 declare namespace NuScien {
     interface InternalClientContract {
         (): string;
@@ -9,10 +36,10 @@ declare namespace NuScien {
         pathKeys(): string[];
         fetch(path: string, reqInit?: RequestOptions): Promise<Response>;
     }
-    interface LoginOptionsContract {
+    export interface LoginOptionsContract {
         scope?: string | string[] | null;
     }
-    interface RequestOptions extends RequestInit {
+    export interface RequestOptions extends RequestInit {
         query?: any;
         path?: string;
         reason?: string;
@@ -20,8 +47,8 @@ declare namespace NuScien {
     /**
      * The resource access client.
      */
-    class Client {
-        internalModelServices: any;
+    export class Client {
+        #private;
         /**
          * Initializes a new instance of the Client class.
          * @param host  The URI host.
@@ -29,7 +56,7 @@ declare namespace NuScien {
          * @param secretKey  The secret key of the client.
          */
         constructor(host: string, clientId: string, secretKey?: string);
-        readonly onreqinit: {
+        get onreqinit(): {
             login: (init: RequestInit) => void;
             logout: (init: RequestInit) => void;
             fetch: (init: RequestOptions) => void;
@@ -38,7 +65,7 @@ declare namespace NuScien {
         /**
          * Signs in.
          */
-        readonly login: {
+        get login(): {
             /**
              * Signs in.
              * @param req  The request token body.
@@ -100,7 +127,7 @@ declare namespace NuScien {
         /**
          * Gets a specific path.
          */
-        readonly path: {
+        get path(): {
             /**
              * Gets or sets a specific path.
              * @param key  The path key.
@@ -139,7 +166,7 @@ declare namespace NuScien {
         /**
          * User resources.
          */
-        readonly user: {
+        get user(): {
             (id: string): Promise<Response>;
             exist(id: string): Promise<Response>;
         };
@@ -163,12 +190,12 @@ declare namespace NuScien {
          * Gets the resource entity provider.
          * @param path  The relative root path.
          */
-        resProvider(path: string): any;
+        resProvider(path: string): ResourceEntityProvider;
     }
     /**
      * The resource entity provider.
      */
-    class ResourceEntityProvider {
+    export class ResourceEntityProvider {
         readonly appInfo: InternalClientContract;
         readonly path: string;
         /**
@@ -205,26 +232,5 @@ declare namespace NuScien {
          */
         fetch(subPath: string, reqInit: RequestOptions): Promise<Response>;
     }
-}
-declare namespace NuScien {
-    class Assert {
-        /**
-         * Converts to string. Or returns null for unsupported type.
-         * @param obj  The source object.
-         * @param level  The options.
-         *  - "default" or null, to convert the object to string in normal way;
-         *  - "text" to convert string, number or symbol only;
-         *  - "compatible" to convert basic types and stringify object and array;
-         *  - "json" to stringify in JSON format;
-         *  - "query" to stringify in URI query component format;
-         *  - "url" to stringify in URI query format;
-         *  - "string" to pass only for string.
-         */
-        static toStr(obj: any, level?: undefined | "d" | "default" | "DEFAULT" | "t" | "text" | "TEXT" | "c" | "compatible" | "COMPATIBLE" | "j" | "json" | "JSON" | "q" | "query" | "QUERY" | "u" | "url" | "URL" | "s" | "string" | "STRING"): string | null;
-        static isNoNull(input: any, throwIfFailure?: boolean | string): boolean;
-        static isString(input: any, throwIfFailure?: boolean | string): input is string;
-        static isStrOrNull(input: any, throwIfFailure?: boolean | string): input is string | null | undefined;
-        static isValidNumber(input: any, throwIfFailure?: boolean | string): input is number;
-        static isSafeInteger(input: any, throwIfFailure?: boolean | string): input is number;
-    }
+    export {};
 }

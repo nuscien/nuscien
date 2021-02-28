@@ -25,7 +25,7 @@ namespace NuScien.Web
     /// <summary>
     /// The passport and settings controller.
     /// </summary>
-    public partial class ResourceAccessController : ControllerBase
+    public partial class ResourceAccessControllerBase : ControllerBase
     {
         /// <summary>
         /// Gets the publish content.

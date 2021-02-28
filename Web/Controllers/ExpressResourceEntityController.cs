@@ -26,7 +26,7 @@ namespace NuScien.Web
     /// <summary>
     /// The web API controller for base resource entity.
     /// </summary>
-    public abstract class BaseResourceEntityController<TEntity> : ControllerBase, IResourceEntityProvider<TEntity>
+    public abstract class ResourceEntityControllerBase<TEntity> : ControllerBase, IResourceEntityProvider<TEntity>
         where TEntity : BaseResourceEntity
     {
         /// <summary>
@@ -35,17 +35,17 @@ namespace NuScien.Web
         private BaseResourceAccessClient coreResources;
 
         /// <summary>
-        /// Initializes a new instance of the BaseResourceEntityController class.
+        /// Initializes a new instance of the ResourceEntityControllerBase class.
         /// </summary>
-        public BaseResourceEntityController()
+        public ResourceEntityControllerBase()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the ResourceAccessController class.
+        /// Initializes a new instance of the ResourceEntityControllerBase class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public BaseResourceEntityController(ILogger<BaseResourceEntityController<TEntity>> logger)
+        public ResourceEntityControllerBase(ILogger<ResourceEntityControllerBase<TEntity>> logger)
         {
             Logger = logger;
         }
@@ -53,7 +53,7 @@ namespace NuScien.Web
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
-        protected ILogger<BaseResourceEntityController<TEntity>> Logger { get; set; }
+        protected ILogger<ResourceEntityControllerBase<TEntity>> Logger { get; set; }
 
         /// <summary>
         /// Gets the resource access client.
@@ -77,6 +77,7 @@ namespace NuScien.Web
             {
                 var er = this.ExceptionResult(ex, true);
                 if (er != null) return er;
+                Logger?.LogError(new EventId(17006011, "GetEntity"), $"Get entity {id} failed with internal reason. {ex.GetType().Name} {ex.Message}");
                 throw;
             }
         }
@@ -119,6 +120,7 @@ namespace NuScien.Web
             {
                 var er = this.ExceptionResult(ex, true);
                 if (er != null) return er;
+                Logger?.LogError(new EventId(17006012, "GetEntity"), $"Search entities failed with internal reason. {ex.GetType().Name} {ex.Message}");
                 throw;
             }
         }
@@ -158,7 +160,7 @@ namespace NuScien.Web
             {
                 if (entity is null) return this.ExceptionResult(400, "Require to send the entity in JSON format as request body.", "NoBody");
                 var result = await SaveAsync(entity, default) ?? new ChangingResultInfo(ChangeMethods.Invalid);
-                Logger?.LogInformation(new EventId(17006003, "SaveEntity"), $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
+                Logger?.LogInformation(new EventId(17006013, "SaveEntity"), $"Save ({result.State}) entity {entity.GetType().Name} {entity.Name} ({entity.Id}).");
                 return result.ToActionResult();
             }
             catch (Exception ex)
@@ -166,10 +168,11 @@ namespace NuScien.Web
                 var er = this.ExceptionResult(ex, true);
                 if (er != null)
                 {
-                    Logger?.LogError(new EventId(17006003, "SaveEntity"), $"Failed save entity {entity.GetType().Name} {entity.Name} ({entity.Id}). {ex.GetType().Name} {ex.Message}");
+                    Logger?.LogError(new EventId(17006013, "SaveEntity"), $"Save entity failed, {entity.GetType().Name} {entity.Name} ({entity.Id}). {ex.GetType().Name} {ex.Message}");
                     return er;
                 }
 
+                Logger?.LogError(new EventId(17006013, "SaveEntity"), $"Save entity failed with internal error, {entity.GetType().Name} {entity.Name} ({entity.Id}). {ex.GetType().Name} {ex.Message}");
                 throw;
             }
         }
@@ -212,10 +215,11 @@ namespace NuScien.Web
                 var er = this.ExceptionResult(ex, true);
                 if (er != null)
                 {
-                    Logger?.LogError(new EventId(17006004, "UpdateEntity"), $"Failed update entity {id}. {ex.GetType().Name} {ex.Message}");
+                    Logger?.LogError(new EventId(17006014, "UpdateEntity"), $"Update entity {id} failed. {ex.GetType().Name} {ex.Message}");
                     return er;
                 }
 
+                Logger?.LogError(new EventId(17006014, "UpdateEntity"), $"Update entity {id} failed with internal error. {ex.GetType().Name} {ex.Message}");
                 throw;
             }
         }
@@ -288,10 +292,11 @@ namespace NuScien.Web
                 var er = this.ExceptionResult(ex, true);
                 if (er != null)
                 {
-                    Logger?.LogError(new EventId(17006005, "DeleteEntity"), $"Failed delete entity {id}. {ex.GetType().Name} {ex.Message}");
+                    Logger?.LogError(new EventId(17006015, "DeleteEntity"), $"Delete entity {id} failed. {ex.GetType().Name} {ex.Message}");
                     return er;
                 }
 
+                Logger?.LogError(new EventId(17006015, "DeleteEntity"), $"Delete entity {id} failed with internal error. {ex.GetType().Name} {ex.Message}");
                 throw;
             }
         }

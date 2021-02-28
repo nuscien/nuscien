@@ -217,7 +217,19 @@ namespace NuScien.Security
         {
             try
             {
-                var r = await TokenRequestRoute.SignInAsync(utf8Stream);
+                string input;
+                using (var reader = new StreamReader(utf8Stream, Encoding.UTF8))
+                {
+                    input = await reader.ReadToEndAsync();
+                }
+
+                var r = await TokenRequestRoute.SignInAsync(input);
+                if (r == null)
+                    return new UserTokenInfo
+                    {
+                        ErrorCode = TokenInfo.ErrorCodeConstants.InvalidRequest,
+                        ErrorDescription = "Cannot sign in."
+                    };
                 return r.ItemSelected as UserTokenInfo;
             }
             catch (ArgumentException ex)
@@ -236,7 +248,6 @@ namespace NuScien.Security
                     ErrorDescription = ex.Message
                 };
             }
-
         }
 
         /// <summary>

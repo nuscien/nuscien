@@ -1,3 +1,8 @@
+/**
+ * NuScien core library for front-end (web client).
+ * https://github.com/nuscien/trivial
+ * Copyright (c) 2020 Kingcean Tuan. All rights reserved.
+ */
 namespace NuScien {
     export class Assert {
 
@@ -20,9 +25,9 @@ namespace NuScien {
             if (level === "json" || level === "j")
                 return JSON.stringify(obj) || null;
             if (typeof obj === "string") return obj;
-            if (obj === null || isNaN(obj) || level === "string" || level === "s") return null;
+            if (obj === null || level === "string" || level === "s") return null;
             if (typeof obj === "number")
-                return obj.toString(10);
+                return isNaN(obj) ? null : obj.toString(10);
             if (typeof obj === "symbol")
                 return obj.toString();
             if (level === "text" || level === "t")
@@ -46,7 +51,7 @@ namespace NuScien {
         }
 
         public static isNoNull(input: any, throwIfFailure: boolean | string = false) {
-            var isNull = typeof input === "undefined" || input === null || isNaN(input);
+            var isNull = typeof input === "undefined" || input === null || (typeof input === "number" && isNaN(input));
             if (!isNull) return true;
             if (throwIfFailure) throw throwIfFailure === true ? new Error("input is null or undefined.") : throwIfFailure;
             return false;

@@ -24,7 +24,7 @@ namespace NuScien.Web.Controllers
     [ApiController]
     [Route("api")]
     [Route("nuscien5")]
-    public class ResourceAccessController : NuScien.Web.ResourceAccessController
+    public class ResourceAccessController : NuScien.Web.ResourceAccessControllerBase
     {
         /// <summary>
         /// Initializes a new instance of the ResourceAccessController class.

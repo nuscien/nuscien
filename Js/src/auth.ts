@@ -1,3 +1,5 @@
+/// <reference path="./main.ts" />
+
 namespace NuScien {
 
     interface InternalClientContract {
@@ -81,8 +83,8 @@ namespace NuScien {
             let onreq = this.onreqinit;
             let getLoginInit = (body: any) => {
                 let s = Assert.toStr(body, "u") || "";
-                if (secretKey) s = "client_secret=" + encodeURIComponent(secretKey) + s;
-                if (clientId) s = "client_id=" + encodeURIComponent(clientId) + s;
+                if (secretKey) s = "client_secret=" + encodeURIComponent(secretKey) + "&" + s;
+                if (clientId) s = "client_id=" + encodeURIComponent(clientId) + "&" + s;
                 let init: RequestInit = {
                     method: "POST",
                     body: s,

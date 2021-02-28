@@ -32,6 +32,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\Js\dist\core.js" Link="wwwroot\nuscien.core.js" />
+    <Content Include="..\Js\dist\core.js.map" Link="wwwroot\nuscien.core.js.map" />
     <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>

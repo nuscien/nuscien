@@ -22,21 +22,22 @@ namespace NuScien.Web
     /// <summary>
     /// The passport and settings controller.
     /// </summary>
-    [Route("nuscien5")]
-    public partial class ResourceAccessController : ControllerBase
+    public partial class ResourceAccessControllerBase : ControllerBase
     {
+        private const string assemblyVersionPrefix = "5.0";
+
         /// <summary>
-        /// Initializes a new instance of the ResourceAccessController class.
+        /// Initializes a new instance of the ResourceAccessControllerBase class.
         /// </summary>
-        public ResourceAccessController()
+        public ResourceAccessControllerBase()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the ResourceAccessController class.
+        /// Initializes a new instance of the ResourceAccessControllerBase class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public ResourceAccessController(ILogger<ResourceAccessController> logger)
+        public ResourceAccessControllerBase(ILogger<ResourceAccessControllerBase> logger)
         {
             Logger = logger;
         }
@@ -44,7 +45,7 @@ namespace NuScien.Web
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
-        protected ILogger<ResourceAccessController> Logger { get; set; }
+        protected ILogger<ResourceAccessControllerBase> Logger { get; set; }
 
         /// <summary>
         /// Gets the core client script file.
@@ -52,12 +53,13 @@ namespace NuScien.Web
         /// <returns>A JavaScript file result.</returns>
         [HttpGet]
         [Route("js/nuscien.js")]
+        [Route("js/nuscien.core.js")]
         public IActionResult GetClientScript()
         {
-            var fileProvider = new Microsoft.Extensions.FileProviders.EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-            var file = fileProvider.GetFileInfo("core.js");
-            if (!file.Exists) return NotFound();
-            return File(file.CreateReadStream(), WebFormat.JavaScriptMIME, "nuscien.core.js");
+            var ver = (Request.Query?["ver"])?.ToString();
+            if (string.IsNullOrEmpty(ver) || ver.StartsWith(assemblyVersionPrefix) || ver.StartsWith("1.0"))
+                return GetEmbeddedFile("core.js", "nuscien.core.js", WebFormat.JavaScriptMIME);
+            return NotFound();
         }
 
         /// <summary>
@@ -66,12 +68,21 @@ namespace NuScien.Web
         /// <returns>A JavaScript file result.</returns>
         [HttpGet]
         [Route("js/nuscien.d.ts")]
+        [Route("js/nuscien.core.d.ts")]
         public IActionResult GetClientScriptDefinition()
         {
+            var ver = (Request.Query?["ver"])?.ToString();
+            if (string.IsNullOrEmpty(ver) || ver.StartsWith(assemblyVersionPrefix) || ver.StartsWith("1.0"))
+                return GetEmbeddedFile("core.d.ts", "nuscien.core.d.ts", "application/x-typescript");
+            return NotFound();
+        }
+
+        private IActionResult GetEmbeddedFile(string subpath, string downloadName, string mime)
+        {
             var fileProvider = new Microsoft.Extensions.FileProviders.EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-            var file = fileProvider.GetFileInfo("core.d.ts");
+            var file = fileProvider.GetFileInfo(subpath);
             if (!file.Exists) return NotFound();
-            return File(file.CreateReadStream(), "application/x-typescript", "nuscien.core.d.ts");
+            return File(file.CreateReadStream(), mime, downloadName);
         }
     }
 }
