@@ -58,7 +58,7 @@ namespace NuScien.Web
         {
             var ver = (Request.Query?["ver"])?.ToString();
             if (string.IsNullOrEmpty(ver) || ver.StartsWith(assemblyVersionPrefix) || ver.StartsWith("1.0"))
-                return GetEmbeddedFile("core.js", "nuscien.core.js", WebFormat.JavaScriptMIME);
+                return GetEmbeddedJsFile("core.js", "nuscien.core.js");
             return NotFound();
         }
 
@@ -73,16 +73,26 @@ namespace NuScien.Web
         {
             var ver = (Request.Query?["ver"])?.ToString();
             if (string.IsNullOrEmpty(ver) || ver.StartsWith(assemblyVersionPrefix) || ver.StartsWith("1.0"))
-                return GetEmbeddedFile("core.d.ts", "nuscien.core.d.ts", "application/x-typescript");
+                return GetEmbeddedJsFile("core.d.ts", "nuscien.core.d.ts", "application/x-typescript");
             return NotFound();
+        }
+
+        private IActionResult GetEmbeddedJsFile(string subpath, string downloadName, string mime = null)
+        {
+            return GetEmbeddedFile("NuScien.Js." + subpath, downloadName, mime ?? WebFormat.JavaScriptMIME);
         }
 
         private IActionResult GetEmbeddedFile(string subpath, string downloadName, string mime)
         {
-            var fileProvider = new Microsoft.Extensions.FileProviders.EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-            var file = fileProvider.GetFileInfo(subpath);
-            if (!file.Exists) return NotFound();
-            return File(file.CreateReadStream(), mime, downloadName);
+            var assembly = Assembly.GetExecutingAssembly();
+            var stream = assembly.GetManifestResourceStream(subpath);
+            if (stream == null) return NotFound();
+            return File(stream, mime, downloadName);
+
+            //var fileProvider = new Microsoft.Extensions.FileProviders.EmbeddedFileProvider(assembly);
+            //var file = fileProvider.GetFileInfo(subpath);
+            //if (!file.Exists) return NotFound();
+            //return File(file.CreateReadStream(), mime, downloadName);
         }
     }
 }

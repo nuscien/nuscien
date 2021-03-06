@@ -1,0 +1,8 @@
+[
+  {
+    "outputFileName": "../Js/dist/core.min.js",
+    "inputFiles": [
+      "../Js/dist/core.js"
+    ]
+  }
+]

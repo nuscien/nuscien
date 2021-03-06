@@ -60,6 +60,24 @@ namespace NuScien {
         return fetch(path, reqInit);
     }
 
+    export interface ClientOptionsContact {
+
+        /**
+         * The URI host.
+         */
+        host?: string;
+
+        /**
+         * The client identifier.
+         */
+        clientId: string;
+
+        /**
+         * The secret key of the client.
+         */
+        secretKey?: string;
+    }
+
     /**
      * The resource access client.
      */
@@ -70,14 +88,13 @@ namespace NuScien {
 
         /**
          * Initializes a new instance of the Client class.
-         * @param host  The URI host.
-         * @param appId  The client identifier.
-         * @param secretKey  The secret key of the client.
+         * @param options  The options containing the client information.
          */
-        public constructor(host: string, clientId: string, secretKey?: string) {
-            clientId = Assert.toStr(clientId, "t");
-            secretKey = Assert.toStr(secretKey, "t");
-            host = Assert.toStr(host, "t");
+        public constructor(options: ClientOptionsContact) {
+            if (!options) options = {} as any;
+            let clientId = Assert.toStr(options.clientId, "t");
+            let secretKey = Assert.toStr(options.secretKey, "t");
+            let host = Assert.toStr(options.host, "t");
             let pathes: any = {
             };
             let onreq = this.onreqinit;
