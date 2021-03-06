@@ -21,6 +21,8 @@ See [sample and tutorials](https://github.com/nuscien/sample) to get start. Foll
 The common library.
 It contains a foundation for ACL and business resource entity.
 
+Following are the commonly used types.
+
 - `BaseResourceEntity` base class and its sub-classes: the shared model for DAL, BLL, Web API and GUI databinding.
 - `OnPremisesResourceAccessClient` class: used to authorize (OAuth 2.0) and to access core resources for server-side.
 - `HttpResourceAccessClient` class: used to authorize and access core resources for client-side.
@@ -39,8 +41,15 @@ Authorization is based on OAuth 2.0 and powered by [Trivial](https://github.com/
 
 `NuScien.OnPremises.dll`
 
-On-premises library with EF Core 5.0 supports.
-This is used in server-side (or cloud).
+On-premises library uses Entity Framework to implement the resource access provider and other data provider of the core library.
+It can be used as the core of one of the following scenarios.
+
+- On-premises server-side web API app.
+- Cloud web API services.
+- Admin client tools on-premises.
+- Windows service for special case.
+
+Following are the commonly used types.
 
 - `AccountDbSetProvider` class: an implementation used for `OnPremisesResourceAccessClient` to power core resources management based on database for server-side.
 - `OnPremisesResourceEntityProvider<TEntity>` base class: provide a way for server-side business logic about a specific type of the resource entity.
@@ -53,7 +62,10 @@ This is used in server-side (or cloud).
 
 `NuScien.Web.dll`
 
-Web API components and toolkits.
+Web library includes a controller to core resources and a base controller for customized resource provider.
+It also contains an authentication handler and some and toolkits.
+
+Following are the commonly used types.
 
 - `ResourceAccessController` class: an MVC web API controller for core resources.
 - `ResourceEntityController<TProvider, TEntity>` base class: an MVC web API controller to route the network transfer to `OnPremisesResourceEntityProvider<TEntity>` implementation.
