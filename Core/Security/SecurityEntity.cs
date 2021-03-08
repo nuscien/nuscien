@@ -56,8 +56,8 @@ namespace NuScien.Security
         /// This property is only used for JSON serialization.
         /// </summary>
         [NotMapped]
-        [DataMember(Name = "security_type")]
-        [JsonPropertyName("security_type")]
+        [DataMember(Name = "identype")]
+        [JsonPropertyName("identype")]
         public string SecurityEntityTypeString
         {
             get => SecurityEntityType.ToString();

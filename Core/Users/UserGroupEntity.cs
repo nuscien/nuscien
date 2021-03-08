@@ -25,12 +25,12 @@ namespace NuScien.Users
         /// <summary>
         /// The group information is visible but the members are private for guest.
         /// </summary>
-        MembersHidden = 1,
+        Memberwise = 1,
 
         /// <summary>
-        /// Public.
+        /// Public visibility to search and get.
         /// </summary>
-        Visible = 2
+        Public = 2
     }
 
     /// <summary>

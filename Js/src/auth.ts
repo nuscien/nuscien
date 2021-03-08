@@ -5,6 +5,7 @@ namespace NuScien {
     interface InternalClientContract {
         (): string;
         id(): string;
+        clientType(): string;
         login(body: any): Promise<Response>;
         logout(): Promise<Response>;
         url(path: string, query?: any): string;
@@ -92,12 +93,13 @@ namespace NuScien {
          */
         public constructor(options: ClientOptionsContact) {
             if (!options) options = {} as any;
-            let clientId = Assert.toStr(options.clientId, "t");
+            let clientId = Assert.toStr(options.clientId, "t") || "webjsclient";
             let secretKey = Assert.toStr(options.secretKey, "t");
             let host = Assert.toStr(options.host, "t");
             let pathes: any = {
             };
             let onreq = this.onreqinit;
+            let clientTypeStr = `jssdk; ${ver}; fetch; ${encodeURIComponent(clientId)};`;
             let getLoginInit = (body: any) => {
                 let s = Assert.toStr(body, "u") || "";
                 if (secretKey) s = "client_secret=" + encodeURIComponent(secretKey) + "&" + s;
@@ -107,7 +109,7 @@ namespace NuScien {
                     body: s,
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
-                        "X-Ns-Client-Type": "js"
+                        "X-Ns-Client-Type": clientTypeStr
                     }
                 };
                 if (typeof onreq.login === "function") onreq.login(init);
@@ -118,6 +120,9 @@ namespace NuScien {
                 id() {
                     return clientId
                 },
+                clientType() {
+                    return clientTypeStr;
+                },
                 login(body: any) {
                     return getLoginInit(body);
                 },
@@ -127,7 +132,7 @@ namespace NuScien {
                         body: "",
                         headers: {
                             "Content-Type": "application/x-www-form-urlencoded",
-                            "X-Ns-Client-Type": "js"
+                            "X-Ns-Client-Type": clientTypeStr
                         }
                     };
                     if (typeof onreq.logout === "function") onreq.logout(init);
@@ -378,24 +383,58 @@ namespace NuScien {
          * User resources.
          */
         public get user(): {
-            (id: string): Promise<Response>;
+            /**
+             * Gets user by identifier.
+             * @param id  The user identifier.
+             */
+            (id: string): GenericWebResponseContract<UserEntityContract>;
+
+            /**
+             * Tests if the user does exist.
+             * @param id  The user identifier.
+             */
             exist(id: string): Promise<Response>;
+
+            /**
+             * Searches users joined in a specific group.
+             * @param id  The user group identifier.
+             */
+            searchByGroup(id: string): Promise<Response>;
+
+            /**
+             * Adds or updates a user entity.
+             * @param entity  The entity to save.
+             */
+            save(entity: UserEntityContract): Promise<Response>;
+            /**
+             * Updates a user entity.
+             * @param id  The user identifier.
+             * @param data  The entity data to delta update.
+             */
+            update(id: string, data: any): Promise<Response>;
         } {
             let appInfo: InternalClientContract = this.#internalModelServices.app;
             let m = this.#internalModelServices.user;
             if (m) return m;
             m = function (id: string) {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/exist", {
                     method: "GET",
                     path: "user/" + (Assert.toStr(id, "t") || "0")
                 });
             };
             m.exist = (id: string) => {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/e", {
                     method: "GET",
                     path: "user/exist" + (Assert.toStr(id, "t") || "0")
                 });
-            }
+            };
+            m.searchByGroup = (id: string) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/group/", {
+                    method: "GET",
+                    path: "user/exist" + (Assert.toStr(id, "t") || "0")
+                });
+            };
+            
             return this.#internalModelServices.user = m;
         }
 

@@ -116,6 +116,7 @@ namespace NuScien.Web
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         [HttpGet]
         [Route("passport/user/{id}")]
+        [Route("passport/users/e/{id}")]
         public async Task<IActionResult> GetUserByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
@@ -131,6 +132,7 @@ namespace NuScien.Web
         /// <returns>The user group entity matched if found; otherwise, null.</returns>
         [HttpGet]
         [Route("passport/group/{id}")]
+        [Route("passport/groups/e/{id}")]
         public async Task<IActionResult> GetUserGroupByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
@@ -259,6 +261,7 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/user")]
+        [Route("passport/users/e")]
         public async Task<IActionResult> SaveUserAsync([FromBody] UserEntity entity)
         {
             if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
@@ -275,6 +278,7 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/user/{id}")]
+        [Route("passport/users/e/{id}")]
         public Task<IActionResult> SaveUserAsync(string id)
         {
             return this.SaveEntityAsync(async (i, instance) =>
@@ -295,6 +299,7 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/group")]
+        [Route("passport/groups/e")]
         public async Task<IActionResult> SaveGroupAsync([FromBody] UserGroupEntity entity)
         {
             if (entity == null) return ChangeErrorKinds.Argument.ToActionResult("Requires an entity in body.");
@@ -311,6 +316,7 @@ namespace NuScien.Web
         /// <returns>The status of changing result.</returns>
         [HttpPut]
         [Route("passport/group/{id}")]
+        [Route("passport/groups/e/{id}")]
         public Task<IActionResult> SaveGroupAsync(string id)
         {
             return this.SaveEntityAsync(async (i, instance) =>

@@ -252,7 +252,6 @@ namespace NuScien.Data
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 #endif
         [JsonPropertyName("offset")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public int? Offset { get; set; }
 
         /// <summary>
@@ -263,7 +262,6 @@ namespace NuScien.Data
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 #endif
         [JsonPropertyName("count")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public int? TotalCount { get; set; }
 
         /// <summary>
@@ -277,7 +275,6 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "col")]
         [JsonPropertyName("col")]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public IEnumerable<T> Value { get; set; }
 
         /// <summary>

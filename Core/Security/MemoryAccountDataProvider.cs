@@ -303,7 +303,7 @@ namespace NuScien.Security
         {
             var col = groups.Where(ele => ele.OwnerSiteId == siteId);
             if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q));
-            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
+            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Public);
             return col.Where(ele => ele.State == state);
         }
 
@@ -318,7 +318,7 @@ namespace NuScien.Security
         public Task<IEnumerable<UserGroupEntity>> ListGroupsAsync(QueryArgs q, string siteId, bool onlyPublic = false, CancellationToken cancellationToken = default)
         {
             var col = groups.Where(ele => ele.OwnerSiteId == siteId);
-            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
+            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Public);
             if (!string.IsNullOrWhiteSpace(q.NameQuery))
             {
                 if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery || ele.Nickname == q.NameQuery);
@@ -338,7 +338,7 @@ namespace NuScien.Security
         {
             IEnumerable<UserGroupEntity> col = groups;
             if (!string.IsNullOrWhiteSpace(q)) col = col.Where(ele => ele.Name.Contains(q) || (ele.Nickname != null && ele.Nickname.Contains(q)));
-            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
+            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Public);
             return col;
         }
 
@@ -353,7 +353,7 @@ namespace NuScien.Security
         {
 
             IEnumerable<UserGroupEntity> col = groups;
-            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Visible);
+            if (onlyPublic) col = col.Where(ele => ele.Visibility == UserGroupVisibilities.Public);
             if (!string.IsNullOrWhiteSpace(q.NameQuery))
             {
                 if (q.NameExactly) col = col.Where(ele => ele.Name == q.NameQuery || ele.Nickname == q.NameQuery);

@@ -106,7 +106,7 @@ namespace NuScien.UnitTest.Security
                 OwnerSiteId = "site",
                 Nickname = "Test Group",
                 MembershipPolicy = UserGroupMembershipPolicies.Application,
-                Visibility = UserGroupVisibilities.Visible
+                Visibility = UserGroupVisibilities.Public
             };
             group.State = ResourceEntityStates.Normal;
             await client.SaveAsync(group);

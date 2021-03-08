@@ -1851,7 +1851,7 @@ namespace NuScien.Security
         /// <returns>true if can view members; otherwise, false.</returns>
         public async Task<bool> CanViewMembersAsync(UserGroupEntity group)
         {
-            if (group.Visibility == UserGroupVisibilities.Visible) return true;
+            if (group.Visibility == UserGroupVisibilities.Public) return true;
             if (IsTokenNullOrEmpty || string.IsNullOrWhiteSpace(UserId)) return false;
             var g = JoinedGroupsCache;
             if (g == null)

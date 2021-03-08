@@ -4,9 +4,33 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     }
     return privateMap.get(receiver);
 };
+/**
+ * NuScien core library for front-end (web client).
+ * https://github.com/nuscien/trivial
+ * Copyright (c) 2020 Kingcean Tuan. All rights reserved.
+ */
 var NuScien;
 (function (NuScien) {
+    /**
+     * The main version.
+     */
+    NuScien.ver = "5.0";
+    /**
+     * Assert helper.
+     */
     class Assert {
+        /**
+         * Converts to string. Or returns null for unsupported type.
+         * @param obj  The source object.
+         * @param level  The options.
+         *  - "default" or null, to convert the object to string in normal way;
+         *  - "text" to convert string, number or symbol only;
+         *  - "compatible" to convert basic types and stringify object and array;
+         *  - "json" to stringify in JSON format;
+         *  - "query" to stringify in URI query component format;
+         *  - "url" to stringify in URI query format;
+         *  - "string" to pass only for string.
+         */
         static toStr(obj, level) {
             if (typeof obj === "undefined")
                 return null;
@@ -84,6 +108,8 @@ var NuScien;
     }
     NuScien.Assert = Assert;
 })(NuScien || (NuScien = {}));
+/// <reference path="./core.ts" />
+// For asynchronous modules loaders.
 (function () {
     if (typeof define === 'function') {
         if (define.amd || typeof __webpack_require__ !== "undefined") {
@@ -96,6 +122,7 @@ var NuScien;
         module["exports"] = NuScien;
     }
 })();
+/// <reference path="./main.ts" />
 var NuScien;
 (function (NuScien) {
     var _internalModelServices;
@@ -138,18 +165,26 @@ var NuScien;
     function fetchImpl(path, reqInit) {
         return fetch(path, reqInit);
     }
+    /**
+     * The resource access client.
+     */
     class Client {
+        /**
+         * Initializes a new instance of the Client class.
+         * @param options  The options containing the client information.
+         */
         constructor(options) {
             _internalModelServices.set(this, {
                 reqInit: {}
             });
             if (!options)
                 options = {};
-            let clientId = NuScien.Assert.toStr(options.clientId, "t");
+            let clientId = NuScien.Assert.toStr(options.clientId, "t") || "webjsclient";
             let secretKey = NuScien.Assert.toStr(options.secretKey, "t");
             let host = NuScien.Assert.toStr(options.host, "t");
             let pathes = {};
             let onreq = this.onreqinit;
+            let clientTypeStr = `jssdk; ${NuScien.ver}; fetch; ${encodeURIComponent(clientId)};`;
             let getLoginInit = (body) => {
                 let s = NuScien.Assert.toStr(body, "u") || "";
                 if (secretKey)
@@ -161,7 +196,7 @@ var NuScien;
                     body: s,
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
-                        "X-Ns-Client-Type": "js"
+                        "X-Ns-Client-Type": clientTypeStr
                     }
                 };
                 if (typeof onreq.login === "function")
@@ -173,6 +208,9 @@ var NuScien;
                 id() {
                     return clientId;
                 },
+                clientType() {
+                    return clientTypeStr;
+                },
                 login(body) {
                     return getLoginInit(body);
                 },
@@ -182,7 +220,7 @@ var NuScien;
                         body: "",
                         headers: {
                             "Content-Type": "application/x-www-form-urlencoded",
-                            "X-Ns-Client-Type": "js"
+                            "X-Ns-Client-Type": clientTypeStr
                         }
                     };
                     if (typeof onreq.logout === "function")
@@ -218,6 +256,14 @@ var NuScien;
                     if (reqInit) {
                         query = reqInit.query;
                         subFolder = reqInit.path;
+                        //if (query || subFolder) {
+                        //    let reqInit2 = { ...reqInit };
+                        //    if (reqInit.query === query && reqInit.path === subFolder) {
+                        //        reqInit = reqInit2;
+                        //        delete reqInit.query;
+                        //        delete reqInit.path;
+                        //    }
+                        //}
                     }
                     let url = appendUrl(path.indexOf("//") === 0 || path.indexOf("://") > 0 ? null : host, path, subFolder, query);
                     return fetchImpl(url, reqInit);
@@ -227,6 +273,9 @@ var NuScien;
         get onreqinit() {
             return __classPrivateFieldGet(this, _internalModelServices).reqInit;
         }
+        /**
+         * Signs in.
+         */
         get login() {
             let m = __classPrivateFieldGet(this, _internalModelServices).login;
             if (m)
@@ -257,6 +306,9 @@ var NuScien;
             };
             return __classPrivateFieldGet(this, _internalModelServices).login = m;
         }
+        /**
+         * Gets a specific path.
+         */
         get path() {
             let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             let p = function (key, value, skipIfExist) {
@@ -289,62 +341,109 @@ var NuScien;
             p.keys = () => appInfo.pathKeys();
             return p;
         }
+        /**
+         * User resources.
+         */
         get user() {
             let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             let m = __classPrivateFieldGet(this, _internalModelServices).user;
             if (m)
                 return m;
             m = function (id) {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/exist", {
                     method: "GET",
                     path: "user/" + (NuScien.Assert.toStr(id, "t") || "0")
                 });
             };
             m.exist = (id) => {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/e", {
+                    method: "GET",
+                    path: "user/exist" + (NuScien.Assert.toStr(id, "t") || "0")
+                });
+            };
+            m.searchByGroup = (id) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/group/", {
                     method: "GET",
                     path: "user/exist" + (NuScien.Assert.toStr(id, "t") || "0")
                 });
             };
             return __classPrivateFieldGet(this, _internalModelServices).user = m;
         }
+        /**
+         * Signs out.
+         */
         logout() {
             let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             return appInfo.logout();
         }
+        /**
+         * Gets a URL.
+         * @param path  The relative path.
+         * @param query  The query data.
+         */
         url(path, query) {
             let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             return appInfo.url(path, query);
         }
+        /**
+         * Sends request to service and gets response.
+         * @param path  The relative path.
+         * @param reqInit  The options.
+         */
         fetch(path, reqInit) {
             let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
             if (typeof this.onreqinit.fetch === "function")
                 this.onreqinit.fetch(reqInit);
             return appInfo.fetch(path, reqInit);
         }
+        /**
+         * Gets the resource entity provider.
+         * @param path  The relative root path.
+         */
         resProvider(path) {
             return new ResourceEntityProvider(__classPrivateFieldGet(this, _internalModelServices).app, path);
         }
     }
     _internalModelServices = new WeakMap();
     NuScien.Client = Client;
+    /**
+     * The resource entity provider.
+     */
     class ResourceEntityProvider {
+        /**
+         * Initializes a new instance of the ResourceEntityProvider class.
+         * @param appInfo  The client proxy.
+         * @param path  The relative root path.
+         */
         constructor(appInfo, path) {
             this.appInfo = appInfo;
             this.path = path;
         }
+        /**
+         * Searches.
+         * @param q  The query.
+         */
         search(q) {
             return this.appInfo.fetch(this.path, {
                 method: "GET",
                 query: q
             });
         }
+        /**
+         * Gets a resource entity.
+         * @param id  The entity identifier.
+         */
         get(id) {
             return this.appInfo.fetch(this.path, {
                 method: "GET",
                 path: "e/" + (NuScien.Assert.toStr(id, "t") || "0")
             });
         }
+        /**
+         * Creates or updates a specific resource entity.
+         * @param value  The entity to save or the content to delta update.
+         * @param id  The optional entity identifier. Only set this parameter when need delta update.
+         */
         save(value, id) {
             NuScien.Assert.isNoNull(value, true);
             if (id) {
@@ -369,12 +468,21 @@ var NuScien;
                 }
             });
         }
+        /**
+         * Deletes a specific resource entity.
+         * @param id  The entity identifier.
+         */
         delete(id) {
             return this.appInfo.fetch(this.path, {
                 method: "DELETE",
                 path: "e/" + (NuScien.Assert.toStr(id, "t") || "0")
             });
         }
+        /**
+         * Sends request to service and gets response.
+         * @param path  The relative path.
+         * @param reqInit  The options.
+         */
         fetch(subPath, reqInit) {
             let url = this.path || subPath;
             if (url && subPath) {

@@ -4,6 +4,67 @@
  * Copyright (c) 2020 Kingcean Tuan. All rights reserved.
  */
 namespace NuScien {
+
+    export interface ResourceEntityContract {
+        id: string;
+        name: string;
+        state: number | "deleted" | "draft" | "request" | "normal";
+        creation: number | Date;
+        lastupdate: number | Date;
+        rev?: string;
+        slim?: boolean;
+    }
+
+    export interface ConfigurableResourceEntityContract extends ResourceEntityContract {
+        config: any;
+    }
+
+    export interface SiteOwnerResourceEntityContract extends ConfigurableResourceEntityContract {
+        site: string;
+    }
+
+    export interface BaseOwnerResourceEntityContract extends ConfigurableResourceEntityContract {
+        owner: string;
+    }
+
+    export interface RelationshipResourceEntityContract extends BaseOwnerResourceEntityContract {
+        target: string;
+    }
+
+    export interface SecurityResourceEntityContract extends ResourceEntityContract {
+        identype: string;
+        nickname: string;
+        avatar: string;
+    }
+
+    export interface UserEntityContract extends SecurityResourceEntityContract {
+        gender: number | "unknown" | "male" | "female" | "asexual" | "machine" | "other";
+        avatar: string;
+        birthday?: Date | number;
+        market?: string;
+    }
+
+    export interface UserGroupEntityContract extends SecurityResourceEntityContract {
+        site: string;
+        membership: number | "forbidden" | "application" | "allow";
+        visible: number | "hidden" | "memberwise" | "public";
+    }
+
+    export interface GenericWebResponseContract<T> extends Response {
+        /**
+         * Gets the response data.
+         */
+        json(): Promise<T>;
+    }
+
+    /**
+     * The main version.
+     */
+    export const ver = "5.0";
+
+    /**
+     * Assert helper.
+     */
     export class Assert {
 
         /**

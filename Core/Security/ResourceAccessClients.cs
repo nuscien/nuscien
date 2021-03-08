@@ -194,7 +194,7 @@ namespace NuScien.Security
                         Name = "Administrators",
                         Nickname = "General Admin Group",
                         MembershipPolicy = UserGroupMembershipPolicies.Forbidden,
-                        Visibility = UserGroupVisibilities.MembersHidden,
+                        Visibility = UserGroupVisibilities.Memberwise,
                         State = ResourceEntityStates.Normal
                     };
                     await dataProvider.SaveAsync(group);
