@@ -64,7 +64,11 @@ namespace NuScien.Security
             {
                 var rest = ExpirationTime - DateTime.Now;
                 var total = ExpirationTime - LastModificationTime;
+#if NETSTANDARD2_0 || NETFRAMEWORK
+                return (total.TotalSeconds / 4 > rest.TotalSeconds) || (ExpirationTime <= DateTime.Now);
+#else
                 return (total / 4 > rest) || (ExpirationTime <= DateTime.Now);
+#endif
             }
         }
 

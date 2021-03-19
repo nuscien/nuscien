@@ -248,9 +248,7 @@ namespace NuScien.Data
         /// Gets or sets the offset of the result.
         /// </summary>
         [DataMember(Name = "offset")]
-#if !NETCOREAPP3_1
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-#endif
         [JsonPropertyName("offset")]
         public int? Offset { get; set; }
 
@@ -258,9 +256,7 @@ namespace NuScien.Data
         /// Gets or sets the total count.
         /// </summary>
         [DataMember(Name = "count")]
-#if !NETCOREAPP3_1
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-#endif
         [JsonPropertyName("count")]
         public int? TotalCount { get; set; }
 

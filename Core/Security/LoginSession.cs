@@ -123,6 +123,7 @@ namespace NuScien.Security
         /// </summary>
         [DataMember(Name = "user", EmitDefaultValue = true)]
         [JsonPropertyName("user")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public UserEntity User { get; set; }
 
         /// <summary>
@@ -130,6 +131,7 @@ namespace NuScien.Security
         /// </summary>
         [DataMember(Name = "client_id", EmitDefaultValue = true)]
         [JsonPropertyName("client_id")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string ClientId { get; set; }
 
         /// <summary>

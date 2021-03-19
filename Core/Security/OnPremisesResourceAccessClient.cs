@@ -740,6 +740,110 @@ namespace NuScien.Security
             }
         }
 
+        /// <summary>
+        /// Gets the permission items.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="targetType">The target entity type.</param>
+        /// <param name="targetId">The target entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The permission list.</returns>
+        /// <exception cref="ArgumentNullException">siteId was null or empty.</exception>
+        /// <exception cref="ArgumentException">The target type was invalid.</exception>
+        /// <exception cref="UnauthorizedAccessException">No permission.</exception>
+        public override async Task<CollectionResult<string>> GetPermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(siteId)) throw new ArgumentNullException(nameof(siteId), "siteId should not be null or empty.");
+            siteId = siteId.Trim();
+            var hasPerm = false;
+            switch (targetType)
+            {
+                case SecurityEntityTypes.User:
+                    {
+                        hasPerm = (targetId == UserId && !string.IsNullOrWhiteSpace(UserId)) || await IsPermissionAdminAsync(siteId, cancellationToken);
+                        break;
+                    }
+                case SecurityEntityTypes.UserGroup:
+                    {
+                        hasPerm = true;
+                        break;
+                    }
+                case SecurityEntityTypes.ServiceClient:
+                    {
+                        hasPerm = true;
+                        break;
+                    }
+                default:
+                    {
+                        throw new ArgumentException("The target type is not supported.", nameof(targetType));
+                    }
+            }
+
+            if (!hasPerm) throw new UnauthorizedAccessException("No permission!");
+            switch (targetType)
+            {
+                case SecurityEntityTypes.User:
+                    {
+                        var user = await DataProvider.GetUserByIdAsync(targetId, cancellationToken);
+                        var perm = await DataProvider.GetUserPermissionsAsync(user, siteId, cancellationToken);
+                        return new CollectionResult<string>(perm?.GetPermissionList());
+                    }
+                case SecurityEntityTypes.UserGroup:
+                    {
+                        var group = await DataProvider.GetUserGroupByIdAsync(targetId, cancellationToken);
+                        var perm = await DataProvider.GetGroupPermissionsAsync(group, siteId, cancellationToken);
+                        return new CollectionResult<string>(perm?.GetPermissionList());
+                    }
+                case SecurityEntityTypes.ServiceClient:
+                    {
+                        var client = await DataProvider.GetClientByIdAsync(targetId, cancellationToken);
+                        var perm = await DataProvider.GetClientPermissionsAsync(client, siteId, cancellationToken);
+                        return new CollectionResult<string>(perm?.GetPermissionList());
+                    }
+                default:
+                    {
+                        throw new ArgumentException("The target type is not supported.", nameof(targetType));
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Gets the user permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user permission list.</returns>
+        public override Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            var u = User;
+            if (u == null) return Task.FromResult<UserPermissionItemEntity>(null);
+            return DataProvider.GetUserPermissionsAsync(u, siteId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the user group permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group permission list.</returns>
+        public override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            var u = User;
+            if (u == null) return Task.FromResult<IEnumerable<UserGroupPermissionItemEntity>>(new List<UserGroupPermissionItemEntity>());
+            return DataProvider.ListGroupPermissionsAsync(User, siteId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the client permissions of the current client.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The client permission list.</returns>
+        public override Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            return ClientVerified != null ? DataProvider.GetClientPermissionsAsync(ClientVerified, siteId, cancellationToken) : null;
+        }
+
         private static void FillPermissionItemEntity<T>(BasePermissionItemEntity<T> entity, string siteId, T target) where T : BaseSecurityEntity
         {
             entity.Name = target.Nickname ?? target.Nickname;
@@ -774,43 +878,6 @@ namespace NuScien.Security
         protected override Task<IEnumerable<UserGroupRelationshipEntity>> GetRelationshipsAsync(string q, ResourceEntityStates relationshipState, CancellationToken cancellationToken = default)
         {
             return DataProvider.ListUserGroupsAsync(User, q, relationshipState, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the user permissions of the current user.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user permission list.</returns>
-        protected override Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
-        {
-            var u = User;
-            if (u == null) return Task.FromResult<UserPermissionItemEntity>(null);
-            return DataProvider.GetUserPermissionsAsync(u, siteId, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the user group permissions of the current user.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group permission list.</returns>
-        protected override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
-        {
-            var u = User;
-            if (u == null) return Task.FromResult<IEnumerable<UserGroupPermissionItemEntity>>(new List<UserGroupPermissionItemEntity>());
-            return DataProvider.ListGroupPermissionsAsync(User, siteId, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the client permissions of the current client.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The client permission list.</returns>
-        protected override Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
-        {
-            return ClientVerified != null ? DataProvider.GetClientPermissionsAsync(ClientVerified, siteId, cancellationToken) : null;
         }
 
         /// <summary>

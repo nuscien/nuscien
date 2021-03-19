@@ -48,7 +48,7 @@ namespace NuScien.Web
         /// <returns>The value.</returns>
         [HttpGet]
         [Route("cms/c")]
-        public async Task<IActionResult> ListContentById()
+        public async Task<IActionResult> ListContent()
         {
             var instance = await this.GetResourceAccessClientAsync();
             var q = Request.Query?.GetQueryArgs();
@@ -70,7 +70,7 @@ namespace NuScien.Web
         /// <param name="id">The source entity identifier.</param>
         /// <returns>The value.</returns>
         [HttpGet]
-        [Route("cms/cr/{id}/rev")]
+        [Route("cms/c/{id}/rev")]
         public async Task<IActionResult> ListContentRevisionById(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
@@ -161,7 +161,7 @@ namespace NuScien.Web
         /// <returns>The value.</returns>
         [HttpGet]
         [Route("cms/t")]
-        public async Task<IActionResult> ListContentTemplateById()
+        public async Task<IActionResult> ListContentTemplate()
         {
             var instance = await this.GetResourceAccessClientAsync();
             var q = Request.Query?.GetQueryArgs();
@@ -180,7 +180,7 @@ namespace NuScien.Web
         /// <param name="id">The source entity identifier.</param>
         /// <returns>The value.</returns>
         [HttpGet]
-        [Route("cms/tr/{id}/rev")]
+        [Route("cms/t/{id}/rev")]
         public async Task<IActionResult> ListContentTemplateRevisionById(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();

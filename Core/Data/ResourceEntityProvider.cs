@@ -23,10 +23,12 @@ namespace NuScien.Data
     /// <typeparam name="T">The type of the resouce entity.</typeparam>
     public interface IResourceEntityProvider<T> where T : BaseResourceEntity
     {
+#if !NETSTANDARD2_0 && !NETFRAMEWORK
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
         protected BaseResourceAccessClient CoreResources { get; }
+#endif
 
         /// <summary>
         /// Gets by a specific entity identifier.
@@ -121,10 +123,12 @@ namespace NuScien.Data
         /// </summary>
         protected bool IsTokenNullOrEmpty => CoreResources.IsTokenNullOrEmpty;
 
+#if !NETSTANDARD2_0 && !NETFRAMEWORK
         /// <summary>
         /// Gets the resource access client.
         /// </summary>
         BaseResourceAccessClient IResourceEntityProvider<T>.CoreResources => CoreResources;
+#endif
 
         /// <summary>
         /// Gets the relative path.
@@ -295,8 +299,8 @@ namespace NuScien.Data
                 return new Uri(path);
             }
 
-            var a = RelativePath + (RelativePath[^1] == '/' ? string.Empty : "/");
-            var b = path[0] == '/' ? path[0..^1] : path;
+            var a = RelativePath + (RelativePath.EndsWith('/') ? string.Empty : "/");
+            var b = path[0] == '/' ? path.Range(0, -1) : path;
             return CoreResources.GetUri(a + b, query);
         }
 

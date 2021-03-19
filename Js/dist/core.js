@@ -301,6 +301,19 @@ var NuScien;
             m.client = (options) => {
                 return appInfo.login(Object.assign({ grant_type: "client_credentials" }, options));
             };
+            m.setAuthCode = (serviceProvider, code, insert) => {
+                let body = "code=" + encodeURIComponent(NuScien.Assert.toStr(code, "t"));
+                if (insert)
+                    body += "&insert=true";
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "authcode/" + serviceProvider,
+                    body: body,
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                });
+            };
             m.logout = () => {
                 return appInfo.logout();
             };
@@ -350,24 +363,367 @@ var NuScien;
             if (m)
                 return m;
             m = function (id) {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/exist", {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
                     method: "GET",
-                    path: "user/" + (NuScien.Assert.toStr(id, "t") || "0")
+                    path: "users/e/" + (NuScien.Assert.toStr(id, "t") || "0")
                 });
             };
-            m.exist = (id) => {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/e", {
-                    method: "GET",
-                    path: "user/exist" + (NuScien.Assert.toStr(id, "t") || "0")
+            m.exist = (name) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "POST",
+                    path: "users/exist",
+                    body: "logname=" + encodeURIComponent(NuScien.Assert.toStr(name, "t")),
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
                 });
             };
             m.searchByGroup = (id) => {
-                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport/users/group/", {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
                     method: "GET",
-                    path: "user/exist" + (NuScien.Assert.toStr(id, "t") || "0")
+                    path: "users/group/" + (NuScien.Assert.toStr(id, "t") || "0")
+                });
+            };
+            m.save = (entity) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "users/e",
+                    body: JSON.stringify(entity),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.update = (id, data) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "users/e/" + (NuScien.Assert.toStr(id, "t") || "0"),
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.rela = (q) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "GET",
+                    path: "rela",
+                    query: q
+                });
+            };
+            m.saveRela = (data) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "rela",
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.contact = (id) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "GET",
+                    path: "contact/" + (NuScien.Assert.toStr(id, "t") || "0")
+                });
+            };
+            m.contacts = (q) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "GET",
+                    path: "contact",
+                    query: q
+                });
+            };
+            m.saveContact = (entity) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "contact",
+                    body: JSON.stringify(entity),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.updateContact = (id, data) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "contact/" + (NuScien.Assert.toStr(id, "t") || "0"),
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
                 });
             };
             return __classPrivateFieldGet(this, _internalModelServices).user = m;
+        }
+        /**
+         * User group resources.
+         */
+        get group() {
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
+            let m = __classPrivateFieldGet(this, _internalModelServices).group;
+            if (m)
+                return m;
+            m = function (id) {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "GET",
+                    path: "groups/e/" + (NuScien.Assert.toStr(id, "t") || "0")
+                });
+            };
+            m.list = (q) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "GET",
+                    path: "groups",
+                    query: q
+                });
+            };
+            m.save = (entity) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "groups/e",
+                    body: JSON.stringify(entity),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.update = (id, data) => {
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "PUT",
+                    path: "groups/e/" + (NuScien.Assert.toStr(id, "t") || "0"),
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.rela = (group, user) => {
+                let path = "rela/g/" + group;
+                if (user)
+                    path += "/" + user;
+                return appInfo.fetch(appInfo.path("passport") || "nuscien5/passport", {
+                    method: "GET",
+                    path: path
+                });
+            };
+            return __classPrivateFieldGet(this, _internalModelServices).group = m;
+        }
+        /**
+         * Settings.
+         */
+        get settings() {
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
+            let m = __classPrivateFieldGet(this, _internalModelServices).settings;
+            if (m)
+                return m;
+            m = function (key, site) {
+                return appInfo.fetch(appInfo.path("settings") || "nuscien5/settings", {
+                    method: "GET",
+                    path: site ? `global/${key}` : `site/${site}/${key}`
+                });
+            };
+            m.site = (site, key) => {
+                return appInfo.fetch(appInfo.path("settings") || "nuscien5/settings", {
+                    method: "GET",
+                    path: site ? `global/${key}` : `site/${site}/${key}`
+                });
+            };
+            m.setGlobal = (key, value) => {
+                return appInfo.fetch(appInfo.path("settings") || "nuscien5/settings", {
+                    method: "PUT",
+                    path: "global/" + key,
+                    body: JSON.stringify(value),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.setSite = (site, key, value) => {
+                return appInfo.fetch(appInfo.path("settings") || "nuscien5/settings", {
+                    method: "PUT",
+                    path: site ? `global/${key}` : `site/${site}/${key}`,
+                    body: JSON.stringify(value),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.getPerm = (site, targetType, targetId) => {
+                return appInfo.fetch(appInfo.path("settings") || "nuscien5/settings", {
+                    method: "GET",
+                    path: `perms/${site}/${targetType}/${targetId}`
+                });
+            };
+            m.setPerm = (site, targetType, targetId, value) => {
+                return appInfo.fetch(appInfo.path("settings") || "nuscien5/settings", {
+                    method: "PUT",
+                    path: `perms/${site}/${targetType}/${targetId}`,
+                    body: JSON.stringify(value),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            return __classPrivateFieldGet(this, _internalModelServices).settings = m;
+        }
+        /**
+         * CMS.
+         */
+        get cms() {
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
+            let m = __classPrivateFieldGet(this, _internalModelServices).cms;
+            if (m)
+                return m;
+            m = function (id) {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "c/" + id
+                });
+            };
+            m.list = (id, q) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "c",
+                    query: q ? Object.assign(Object.assign({}, q), { parent: id }) : { parent: id }
+                });
+            };
+            m.save = (entity, message) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "PUT",
+                    path: "c",
+                    body: JSON.stringify(message && entity ? Object.assign(Object.assign({}, entity), { message }) : entity),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.update = (id, data, message) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "PUT",
+                    path: "c/" + (NuScien.Assert.toStr(id, "t") || "0"),
+                    body: JSON.stringify(message && data ? Object.assign(Object.assign({}, data), { message }) : data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.revs = (parent, q) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "c/" + parent + "/rev",
+                    query: q
+                });
+            };
+            m.rev = (id) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "cr/" + id
+                });
+            };
+            m.template = (id) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "t/" + id
+                });
+            };
+            m.templates = (q) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "t",
+                    query: q
+                });
+            };
+            m.saveTemplate = (entity, message) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "PUT",
+                    path: "t",
+                    body: JSON.stringify(message && entity ? Object.assign(Object.assign({}, entity), { message }) : entity),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.updateTemplate = (id, data, message) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "PUT",
+                    path: "t/" + (NuScien.Assert.toStr(id, "t") || "0"),
+                    body: JSON.stringify(message && data ? Object.assign(Object.assign({}, data), { message }) : data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.templateRevs = (parent, q) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "t/" + parent + "/rev",
+                    query: q
+                });
+            };
+            m.templateRev = (id) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "tr/" + id
+                });
+            };
+            m.comment = (id) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: "cc/" + id
+                });
+            };
+            m.comments = (content, plain) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: `c/${content}/comments`,
+                    query: plain ? { plain: true } : null
+                });
+            };
+            m.childComments = (parent) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "GET",
+                    path: `cc/${parent}/children`
+                });
+            };
+            m.saveComment = (entity) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "PUT",
+                    path: "cc",
+                    body: JSON.stringify(entity),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.updateComment = (id, data) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "PUT",
+                    path: "cc/" + (NuScien.Assert.toStr(id, "t") || "0"),
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+            };
+            m.deleteComment = (id) => {
+                return appInfo.fetch(appInfo.path("cms") || "nuscien5/cms", {
+                    method: "DELETE",
+                    path: "cc/" + (NuScien.Assert.toStr(id, "t") || "0")
+                });
+            };
+            return __classPrivateFieldGet(this, _internalModelServices).cms = m;
+        }
+        /**
+         * User activities.
+         */
+        get activities() {
+            let appInfo = __classPrivateFieldGet(this, _internalModelServices).app;
+            let m = __classPrivateFieldGet(this, _internalModelServices).activities;
+            if (m)
+                return m;
+            m = function () {
+            };
+            return __classPrivateFieldGet(this, _internalModelServices).activities = m;
         }
         /**
          * Signs out.
@@ -454,8 +810,7 @@ var NuScien;
                         body: JSON.stringify(value),
                         path: "e/" + (NuScien.Assert.toStr(id, "t") || "0"),
                         headers: {
-                            "Content-Type": "application/json",
-                            "X-Ns-Client-Type": "js"
+                            "Content-Type": "application/json"
                         }
                     });
             }
@@ -463,8 +818,7 @@ var NuScien;
                 method: "PUT",
                 body: JSON.stringify(value),
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-Ns-Client-Type": "js"
+                    "Content-Type": "application/json"
                 }
             });
         }

@@ -4,14 +4,39 @@
  * Copyright (c) 2020 Kingcean Tuan. All rights reserved.
  */
 declare namespace NuScien {
+    /**
+     * The main version.
+     */
+    const ver = "5.0";
+    /**
+     * The state of resource entity.
+     */
+    type ResourceEntityStateValue = number | "deleted" | "draft" | "request" | "normal" | "Deleted" | "Draft" | "Request" | "Normal";
+    /**
+     * The query arguments.
+     */
+    interface QueryArgsContract {
+        q?: string;
+        eqname?: boolean;
+        count?: number;
+        offset?: number;
+        state?: ResourceEntityStateValue;
+        order?: number | "default" | "latest" | "time" | "name" | "z2a" | "Default" | "Latest" | "Time" | "Name" | "Z2A";
+        [property: string]: any;
+        site?: string | undefined | null;
+    }
+    /**
+     * The base resource entity contract.
+     */
     interface ResourceEntityContract {
         id: string;
         name: string;
-        state: number | "deleted" | "draft" | "request" | "normal";
+        state: ResourceEntityStateValue;
         creation: number | Date;
         lastupdate: number | Date;
         rev?: string;
         slim?: boolean;
+        [property: string]: any;
     }
     interface ConfigurableResourceEntityContract extends ResourceEntityContract {
         config: any;
@@ -27,19 +52,57 @@ declare namespace NuScien {
     }
     interface SecurityResourceEntityContract extends ResourceEntityContract {
         identype: string;
-        nickname: string;
-        avatar: string;
+        nickname: string | null;
+        avatar: string | null;
     }
     interface UserEntityContract extends SecurityResourceEntityContract {
-        gender: number | "unknown" | "male" | "female" | "asexual" | "machine" | "other";
+        gender: number | "unknown" | "male" | "female" | "asexual" | "machine" | "other" | "Unknown" | "Male" | "Female" | "Asexual" | "Machine" | "Other";
         avatar: string;
-        birthday?: Date | number;
+        birthday?: Date | number | undefined | null;
         market?: string;
     }
     interface UserGroupEntityContract extends SecurityResourceEntityContract {
         site: string;
-        membership: number | "forbidden" | "application" | "allow";
-        visible: number | "hidden" | "memberwise" | "public";
+        membership: number | "forbidden" | "application" | "allow" | "Forbidden" | "Application" | "Allow";
+        visible: number | "hidden" | "memberwise" | "public" | "Hidden" | "Memberwise" | "Public";
+    }
+    interface UserGroupRelaEntityContract extends ResourceEntityContract {
+        owner: string;
+        res: string;
+        config: any;
+        role: number | "member" | "poweruser" | "master" | "owner" | "Member" | "PowerUser" | "Master" | "Owner" | null;
+    }
+    interface ContentEntityContract extends ResourceEntityContract {
+    }
+    interface ContentTemplateEntityContract extends ResourceEntityContract {
+    }
+    interface CommentEntityContract extends ResourceEntityContract {
+    }
+    interface ContactEntityContract extends ResourceEntityContract {
+    }
+    interface TokenResponseContract {
+        state?: string | undefined | null;
+        token_type?: string | undefined | null;
+        access_token?: string | undefined | null;
+        refresh_token?: string | undefined | null;
+        scope?: string | null;
+        user_id?: string | undefined | null;
+        user?: UserEntityContract | undefined | null;
+        client_id?: string | undefined | null;
+        error?: "unknown" | "invalid_request" | "invalid_client" | "invalid_grant" | "UnauthorizedClient" | "access_denied" | "unsupported_response_type" | "unsupported_grant_type" | "invalid_scope" | "server_error" | "temporarily_unavailable" | string | undefined | null;
+        error_uri?: string | undefined | null;
+        error_description?: string | undefined | null;
+    }
+    interface CollectionResultContract<T = any> {
+        col: T[];
+        offset?: number | null | undefined;
+        count?: number | null | undefined;
+    }
+    interface ChangingResultContract {
+        state: number | "unknown" | "unchanged" | "same" | "update" | "membermodify" | "remove" | "invalid" | "Unknown" | "Unchanged" | "Same" | "Update" | "MemberModify" | "Remove" | "Invalid";
+        code?: number | string | undefined;
+        message?: string | undefined | null;
+        data?: any | undefined | null;
     }
     interface GenericWebResponseContract<T> extends Response {
         /**
@@ -47,10 +110,10 @@ declare namespace NuScien {
          */
         json(): Promise<T>;
     }
-    /**
-     * The main version.
-     */
-    const ver = "5.0";
+    interface CollectionWebResponseContract<T> extends GenericWebResponseContract<CollectionResultContract<T>> {
+    }
+    interface ChangingWebResponseContract extends GenericWebResponseContract<ChangingResultContract> {
+    }
     /**
      * Assert helper.
      */
@@ -80,12 +143,12 @@ declare namespace NuScien {
         (): string;
         id(): string;
         clientType(): string;
-        login(body: any): Promise<Response>;
-        logout(): Promise<Response>;
+        login(body: any): Promise<GenericWebResponseContract<TokenResponseContract>>;
+        logout(): Promise<GenericWebResponseContract<TokenResponseContract>>;
         url(path: string, query?: any): string;
         path(key: string, value?: string, skipIfExist?: boolean): string;
         pathKeys(): string[];
-        fetch(path: string, reqInit?: RequestOptions): Promise<Response>;
+        fetch<T = any>(path: string, reqInit?: RequestOptions): Promise<GenericWebResponseContract<T>>;
     }
     export interface LoginOptionsContract {
         scope?: string | string[] | null;
@@ -183,6 +246,13 @@ declare namespace NuScien {
              */
             client(options?: LoginOptionsContract): Promise<Response>;
             /**
+             * Sets an authentication code for current user.
+             * @param serviceProvider  The service provider.
+             * @param code  The authentication code.
+             * @param insert  true if inserts; otherwise, false.
+             */
+            setAuthCode(serviceProvider: string, code: string, insert?: boolean): Promise<ChangingWebResponseContract>;
+            /**
              * Signs out.
              */
             logout(): Promise<Response>;
@@ -231,36 +301,249 @@ declare namespace NuScien {
          */
         get user(): {
             /**
-             * Gets user by identifier.
+             * Gets a specific user by identifier.
              * @param id  The user identifier.
              */
-            (id: string): GenericWebResponseContract<UserEntityContract>;
+            (id: string): Promise<GenericWebResponseContract<UserEntityContract>>;
             /**
-             * Tests if the user does exist.
-             * @param id  The user identifier.
+             * Tests if a specific user does exist.
+             * @param name  The logname.
              */
             exist(id: string): Promise<Response>;
             /**
              * Searches users joined in a specific group.
              * @param id  The user group identifier.
              */
-            searchByGroup(id: string): Promise<Response>;
+            searchByGroup(id: string): Promise<CollectionWebResponseContract<UserEntityContract>>;
             /**
              * Adds or updates a user entity.
              * @param entity  The entity to save.
              */
-            save(entity: UserEntityContract): Promise<Response>;
+            save(entity: UserEntityContract): Promise<ChangingWebResponseContract>;
             /**
              * Updates a user entity.
              * @param id  The user identifier.
              * @param data  The entity data to delta update.
              */
-            update(id: string, data: any): Promise<Response>;
+            update(id: string, data: any): Promise<ChangingWebResponseContract>;
+            /**
+             * Lists the user group relationship entities for current user.
+             * @param q  The optional query arguments to search.
+             */
+            rela(q?: {
+                name?: string;
+                state?: ResourceEntityStateValue;
+            }): Promise<UserGroupRelaEntityContract>;
+            /**
+             * Saves the user group relationship.
+             * @param value  The entity to save.
+             */
+            saveRela(value: UserGroupRelaEntityContract): Promise<ChangingWebResponseContract>;
+            /**
+             * Gets a specific contact by identifier.
+             * @param id  The contact identifier.
+             */
+            contact(id: string): Promise<GenericWebResponseContract<ContactEntityContract>>;
+            /**
+             * Searches contacts joined in a specific group.
+             * @param id  The contact identifier.
+             */
+            contacts(q: QueryArgsContract): Promise<CollectionWebResponseContract<ContactEntityContract>>;
+            /**
+             * Adds or updates a contact entity.
+             * @param entity  The entity to save.
+             */
+            saveContact(entity: ContactEntityContract): Promise<ChangingWebResponseContract>;
+            /**
+             * Updates a contact entity.
+             * @param id  The contact identifier.
+             * @param data  The entity data to delta update.
+             */
+            updateContact(id: string, data: any): Promise<ChangingWebResponseContract>;
         };
+        /**
+         * User group resources.
+         */
+        get group(): {
+            /**
+             * Gets a specific use groupr by identifier.
+             * @param id  The user group identifier.
+             */
+            (id: string): Promise<GenericWebResponseContract<UserGroupEntityContract>>;
+            /**
+             * Searches user groups joined in a specific group.
+             * @param id  The user group identifier.
+             */
+            list(q: QueryArgsContract): Promise<CollectionWebResponseContract<UserGroupEntityContract>>;
+            /**
+             * Adds or updates a user group entity.
+             * @param entity  The entity to save.
+             */
+            save(entity: UserGroupEntityContract): Promise<ChangingWebResponseContract>;
+            /**
+             * Updates a user group entity.
+             * @param id  The user group identifier.
+             * @param data  The entity data to delta update.
+             */
+            update(id: string, data: any): Promise<ChangingWebResponseContract>;
+            /**
+             * Gets the user group relationship entity.
+             * @param group  The user group identifer.
+             * @param user  The optional user identifier; or null, if gets for the current user.
+             */
+            rela(group: string, user?: string): Promise<UserGroupRelaEntityContract>;
+        };
+        /**
+         * Settings.
+         */
+        get settings(): {
+            /**
+             * Gets the settings.
+             * @param key  The settings key.
+             * @param site  The optional site identifier; or null, for global.
+             */
+            (key: string, site?: string): Promise<GenericWebResponseContract<any>>;
+            /**
+             * Gets the settings for the specific site.
+             * @param site  The optional site identifier; or null, for global.
+             * @param key  The settings key.
+             */
+            site(site: string, key: string): Promise<GenericWebResponseContract<any>>;
+            /**
+             * Saves the settings.
+             * @param key  The settings key.
+             * @param site  The optional site identifier; or null, for global.
+             * @param value  The settings data.
+             */
+            setGlobal(key: string, value: any): Promise<ChangingWebResponseContract>;
+            /**
+             * Saves the settings.
+             * @param site  The optional site identifier; or null, for global.
+             * @param key  The settings key.
+             */
+            setSite(site: string, key: string, value: any): Promise<ChangingWebResponseContract>;
+            /**
+             * Saves the permissions.
+             * @param site  The site identifier.
+             * @param targetType  The type of the target resource.
+             * @param targetId  The identifer of the target resource.
+             */
+            getPerm(site: string, targetType: "user" | "group" | "client", targetId: string): Promise<CollectionWebResponseContract<string>>;
+            /**
+             * Saves the permissions.
+             * @param site  The site identifier.
+             * @param targetType  The type of the target resource.
+             * @param targetId  The identifer of the target resource.
+             */
+            setPerm(site: string, targetType: "user" | "group" | "client", targetId: string, value: {
+                permissions: string[];
+                [property: string]: any;
+            }): Promise<ChangingWebResponseContract>;
+        };
+        /**
+         * CMS.
+         */
+        get cms(): {
+            (id: string): Promise<GenericWebResponseContract<ContentEntityContract>>;
+            /**
+             * Searches publish content.
+             * @param id  The publish content identifier.
+             */
+            list(id: string, q?: QueryArgsContract): Promise<CollectionWebResponseContract<ContentEntityContract>>;
+            /**
+             * Adds or updates a publish content entity.
+             * @param entity  The entity to save.
+             */
+            save(entity: ContentEntityContract, message?: string): Promise<ChangingWebResponseContract>;
+            /**
+             * Updates a publish content entity.
+             * @param id  The publish content identifier.
+             * @param data  The entity data to delta update.
+             */
+            update(id: string, data: any, message?: string): Promise<ChangingWebResponseContract>;
+            /**
+             * Lists the revisions.
+             * @param parent  The parent identifier.
+             * @param q  The optional query.
+             */
+            revs(parent: string, q?: QueryArgsContract): Promise<CollectionWebResponseContract<ContentEntityContract>>;
+            /**
+             * Gets a specific revisions.
+             * @param id  The identifier of the revision.
+             */
+            rev(id: string): Promise<CollectionWebResponseContract<ContentEntityContract>>;
+            /**
+             * Gets a specific template of publish content.
+             * @param id  The publish content template identifier.
+             */
+            template(id: string): Promise<CollectionWebResponseContract<ContentTemplateEntityContract>>;
+            /**
+             * Searches template of publish content.
+             * @param q  The optional query.
+             */
+            templates(q: QueryArgsContract): Promise<CollectionWebResponseContract<ContentTemplateEntityContract>>;
+            /**
+             * Adds or updates a publish content template entity.
+             * @param entity  The entity to save.
+             */
+            saveTemplate(entity: ContentTemplateEntityContract, message?: string): Promise<ChangingWebResponseContract>;
+            /**
+             * Updates a publish content template entity.
+             * @param id  The publish content identifier.
+             * @param data  The entity data to delta update.
+             */
+            updateTemplate(id: string, data: any, message?: string): Promise<ChangingWebResponseContract>;
+            /**
+             * Lists the revisions.
+             * @param parent  The parent identifier.
+             * @param q  The optional query.
+             */
+            templateRevs(parent: string, q?: QueryArgsContract): Promise<CollectionWebResponseContract<ContentTemplateEntityContract>>;
+            /**
+             * Gets a specific revisions.
+             * @param id  The identifier of the revision.
+             */
+            templateRev(id: string): Promise<CollectionWebResponseContract<ContentTemplateEntityContract>>;
+            /**
+             * Gets a specific comment of publish content.
+             * @param id  The publish content comment identifier.
+             */
+            comment(id: string): Promise<CollectionWebResponseContract<CommentEntityContract>>;
+            /**
+             * Searches comment of publish content.
+            * @param parent  The parent content identifier.
+             */
+            comments(content: string, plain?: boolean): Promise<CollectionWebResponseContract<CommentEntityContract>>;
+            /**
+             * Searches child comment of publish content.
+             * @param parent  The parent comment identifier.
+             */
+            childComments(parent: string): Promise<CollectionWebResponseContract<CommentEntityContract>>;
+            /**
+             * Adds or updates a publish content comment entity.
+             * @param entity  The entity to save.
+             */
+            saveComment(entity: CommentEntityContract): Promise<ChangingWebResponseContract>;
+            /**
+             * Updates a publish content comment entity.
+             * @param id  The publish content identifier.
+             * @param data  The entity data to delta update.
+             */
+            updateComment(id: string, data: any): Promise<ChangingWebResponseContract>;
+            /**
+             * Deletes a publish content comment entity.
+             * @param id  The publish content identifier.
+             */
+            deleteComment(id: string): Promise<ChangingWebResponseContract>;
+        };
+        /**
+         * User activities.
+         */
+        get activities(): {};
         /**
          * Signs out.
          */
-        logout(): Promise<Response>;
+        logout(): Promise<GenericWebResponseContract<TokenResponseContract>>;
         /**
          * Gets a URL.
          * @param path  The relative path.
@@ -272,17 +555,17 @@ declare namespace NuScien {
          * @param path  The relative path.
          * @param reqInit  The options.
          */
-        fetch(path: string, reqInit?: RequestOptions): Promise<Response>;
+        fetch<T = any>(path: string, reqInit?: RequestOptions): Promise<GenericWebResponseContract<T>>;
         /**
          * Gets the resource entity provider.
          * @param path  The relative root path.
          */
-        resProvider(path: string): ResourceEntityProvider;
+        resProvider<T = any>(path: string): ResourceEntityProvider<T>;
     }
     /**
      * The resource entity provider.
      */
-    export class ResourceEntityProvider {
+    export class ResourceEntityProvider<TEntity> {
         readonly appInfo: InternalClientContract;
         readonly path: string;
         /**
@@ -295,29 +578,29 @@ declare namespace NuScien {
          * Searches.
          * @param q  The query.
          */
-        search(q: any): Promise<Response>;
+        search(q: any): Promise<GenericWebResponseContract<CollectionResultContract<TEntity>>>;
         /**
          * Gets a resource entity.
          * @param id  The entity identifier.
          */
-        get(id: string): Promise<Response>;
+        get(id: string): Promise<GenericWebResponseContract<TEntity>>;
         /**
          * Creates or updates a specific resource entity.
          * @param value  The entity to save or the content to delta update.
          * @param id  The optional entity identifier. Only set this parameter when need delta update.
          */
-        save(value: any, id?: string): Promise<Response>;
+        save(value: any, id?: string): Promise<GenericWebResponseContract<ChangingResultContract>>;
         /**
          * Deletes a specific resource entity.
          * @param id  The entity identifier.
          */
-        delete(id: string): Promise<Response>;
+        delete(id: string): Promise<GenericWebResponseContract<ChangingResultContract>>;
         /**
          * Sends request to service and gets response.
          * @param path  The relative path.
          * @param reqInit  The options.
          */
-        fetch(subPath: string, reqInit: RequestOptions): Promise<Response>;
+        fetch<T>(subPath: string, reqInit: RequestOptions): Promise<GenericWebResponseContract<T>>;
     }
     export {};
 }

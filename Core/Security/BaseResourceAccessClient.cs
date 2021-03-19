@@ -57,12 +57,12 @@ namespace NuScien.Security
         /// <summary>
         /// The permissions set.
         /// </summary>
-        private readonly Dictionary<string, UserSitePermissionSet> permissions = new Dictionary<string, UserSitePermissionSet>();
+        private readonly Dictionary<string, UserSitePermissionSet> permissions = new();
 
         /// <summary>
         /// The settings set.
         /// </summary>
-        private readonly DataCacheCollection<string> settings = new DataCacheCollection<string>
+        private readonly DataCacheCollection<string> settings = new()
         {
             Expiration = TimeSpan.FromMinutes(3)
         };
@@ -70,7 +70,7 @@ namespace NuScien.Security
         /// <summary>
         /// The settings set.
         /// </summary>
-        private readonly DataCacheCollection<SystemSiteSettings> siteSettings = new DataCacheCollection<SystemSiteSettings>
+        private readonly DataCacheCollection<SystemSiteSettings> siteSettings = new()
         {
             Expiration = TimeSpan.FromMinutes(10)
         };
@@ -1819,6 +1819,43 @@ namespace NuScien.Security
         public abstract Task<ChangingResultInfo> SavePermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, IEnumerable<string> permissionList, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets the permission items.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="targetType">The target entity type.</param>
+        /// <param name="targetId">The target entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The permission list.</returns>
+        /// <exception cref="ArgumentNullException">siteId was null or empty.</exception>
+        /// <exception cref="ArgumentException">The target type was invalid.</exception>
+        /// <exception cref="UnauthorizedAccessException">No permission.</exception>
+        public abstract Task<CollectionResult<string>> GetPermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the user permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user permission list.</returns>
+        public abstract Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the user group permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group permission list.</returns>
+        public abstract Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the client permissions of the current client.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The client permission list.</returns>
+        public abstract Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Clears cache.
         /// </summary>
         public void ClearCache()
@@ -1917,30 +1954,6 @@ namespace NuScien.Security
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The token entity matched if found; otherwise, null.</returns>
         protected abstract Task<IEnumerable<UserEntity>> ListUsersByGroupAsync(UserGroupEntity group, UserGroupRelationshipEntity.Roles? role, QueryArgs q, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets the user permissions of the current user.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user permission list.</returns>
-        protected abstract Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets the user group permissions of the current user.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group permission list.</returns>
-        protected abstract Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default);
-        
-        /// <summary>
-        /// Gets the client permissions of the current client.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The client permission list.</returns>
-        protected abstract Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a collection of user groups joined in.

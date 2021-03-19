@@ -17,6 +17,7 @@ using System.Web;
 using NuScien.Cms;
 using NuScien.Configurations;
 using NuScien.Data;
+using NuScien.Reflection;
 using NuScien.Sns;
 using NuScien.Users;
 using Trivial.Collection;
@@ -119,7 +120,7 @@ namespace NuScien.Security
             set
             {
                 if (value == null) coreResPath = string.Empty;
-                if (value.StartsWith("/")) value = value[1..];
+                if (value.StartsWith("/")) value = value.Range(1);
                 if (!value.EndsWith("/")) value += "/";
                 coreResPath = value;
             }
@@ -502,7 +503,7 @@ namespace NuScien.Security
         public override Task<UserEntity> GetUserByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
-            return SendAsync<UserEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/user/" + id), cancellationToken);
+            return SendAsync<UserEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/users/e/" + id), cancellationToken);
         }
 
         /// <summary>
@@ -516,7 +517,7 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
             if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
-            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}passport/user/{id}", delta, cancellationToken);
+            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}passport/users/e/{id}", delta, cancellationToken);
         }
 
         /// <summary>
@@ -528,7 +529,7 @@ namespace NuScien.Security
         public override Task<UserGroupEntity> GetUserGroupByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
-            return SendAsync<UserGroupEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/group/" + id), cancellationToken);
+            return SendAsync<UserGroupEntity>(HttpMethod.Get, GetUri(coreResPath + "passport/groups/e/" + id), cancellationToken);
         }
 
         /// <summary>
@@ -542,7 +543,7 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
             if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
-            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}passport/group/{id}", delta, cancellationToken);
+            return SendChangeAsync(HttpMethod.Put, $"{coreResPath}passport/groups/e/{id}", delta, cancellationToken);
         }
 
         /// <summary>
@@ -857,6 +858,64 @@ namespace NuScien.Security
         }
 
         /// <summary>
+        /// Gets the permission items.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="targetType">The target entity type.</param>
+        /// <param name="targetId">The target entity identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The permission list.</returns>
+        /// <exception cref="ArgumentNullException">siteId was null or empty.</exception>
+        /// <exception cref="ArgumentException">The target type was invalid.</exception>
+        /// <exception cref="UnauthorizedAccessException">No permission.</exception>
+        public override Task<CollectionResult<string>> GetPermissionAsync(string siteId, SecurityEntityTypes targetType, string targetId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(siteId)) throw new ArgumentNullException(nameof(siteId), "siteId should not be null or empty.");
+            siteId = siteId.Trim();
+            var path = targetType switch
+            {
+                SecurityEntityTypes.User => $"{coreResPath}settings/perms/{siteId}/user/{targetId}",
+                SecurityEntityTypes.UserGroup => $"{coreResPath}settings/perms/{siteId}/group/{targetId}",
+                SecurityEntityTypes.ServiceClient => $"{coreResPath}settings/perms/{siteId}/client/{targetId}",
+                _ => throw new ArgumentException("The target type is not supported.", nameof(targetType)),
+            };
+            return SendAsync<CollectionResult<string>>(HttpMethod.Get, GetUri(path), cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the user permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user permission list.</returns>
+        public override Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            return SendAsync<UserPermissionItemEntity>(HttpMethod.Get, GetUri($"{coreResPath}settings/perms/{siteId}/user"), cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the user group permissions of the current user.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The user group permission list.</returns>
+        public override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            return QueryAsync<UserGroupPermissionItemEntity>(HttpMethod.Get, $"{coreResPath}settings/perms/{siteId}/groups", null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Gets the client permissions of the current client.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
+        /// <returns>The client permission list.</returns>
+        public override Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
+        {
+            return SendAsync<ClientPermissionItemEntity>(HttpMethod.Get, GetUri($"{coreResPath}settings/perms/{siteId}/client"), cancellationToken);
+        }
+
+        /// <summary>
         /// Combines path to root to generate a URI.
         /// </summary>
         /// <param name="path">The relative path.</param>
@@ -877,7 +936,7 @@ namespace NuScien.Security
 
             var q = Host.OriginalString;
             if (!string.IsNullOrEmpty(q) && q.EndsWith('/')) q += '/';
-            if (path.StartsWith('/')) path = path[1..];
+            if (path.StartsWith('/')) path = path.Range(1);
             q += path;
             if (query != null) q = query.ToString(q);
             return new Uri(q);
@@ -897,7 +956,7 @@ namespace NuScien.Security
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
             var query = ToQueryData(q);
             query["role"] = ((int)role).ToString();
-            return QueryAsync<UserEntity>(coreResPath + "passport/users/group/" + group.Id, query, cancellationToken);
+            return QueryAsync<UserEntity>(coreResPath + "passport/users/groups/e/" + group.Id, query, cancellationToken);
         }
 
         /// <summary>
@@ -914,39 +973,6 @@ namespace NuScien.Security
             query["state"] = ((int)relationshipState).ToString();
             var col = await SendAsync<UserGroupRelationshipCollection>(HttpMethod.Get, GetUri(coreResPath + "passport/rela", query), cancellationToken);
             return col.Relationships;
-        }
-
-        /// <summary>
-        /// Gets the user permissions of the current user.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user permission list.</returns>
-        protected override Task<UserPermissionItemEntity> GetUserPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
-        {
-            return SendAsync<UserPermissionItemEntity>(HttpMethod.Get, GetUri($"{coreResPath}settings/perms/{siteId}/user"), cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the user group permissions of the current user.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The user group permission list.</returns>
-        protected override Task<IEnumerable<UserGroupPermissionItemEntity>> GetGroupPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
-        {
-            return QueryAsync<UserGroupPermissionItemEntity>(HttpMethod.Get, $"{coreResPath}settings/perms/{siteId}/groups", null, cancellationToken);
-        }
-
-        /// <summary>
-        /// Gets the client permissions of the current client.
-        /// </summary>
-        /// <param name="siteId">The site identifier.</param>
-        /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
-        /// <returns>The client permission list.</returns>
-        protected override Task<ClientPermissionItemEntity> GetClientPermissionsAsync(string siteId, CancellationToken cancellationToken = default)
-        {
-            return SendAsync<ClientPermissionItemEntity>(HttpMethod.Get, GetUri($"{coreResPath}settings/perms/{siteId}/client"), cancellationToken);
         }
 
         /// <summary>

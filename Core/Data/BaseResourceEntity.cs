@@ -294,10 +294,13 @@ namespace NuScien.Data
                                 {
                                     try
                                     {
-                                        if (Enum.TryParse(p.PropertyType, s, out var v)) TrySetProperty(p, v);
+                                        if (InternalAssertion.TryParse(p.PropertyType, s, out var v)) TrySetProperty(p, v);
                                         else if (int.TryParse(s, out var i) && i >= 0) TrySetProperty(p, Enum.ToObject(p.PropertyType, i));
                                     }
                                     catch (ArgumentException)
+                                    {
+                                    }
+                                    catch (InvalidCastException)
                                     {
                                     }
                                 }
@@ -309,6 +312,9 @@ namespace NuScien.Data
                                     TrySetProperty(p, Enum.ToObject(p.PropertyType, vi));
                                 }
                                 catch (ArgumentException)
+                                {
+                                }
+                                catch (InvalidCastException)
                                 {
                                 }
                             }

@@ -595,7 +595,7 @@ namespace NuScien.Sns
             set
             {
                 if (value == null) folder = string.Empty;
-                if (value.StartsWith("/")) value = value[1..];
+                if (value.StartsWith("/")) value = value.Range(1);
                 if (!value.EndsWith("/")) value += "/";
                 folder = value;
             }

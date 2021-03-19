@@ -5,14 +5,42 @@
  */
 namespace NuScien {
 
+    /**
+     * The main version.
+     */
+    export const ver = "5.0";
+
+    /**
+     * The state of resource entity.
+     */
+    export type ResourceEntityStateValue = number | "deleted" | "draft" | "request" | "normal" | "Deleted" | "Draft" | "Request" | "Normal";
+
+    /**
+     * The query arguments.
+     */
+    export interface QueryArgsContract {
+        q?: string;
+        eqname?: boolean;
+        count?: number;
+        offset?: number;
+        state?: ResourceEntityStateValue;
+        order?: number | "default" | "latest" | "time" | "name" | "z2a" | "Default" | "Latest" | "Time" | "Name" | "Z2A";
+        [property: string]: any;
+        site?: string | undefined | null;
+    }
+
+    /**
+     * The base resource entity contract.
+     */
     export interface ResourceEntityContract {
         id: string;
         name: string;
-        state: number | "deleted" | "draft" | "request" | "normal";
+        state: ResourceEntityStateValue;
         creation: number | Date;
         lastupdate: number | Date;
         rev?: string;
         slim?: boolean;
+        [property: string]: any;
     }
 
     export interface ConfigurableResourceEntityContract extends ResourceEntityContract {
@@ -33,21 +61,67 @@ namespace NuScien {
 
     export interface SecurityResourceEntityContract extends ResourceEntityContract {
         identype: string;
-        nickname: string;
-        avatar: string;
+        nickname: string | null;
+        avatar: string | null;
     }
 
     export interface UserEntityContract extends SecurityResourceEntityContract {
-        gender: number | "unknown" | "male" | "female" | "asexual" | "machine" | "other";
+        gender: number | "unknown" | "male" | "female" | "asexual" | "machine" | "other" | "Unknown" | "Male" | "Female" | "Asexual" | "Machine" | "Other";
         avatar: string;
-        birthday?: Date | number;
+        birthday?: Date | number | undefined | null;
         market?: string;
     }
 
     export interface UserGroupEntityContract extends SecurityResourceEntityContract {
         site: string;
-        membership: number | "forbidden" | "application" | "allow";
-        visible: number | "hidden" | "memberwise" | "public";
+        membership: number | "forbidden" | "application" | "allow" | "Forbidden" | "Application" | "Allow";
+        visible: number | "hidden" | "memberwise" | "public" | "Hidden" | "Memberwise" | "Public";
+    }
+
+    export interface UserGroupRelaEntityContract extends ResourceEntityContract {
+        owner: string;
+        res: string;
+        config: any;
+        role: number | "member" | "poweruser" | "master" | "owner" | "Member" | "PowerUser" | "Master" | "Owner" | null;
+    }
+
+    export interface ContentEntityContract extends ResourceEntityContract {
+    }
+
+    export interface ContentTemplateEntityContract extends ResourceEntityContract {
+    }
+
+    export interface CommentEntityContract extends ResourceEntityContract {
+    }
+
+    export interface ContactEntityContract extends ResourceEntityContract {
+    }
+
+    export interface TokenResponseContract {
+        state?: string | undefined | null;
+        token_type?: string | undefined | null;
+        access_token?: string | undefined | null;
+        refresh_token?: string | undefined | null;
+        scope?: string | null;
+        user_id?: string | undefined | null;
+        user?: UserEntityContract | undefined | null;
+        client_id?: string | undefined | null;
+        error?: "unknown" | "invalid_request" | "invalid_client" | "invalid_grant" | "UnauthorizedClient" | "access_denied" | "unsupported_response_type" | "unsupported_grant_type" | "invalid_scope" | "server_error" | "temporarily_unavailable" | string | undefined | null;
+        error_uri?: string | undefined | null;
+        error_description?: string | undefined | null;
+    }
+
+    export interface CollectionResultContract<T = any> {
+        col: T[];
+        offset?: number | null | undefined;
+        count?: number | null | undefined;
+    }
+
+    export interface ChangingResultContract {
+        state: number | "unknown" | "unchanged" | "same" | "update" | "membermodify" | "remove" | "invalid" | "Unknown" | "Unchanged" | "Same" | "Update" | "MemberModify" | "Remove" | "Invalid";
+        code?: number | string | undefined;
+        message?: string | undefined | null;
+        data?: any | undefined | null;
     }
 
     export interface GenericWebResponseContract<T> extends Response {
@@ -57,10 +131,11 @@ namespace NuScien {
         json(): Promise<T>;
     }
 
-    /**
-     * The main version.
-     */
-    export const ver = "5.0";
+    export interface CollectionWebResponseContract<T> extends GenericWebResponseContract<CollectionResultContract<T>> {
+    }
+
+    export interface ChangingWebResponseContract extends GenericWebResponseContract<ChangingResultContract> {
+    }
 
     /**
      * Assert helper.

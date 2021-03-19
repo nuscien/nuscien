@@ -504,7 +504,7 @@ namespace NuScien.Data
             foreach (var prop in value)
             {
                 if (prop.Key == null || !prop.Key.StartsWith("config.")) continue;
-                var key = prop.Key[..7]?.Trim();
+                var key = prop.Key.Range(0, 7)?.Trim();
                 if (string.IsNullOrEmpty(key)) continue;
                 var config = Config;
                 if (config == null) config = Config = new JsonObject();

@@ -139,7 +139,8 @@ namespace NuScien.Users
         /// <summary>
         /// Gets or sets the role.
         /// </summary>
-        [JsonIgnore]
+        [JsonPropertyName("role")]
+        [JsonConverter(typeof(JsonIntegerEnumConverter))]
         [NotMapped]
         public Roles Role
         {
@@ -151,7 +152,7 @@ namespace NuScien.Users
         /// Gets or sets the role code.
         /// </summary>
         [DataMember(Name = "role")]
-        [JsonPropertyName("role")]
+        [JsonIgnore]
         [Column("role")]
         public int RoleCode
         {

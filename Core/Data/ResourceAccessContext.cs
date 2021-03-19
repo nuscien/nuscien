@@ -145,7 +145,7 @@ namespace NuScien.Data
         /// <returns>The result.</returns>
         public Task<TResult> GetDataAsync<TResult>(HttpMethod method, string relativePath, QueryData q, CancellationToken cancellationToken = default)
         {
-            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), cancellationToken);
+            return CreateHttp<TResult>().SendJsonAsync(method, GetUri(relativePath, q), null, cancellationToken);
         }
 
         /// <summary>
