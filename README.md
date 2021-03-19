@@ -13,8 +13,12 @@ See [sample and tutorials](https://github.com/nuscien/sample) to get start. Foll
 ## Core
 
 [![NuGet package](https://img.shields.io/nuget/dt/NuScien?label=nuget+downloads)](https://www.nuget.org/packages/NuScien)
-![.NET 5.0](./docs/assets/badge_NET_5_0.svg)
+
+![.NET 5](./docs/assets/badge_NET_5_0.svg)
 ![.NET Core 3.1](./docs/assets/badge_NET_Core_3_1.svg)
+![.NET Standard 2.0](./docs/assets/badge_NET_Standard_2_0.svg)
+![.NET Framework 4.8](./docs/assets/badge_NET_Fx_4_8.svg)
+![.NET Framework 4.6.1](./docs/assets/badge_NET_Fx_4_6_1.svg)
 
 `NuScien.dll`
 
@@ -36,6 +40,7 @@ Authorization is based on OAuth 2.0 and powered by [Trivial](https://github.com/
 ## OnPremises
 
 [![NuGet package](https://img.shields.io/nuget/dt/NuScien.OnPremises?label=nuget+downloads)](https://www.nuget.org/packages/NuScien.OnPremises)
+
 ![.NET 5.0](./docs/assets/badge_NET_5_0.svg)
 ![.NET Core 3.1](./docs/assets/badge_NET_Core_3_1.svg)
 
