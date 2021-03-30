@@ -15,7 +15,7 @@ namespace NuScien.Reflection
     /// <summary>
     /// The read-only observable properties.
     /// </summary>
-    public class ReadonlyObservableProperties : BaseObservableProperties
+    public abstract class ReadonlyObservableProperties : BaseObservableProperties
     {
         private bool preferThrowExceptionWhenSetPropertyFailed;
 

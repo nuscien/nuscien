@@ -72,13 +72,35 @@ declare namespace NuScien {
         config: any;
         role: number | "member" | "poweruser" | "master" | "owner" | "Member" | "PowerUser" | "Master" | "Owner" | null;
     }
-    interface ContentEntityContract extends ResourceEntityContract {
+    interface RevisionAdditionalInfoContract {
+        owner: string;
+        message?: string;
     }
-    interface ContentTemplateEntityContract extends ResourceEntityContract {
+    interface ContentEntityContract extends SiteOwnerResourceEntityContract {
+        intro?: string;
+        parent?: string;
+        publisher?: string;
+        thumb?: string;
+        templ?: string;
+        keywords?: string;
+        content: string;
+        templc?: string;
+        creator?: string;
     }
-    interface CommentEntityContract extends ResourceEntityContract {
+    interface ContentTemplateEntityContract extends SiteOwnerResourceEntityContract {
+        intro?: string;
+        publisher?: string;
+        thumb?: string;
+        content: string;
+        creator?: string;
     }
-    interface ContactEntityContract extends ResourceEntityContract {
+    interface CommentEntityContract extends BaseOwnerResourceEntityContract {
+        publisher: string;
+        parent?: string;
+        ancestor?: string;
+        content: string;
+    }
+    interface ContactEntityContract extends BaseOwnerResourceEntityContract {
     }
     interface TokenResponseContract {
         state?: string | undefined | null;
