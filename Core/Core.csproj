@@ -8,9 +8,9 @@
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>5.0.0-preview3</Version>
-    <AssemblyVersion>0.5.0.0</AssemblyVersion>
-    <FileVersion>0.5.0.0</FileVersion>
+    <Version>5.0.0</Version>
+    <AssemblyVersion>5.0.0.0</AssemblyVersion>
+    <FileVersion>5.0.0.0</FileVersion>
     <Description>A core library of NuScien framework which provides a solution to build community and enterprise projects based on resource entity and accessories with ACL and CMS built-in.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -40,19 +40,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'net461'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="All" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Trivial" Version="3.7.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="System.Text.Json" Version="5.0.1" />
+    <PackageReference Include="Trivial" Version="3.7.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'net461'">
