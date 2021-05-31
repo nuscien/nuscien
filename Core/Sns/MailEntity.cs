@@ -210,7 +210,7 @@ namespace NuScien.Sns
         }
 
         /// <summary>
-        /// Gets or sets the sender identifier.
+        /// Gets or sets the application name that sent this mail.
         /// </summary>
         [DataMember(Name = "app")]
         [JsonPropertyName("app")]

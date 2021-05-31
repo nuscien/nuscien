@@ -31,6 +31,18 @@
     </LogicalFolder>
     <LogicalFolder Name="查询" Type="0" Sorted="true">
       <Items>
+        <FileNode Name="SnsTablesCreation.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SnsTablesCreation.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SnsTablesDeletion.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SnsTablesDeletion.sql</FullPath>
+        </FileNode>
         <FileNode Name="TablesCreation.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:ALPS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>ALPS</AssociatedConnSrvName>
