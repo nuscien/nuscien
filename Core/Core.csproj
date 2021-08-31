@@ -20,7 +20,7 @@
     <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
-    <PackageTags>acl cms orm</PackageTags>
+    <PackageTags>acl cms orm oauth</PackageTags>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
