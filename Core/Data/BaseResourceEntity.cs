@@ -411,6 +411,15 @@ namespace NuScien.Data
         }
 
         /// <summary>
+        /// Returns a string that represents the current entity object.
+        /// </summary>
+        /// <returns>A string that represents the current entity object.</returns>
+        public override string ToString()
+        {
+            return $"Entity ({base.ToString()}) {Name ?? Id}";
+        }
+
+        /// <summary>
         /// Prepares for saving.
         /// </summary>
         protected internal void PrepareForSaving()

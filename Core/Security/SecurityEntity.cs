@@ -87,5 +87,14 @@ namespace NuScien.Security
             get => GetCurrentProperty<string>();
             set => SetCurrentProperty(value);
         }
+
+        /// <summary>
+        /// Returns a string that represents the current entity object.
+        /// </summary>
+        /// <returns>A string that represents the current entity object.</returns>
+        public override string ToString()
+        {
+            return $"Security entity ({SecurityEntityType}) {Name ?? Id} - {Nickname ?? "?"}";
+        }
     }
 }

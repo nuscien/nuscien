@@ -21,8 +21,8 @@ See [sample and tutorials](https://github.com/nuscien/sample) to get start. Foll
 
 `NuScien.dll`
 
-The common library.
-It contains a foundation for ACL and business resource entity.
+The core library of NuScien project.
+It contains the foundation for ACL and business resource entity.
 
 Following are the commonly used types.
 

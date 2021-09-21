@@ -5,7 +5,7 @@ using System.Text;
 namespace NuScien.Security
 {
     /// <summary>
-    /// The permission item constants.
+    /// The commonly used permission item constants.
     /// </summary>
     public static class PermissionItems
     {
