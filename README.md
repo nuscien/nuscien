@@ -1,4 +1,4 @@
-# NuScien 5
+# NuScien 6
 
 [![MIT Licensed](./docs/assets/badge_lisence_MIT.svg)](https://github.com/nuscien/nuscien/blob/master/LICENSE)
 

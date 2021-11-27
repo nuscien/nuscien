@@ -21,6 +21,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>acl cms orm oauth</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
@@ -35,7 +36,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="README.md" Pack="true" PackagePath="README.md"/>
+    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 

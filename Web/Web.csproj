@@ -21,6 +21,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>acl cms</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
@@ -40,12 +41,10 @@
 
   <ItemGroup>
     <Folder Include="Js\" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <EmbeddedResource Include="..\Js\dist\core.d.ts" Link="Js\core.d.ts" />
     <EmbeddedResource Include="..\Js\dist\core.js" Link="Js\core.js" />
-    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="README.md" Pack="true" PackagePath="README.md"/>
+    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
