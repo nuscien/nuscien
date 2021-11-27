@@ -83,7 +83,7 @@ namespace NuScien.Users
         /// </summary>
         [DataMember(Name = "gender")]
         [JsonPropertyName("gender")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<Genders>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<Genders>))]
         [NotMapped]
         public Genders Gender
         {

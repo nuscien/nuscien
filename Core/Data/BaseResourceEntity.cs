@@ -97,7 +97,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "state")]
         [JsonPropertyName("state")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<ResourceEntityStates>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<ResourceEntityStates>))]
         [NotMapped]
         public ResourceEntityStates State
         {
@@ -191,7 +191,7 @@ namespace NuScien.Data
         /// Sets properites.
         /// </summary>
         /// <param name="value">The JSON object to fill the member of this instance.</param>
-        public void SetProperties(JsonObject value)
+        public void SetProperties(JsonObjectNode value)
         {
             SetProperties(value, null);
         }
@@ -201,7 +201,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="value">The JSON object to fill the member of this instance.</param>
         /// <param name="blacklist">The blacklist of the entity property name.</param>
-        public virtual void SetProperties(JsonObject value, IEnumerable<string> blacklist)
+        public virtual void SetProperties(JsonObjectNode value, IEnumerable<string> blacklist)
         {
             if (value == null) return;
             if (value.TryGetStringValue("id", out var id) && !string.IsNullOrWhiteSpace(id) && id.Trim().ToLowerInvariant() != Id?.ToLowerInvariant()) return;
@@ -358,17 +358,17 @@ namespace NuScien.Data
                                 if (prop.Value.TryGetUInt32(out var v)) TrySetProperty(p, v);
                             }
                         }
-                        else if (p.PropertyType == typeof(JsonObject))
+                        else if (p.PropertyType == typeof(JsonObjectNode))
                         {
-                            if (prop.Value is JsonObject json) TrySetProperty(p, json);
-                            else if (prop.Value is JsonArray jArr) TrySetProperty(p, (JsonObject)jArr);
+                            if (prop.Value is JsonObjectNode json) TrySetProperty(p, json);
+                            else if (prop.Value is JsonArrayNode jArr) TrySetProperty(p, (JsonObjectNode)jArr);
                         }
-                        else if (p.PropertyType == typeof(JsonArray))
+                        else if (p.PropertyType == typeof(JsonArrayNode))
                         {
-                            if (prop.Value is JsonArray jArr) TrySetProperty(p, jArr);
-                            else if (prop.Value is JsonString s) TrySetProperty(p, new JsonArray { s.Value });
-                            else if (prop.Value is JsonInteger i) TrySetProperty(p, new JsonArray { i.Value });
-                            else if (prop.Value is JsonDouble l) TrySetProperty(p, new JsonArray { l.Value });
+                            if (prop.Value is JsonArrayNode jArr) TrySetProperty(p, jArr);
+                            else if (prop.Value is JsonStringNode s) TrySetProperty(p, new JsonArrayNode { s.Value });
+                            else if (prop.Value is JsonIntegerNode i) TrySetProperty(p, new JsonArrayNode { i.Value });
+                            else if (prop.Value is JsonDoubleNode l) TrySetProperty(p, new JsonArrayNode { l.Value });
                         }
                         else if (p.PropertyType == typeof(Uri))
                         {

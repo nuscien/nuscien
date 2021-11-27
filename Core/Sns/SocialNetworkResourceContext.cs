@@ -341,7 +341,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetContactAsync(id, cancellationToken);
@@ -374,7 +374,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetBlogAsync(id, cancellationToken);
@@ -434,7 +434,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetReceivedMailAsync(id, cancellationToken);
@@ -467,7 +467,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetSentMailAsync(id, cancellationToken);
@@ -680,7 +680,7 @@ namespace NuScien.Sns
         public override Task<IEnumerable<BlogCommentEntity>> ListBlogCommentsAsync(string blog, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
             var query = q != null ? (QueryData)q : new QueryData();
-            if (plain) query.Set("plain", JsonBoolean.TrueString);
+            if (plain) query.Set("plain", JsonBooleanNode.TrueString);
             return QueryAsync<BlogCommentEntity>($"{RootFolderName}sns/blog/c/{blog}/comments", q, cancellationToken);
         }
 
@@ -895,7 +895,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateContactAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetChangingResultAsync($"{RootFolderName}passport/contact/{id}", null, delta, cancellationToken);
@@ -911,7 +911,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateContactAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
-            return UpdateContactAsync(id, new JsonObject
+            return UpdateContactAsync(id, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -924,7 +924,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateBlogAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetChangingResultAsync($"{RootFolderName}sns/blog/c/{id}", null, delta, cancellationToken);
@@ -940,7 +940,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateBlogAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
-            return UpdateBlogAsync(id, new JsonObject
+            return UpdateBlogAsync(id, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -957,7 +957,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetChangingResultAsync($"{RootFolderName}sns/blog/cc/{id}", null, new JsonObject
+            return GetChangingResultAsync($"{RootFolderName}sns/blog/cc/{id}", null, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -974,7 +974,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetChangingResultAsync($"{RootFolderName}sns/activit/u/{id}", null, new JsonObject
+            return GetChangingResultAsync($"{RootFolderName}sns/activit/u/{id}", null, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -991,7 +991,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return GetChangingResultAsync($"{RootFolderName}sns/activit/g/{id}", null, new JsonObject
+            return GetChangingResultAsync($"{RootFolderName}sns/activit/g/{id}", null, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -1004,7 +1004,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetChangingResultAsync($"{RootFolderName}mail/m/{id}", null, delta, cancellationToken);
@@ -1020,7 +1020,7 @@ namespace NuScien.Sns
         public override Task<ChangingResultInfo> UpdateReceivedMailAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
-            return UpdateReceivedMailAsync(id, new JsonObject
+            return UpdateReceivedMailAsync(id, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);
@@ -1033,7 +1033,7 @@ namespace NuScien.Sns
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The changing result information.</returns>
-        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateSentMailAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
             return GetChangingResultAsync($"{RootFolderName}mail/e/{id}", null, delta, cancellationToken);
@@ -1050,7 +1050,7 @@ namespace NuScien.Sns
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, EmptyIdTips));
             if (string.IsNullOrWhiteSpace(UserId)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Unauthorized, LoginErrorTips));
-            return UpdateSentMailAsync(id, new JsonObject
+            return UpdateSentMailAsync(id, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);

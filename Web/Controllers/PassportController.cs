@@ -102,7 +102,7 @@ namespace NuScien.Web
             var q = await Request.ReadBodyAsQueryDataAsync();
             var code = q.GetFirstValue(CodeTokenRequestBody.CodeProperty, true);
             if (string.IsNullOrWhiteSpace(code)) return BadRequest();
-            var isInserting = q.GetFirstValue("insert", true) == JsonBoolean.TrueString;
+            var isInserting = q.GetFirstValue("insert", true) == JsonBooleanNode.TrueString;
             var instance = await this.GetResourceAccessClientAsync();
             var result = await instance.SetAuthorizationCodeAsync(serviceProvider, code, isInserting);
             Logger?.LogInformation(new EventId(17001005, "AuthCode"), "Set auth code of {0} for user {1}.", serviceProvider, instance?.User?.Name ?? instance?.UserId);

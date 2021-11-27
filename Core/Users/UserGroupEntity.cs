@@ -63,7 +63,7 @@ namespace NuScien.Users
         /// Gets or sets the membership policy.
         /// </summary>
         [JsonPropertyName("membership")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<UserGroupMembershipPolicies>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<UserGroupMembershipPolicies>))]
         [NotMapped]
         public UserGroupMembershipPolicies MembershipPolicy
         {
@@ -87,7 +87,7 @@ namespace NuScien.Users
         /// Gets or sets the visibility.
         /// </summary>
         [JsonPropertyName("visible")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<UserGroupVisibilities>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<UserGroupVisibilities>))]
         [NotMapped]
         public UserGroupVisibilities Visibility
         {

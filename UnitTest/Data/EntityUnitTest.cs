@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuScien.Data;
 using NuScien.Security;
 using NuScien.Users;
-using NuScien.Web;
 using Trivial.Data;
 using Trivial.Net;
 using Trivial.Security;
@@ -104,20 +103,6 @@ namespace NuScien.UnitTest.Data
 
             // Sign out
             await context.CoreResources.SignOutAsync();
-        }
-
-        /// <summary>
-        /// Tests MIME mapping.
-        /// </summary>
-        [TestMethod]
-        public void TestMime()
-        {
-            const string TestMimeValue = "application/x-test";
-            MimeUtilities.GetHandler = file => file?.Extension == ".test" ? TestMimeValue : null;
-            Assert.AreEqual(TestMimeValue, MimeUtilities.GetByFileExtension(".test"));
-            Assert.AreEqual("application/vnd.openxmlformats-officedocument.presentationml.presentation", MimeUtilities.GetByFileExtension(".pptx"));
-            Assert.AreEqual(WebFormat.StreamMIME, MimeUtilities.GetByFileExtension(".abcdefg"));
-            Assert.IsNull(MimeUtilities.GetByFileExtension(".abcdefg", true));
         }
     }
 }

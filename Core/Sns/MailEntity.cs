@@ -303,7 +303,7 @@ namespace NuScien.Sns
         /// </summary>
         [NotMapped]
         [JsonPropertyName("flag")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<MailFlags>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<MailFlags>))]
         public MailFlags Flag
         {
             get => GetCurrentProperty<MailFlags>();

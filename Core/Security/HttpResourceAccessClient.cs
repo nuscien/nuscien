@@ -32,7 +32,7 @@ namespace NuScien.Security
     /// <summary>
     /// The on-premises resource access client.
     /// </summary>
-    public class HttpResourceAccessClient : BaseResourceAccessClient, IDisposable
+    public class HttpResourceAccessClient : BaseResourceAccessClient
     {
         /// <summary>
         /// The OAuth client.
@@ -305,25 +305,6 @@ namespace NuScien.Security
         }
 
         /// <summary>
-        /// Releases all resources used by the current OAuth client object.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by this instance and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing) return;
-            if (appKey != null) appKey.Dispose();
-        }
-
-        /// <summary>
         /// Creates a token request instance by a specific body.
         /// The current app secret information will be filled into the instance.
         /// </summary>
@@ -458,7 +439,7 @@ namespace NuScien.Security
         /// <returns>The status of changing result.</returns>
         public override Task<ChangingResultInfo> SetAuthorizationCodeAsync(string serviceProvider, string code, bool insertNewOne = false, CancellationToken cancellationToken = default)
         {
-            return SendChangeAsync(HttpMethod.Put, coreResPath + "passport/authcode/" + serviceProvider, new JsonObject
+            return SendChangeAsync(HttpMethod.Put, coreResPath + "passport/authcode/" + serviceProvider, new JsonObjectNode
             {
                 { CodeTokenRequestBody.CodeProperty, code },
                 { "insert", insertNewOne }
@@ -487,7 +468,7 @@ namespace NuScien.Security
         public override Task<bool> HasUserNameAsync(string logname, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(logname)) return Task.FromResult(false);
-            return SendTestingAsync(HttpMethod.Post, coreResPath + "passport/users/exist", new JsonObject
+            return SendTestingAsync(HttpMethod.Post, coreResPath + "passport/users/exist", new JsonObjectNode
             {
                 { "key", "logname" },
                 { "value", logname }
@@ -513,7 +494,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override Task<ChangingResultInfo> UpdateUserAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateUserAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
             if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
@@ -539,7 +520,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override Task<ChangingResultInfo> UpdateUserGroupAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateUserGroupAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
             if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
@@ -580,7 +561,7 @@ namespace NuScien.Security
         /// <returns>The client app identifier and secret key.</returns>
         public override async Task<AppAccessingKey> RenewAppClientKeyAsync(string appId, CancellationToken cancellationToken = default)
         {
-            var r = await SendAsync<JsonObject>(HttpMethod.Post, GetUri($"{coreResPath}passport/credential/client/{appId}/renew"), cancellationToken);
+            var r = await SendAsync<JsonObjectNode>(HttpMethod.Post, GetUri($"{coreResPath}passport/credential/client/{appId}/renew"), cancellationToken);
             if (r == null) return null;
             var id = r.GetStringValue("id");
             var secret = r.GetStringValue("secret");
@@ -598,7 +579,7 @@ namespace NuScien.Security
         {
             return SendAsync<ContentEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/c/" + id, includeAllStates ? new QueryData
             {
-                { "all", JsonBoolean.TrueString }
+                { "all", JsonBooleanNode.TrueString }
             } : null), cancellationToken);
         }
 
@@ -662,7 +643,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
             if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
@@ -680,7 +661,7 @@ namespace NuScien.Security
         {
             return SendAsync<ContentTemplateEntity>(HttpMethod.Get, GetUri(coreResPath + "cms/t/" + id, includeAllStates ? new QueryData
             {
-                { "all", JsonBoolean.TrueString }
+                { "all", JsonBooleanNode.TrueString }
             } : null), cancellationToken);
         }
 
@@ -728,7 +709,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the entity identifier."));
             if (delta == null || delta.Count == 0) return Task.FromResult(new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing request to update."));
@@ -746,7 +727,7 @@ namespace NuScien.Security
         public override Task<IEnumerable<ContentCommentEntity>> ListContentCommentsAsync(string content, bool plain, QueryArgs q, CancellationToken cancellationToken = default)
         {
             var query = q != null ? (QueryData)q : new QueryData();
-            if (plain) query.Set("plain", JsonBoolean.TrueString);
+            if (plain) query.Set("plain", JsonBooleanNode.TrueString);
             return QueryAsync<ContentCommentEntity>($"{coreResPath}cms/c/{content}/comments", query, cancellationToken);
         }
 
@@ -797,10 +778,10 @@ namespace NuScien.Security
         /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The value.</returns>
-        protected override Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        protected override Task<JsonObjectNode> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(key)) return null;
-            return SendAsync<JsonObject>(HttpMethod.Get, GetUri(string.IsNullOrWhiteSpace(siteId) ? $"{coreResPath}settings/global/{key.Trim()}" : $"{coreResPath}settings/site/{siteId}/{key.Trim()}"), cancellationToken);
+            return SendAsync<JsonObjectNode>(HttpMethod.Get, GetUri(string.IsNullOrWhiteSpace(siteId) ? $"{coreResPath}settings/global/{key.Trim()}" : $"{coreResPath}settings/site/{siteId}/{key.Trim()}"), cancellationToken);
         }
 
         /// <summary>
@@ -824,7 +805,7 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override Task<ChangingResultInfo> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        public override Task<ChangingResultInfo> SaveSettingsAsync(string key, string siteId, JsonObjectNode value, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(key)) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires key."));
             key = key.Trim();
@@ -1031,7 +1012,7 @@ namespace NuScien.Security
         protected override Task<ChangingResultInfo> SaveEntityAsync(ContentEntity content, string message, CancellationToken cancellationToken = default)
         {
             if (content == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the content."));
-            var json = JsonObject.ConvertFrom(content);
+            var json = JsonObjectNode.ConvertFrom(content);
             json.SetValue("message", message);
             return SendChangeAsync(HttpMethod.Put, coreResPath + "cms/c", json, cancellationToken);
         }
@@ -1046,7 +1027,7 @@ namespace NuScien.Security
         protected override Task<ChangingResultInfo> SaveEntityAsync(ContentTemplateEntity template, string message, CancellationToken cancellationToken = default)
         {
             if (template == null) return Task.FromResult(new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires the content template."));
-            var json = JsonObject.ConvertFrom(template);
+            var json = JsonObjectNode.ConvertFrom(template);
             json.SetValue("message", message);
             return SendChangeAsync(HttpMethod.Put, coreResPath + "cms/t", json, cancellationToken);
         }
@@ -1179,7 +1160,7 @@ namespace NuScien.Security
             if (q == null) q = InternalAssertion.DefaultQueryArgs;
             var query = new QueryData();
             if (!string.IsNullOrWhiteSpace(q.NameQuery)) query["q"] = q.NameQuery;
-            if (q.NameExactly) query["eq_name"] = JsonBoolean.TrueString;
+            if (q.NameExactly) query["eq_name"] = JsonBooleanNode.TrueString;
             query["count"] = q.Count.ToString();
             query["offset"] = q.Offset.ToString();
             query["state"] = ((int)q.State).ToString();

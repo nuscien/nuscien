@@ -78,7 +78,7 @@ namespace NuScien.Reflection
         /// Writes this instance to the specified writer as a JSON value.
         /// </summary>
         /// <param name="writer">The writer to which to write this instance.</param>
-        public new virtual void WriteTo(Utf8JsonWriter writer) => JsonObject.ConvertFrom(this).WriteTo(writer);
+        public new virtual void WriteTo(Utf8JsonWriter writer) => JsonObjectNode.ConvertFrom(this).WriteTo(writer);
 
         internal T GetPropertySerialized<T>(string key, string s, Func<T> maker) where T : class
         {
@@ -128,11 +128,11 @@ namespace NuScien.Reflection
         /// </summary>
         /// <param name="value">The entity to convert.</param>
         /// <returns>A JSON object instance.</returns>
-        public static explicit operator JsonObject(ReadonlyObservableProperties value)
+        public static explicit operator JsonObjectNode(ReadonlyObservableProperties value)
         {
             try
             {
-                return JsonObject.ConvertFrom(value);
+                return JsonObjectNode.ConvertFrom(value);
             }
             catch (JsonException ex)
             {

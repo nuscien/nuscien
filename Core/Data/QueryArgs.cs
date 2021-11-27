@@ -66,7 +66,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "state")]
         [JsonPropertyName("state")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<ResourceEntityStates>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<ResourceEntityStates>))]
         public ResourceEntityStates State { get; set; } = ResourceEntityStates.Normal;
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace NuScien.Data
         /// </summary>
         [DataMember(Name = "order")]
         [JsonPropertyName("order")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter<ResourceEntityOrders>))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<ResourceEntityOrders>))]
         public ResourceEntityOrders Order { get; set; } = ResourceEntityOrders.Default;
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace NuScien.Data
             var result = new QueryArgs
             {
                 NameQuery = q.GetValue("q") ?? q.GetValue("name"),
-                NameExactly = q.GetValue("eqname")?.ToLowerInvariant() == JsonBoolean.TrueString,
+                NameExactly = q.GetValue("eqname")?.ToLowerInvariant() == JsonBooleanNode.TrueString,
                 Offset = q.TryGetInt32Value("offset") ?? 0,
                 Count = q.TryGetInt32Value("count") ?? ResourceEntityExtensions.PageSize
             };
@@ -227,10 +227,10 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="q">The query arguments to convert.</param>
         /// <returns>The JSON object.</returns>
-        public static explicit operator JsonObject(QueryArgs q)
+        public static explicit operator JsonObjectNode(QueryArgs q)
         {
             if (q == null) return null;
-            return new JsonObject
+            return new JsonObjectNode
             {
                 { "q", q.NameQuery },
                 { "eqname", q.NameExactly },
@@ -298,7 +298,7 @@ namespace NuScien.Data
                 }
             }
 
-            var json = JsonObject.Parse(s);
+            var json = JsonObjectNode.Parse(s);
             return Parse(json);
         }
 
@@ -307,7 +307,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="json">The JSON object.</param>
         /// <returns>An instance of query arguments</returns>
-        public static QueryArgs Parse(JsonObject json)
+        public static QueryArgs Parse(JsonObjectNode json)
         {
             var q = new QueryArgs
             {
@@ -364,7 +364,7 @@ namespace NuScien.Data
 
         private static QueryArgs ParseJson(ref Utf8JsonReader reader)
         {
-            var json = JsonObject.ParseValue(ref reader);
+            var json = JsonObjectNode.ParseValue(ref reader);
             return QueryArgs.Parse(json);
         }
     }

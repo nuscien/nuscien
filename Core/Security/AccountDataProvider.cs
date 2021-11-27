@@ -245,7 +245,7 @@ namespace NuScien.Security
         /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The value.</returns>
-        public Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default);
+        public Task<JsonObjectNode> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the settings.
@@ -468,7 +468,7 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
+        public Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObjectNode value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates a publish content entity.

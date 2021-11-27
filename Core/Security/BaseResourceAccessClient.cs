@@ -932,7 +932,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateUserAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateUserAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetUserByIdAsync(id, cancellationToken);
@@ -966,7 +966,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateUserGroupAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateUserGroupAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetUserGroupByIdAsync(id, cancellationToken);
@@ -1613,7 +1613,7 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, string message, CancellationToken cancellationToken = default)
+        public Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObjectNode delta, string message, CancellationToken cancellationToken = default)
         {
             if (message != null && delta != null) delta.SetValue("message", message);
             return UpdateContentAsync(id, delta, cancellationToken);
@@ -1626,7 +1626,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateContentAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetContentAsync(id, true, cancellationToken);
@@ -1687,7 +1687,7 @@ namespace NuScien.Security
         /// <param name="message">The commit message.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObject delta, string message, CancellationToken cancellationToken = default)
+        public Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObjectNode delta, string message, CancellationToken cancellationToken = default)
         {
             if (message != null && delta != null) delta.SetValue("message", message);
             return UpdateContentTemplateAsync(id, delta, cancellationToken);
@@ -1700,7 +1700,7 @@ namespace NuScien.Security
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> UpdateContentTemplateAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires an entity identifier.");
             var entity = await GetContentTemplateAsync(id, cancellationToken);
@@ -1916,7 +1916,7 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public abstract Task<ChangingResultInfo> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default);
+        public abstract Task<ChangingResultInfo> SaveSettingsAsync(string key, string siteId, JsonObjectNode value, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the settings.
@@ -1934,7 +1934,7 @@ namespace NuScien.Security
         /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The value.</returns>
-        protected abstract Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default);
+        protected abstract Task<JsonObjectNode> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the settings.

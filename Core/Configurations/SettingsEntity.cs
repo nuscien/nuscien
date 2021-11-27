@@ -29,7 +29,7 @@ namespace NuScien.Configurations
             /// </summary>
             /// <param name="key">The settings key.</param>
             /// <param name="globalConfig">The global settings configuration data.</param>
-            public Model(string key, JsonObject globalConfig)
+            public Model(string key, JsonObjectNode globalConfig)
             {
                 Key = key;
                 GlobalConfigString = globalConfig?.ToString();
@@ -53,7 +53,7 @@ namespace NuScien.Configurations
             /// <param name="siteId">The site identifier.</param>
             /// <param name="siteConfig">The site settings configuration data.</param>
             /// <param name="globalConfig">The global settings configuration data.</param>
-            public Model(string key, string siteId, JsonObject siteConfig, JsonObject globalConfig = null)
+            public Model(string key, string siteId, JsonObjectNode siteConfig, JsonObjectNode globalConfig = null)
             {
                 Key = key;
                 SiteId = siteId;
@@ -99,17 +99,17 @@ namespace NuScien.Configurations
             /// <summary>
             /// Gets the configuration data of the site.
             /// </summary>
-            public JsonObject GetSiteConfig()
+            public JsonObjectNode GetSiteConfig()
             {
-                return JsonObject.Parse(SiteConfigString);
+                return JsonObjectNode.Parse(SiteConfigString);
             }
 
             /// <summary>
             /// Gets the configuration data from global.
             /// </summary>
-            public JsonObject GetGlobalConfig()
+            public JsonObjectNode GetGlobalConfig()
             {
-                return JsonObject.Parse(GlobalConfigString);
+                return JsonObjectNode.Parse(GlobalConfigString);
             }
 
             /// <summary>

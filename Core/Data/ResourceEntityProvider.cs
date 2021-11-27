@@ -155,7 +155,7 @@ namespace NuScien.Data
             var client = CreateHttp<T>();
             var entity = await client.GetAsync(GetUri("e/" + id, includeAllStates ? new QueryData
             {
-                { "all", JsonBoolean.TrueString }
+                { "all", JsonBooleanNode.TrueString }
             } : null), cancellationToken);
             return entity;
         }
@@ -216,7 +216,7 @@ namespace NuScien.Data
         /// <param name="delta">The changeset.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangingResultInfo> SaveAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public async Task<ChangingResultInfo> SaveAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires identifier.");
             if (delta == null) return new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing need to update.");
@@ -277,7 +277,7 @@ namespace NuScien.Data
         /// <returns>The change method.</returns>
         public Task<ChangingResultInfo> UpdateStateAsync(string id, ResourceEntityStates state, CancellationToken cancellationToken = default)
         {
-            return SaveAsync(id, new JsonObject
+            return SaveAsync(id, new JsonObjectNode
             {
                 { "state", state.ToString() }
             }, cancellationToken);

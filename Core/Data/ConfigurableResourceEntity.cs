@@ -25,15 +25,15 @@ namespace NuScien.Data
     public abstract class ConfigurableResourceEntity : BaseResourceEntity
     {
         private string config;
-        private JsonObject json;
+        private JsonObjectNode json;
 
         /// <summary>
         /// Gets or sets the additional message.
         /// </summary>
         [JsonPropertyName("config")]
-        [JsonConverter(typeof(JsonObjectConverter))]
+        [JsonConverter(typeof(JsonObjectNodeConverter))]
         [NotMapped]
-        public JsonObject Config
+        public JsonObjectNode Config
         {
             get
             {
@@ -243,7 +243,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The value of the property.</returns>
-        public JsonObject TryGetJsonConfigValue(string key)
+        public JsonObjectNode TryGetJsonConfigValue(string key)
         {
             var json = Config;
             if (json != null) return json.TryGetObjectValue(key);
@@ -255,7 +255,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The value of the property.</returns>
-        public JsonArray TryGetJsonArrayConfigValue(string key)
+        public JsonArrayNode TryGetJsonArrayConfigValue(string key)
         {
             var json = Config;
             if (json != null) return json.TryGetArrayValue(key);
@@ -286,7 +286,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The value of the property.</returns>
-        public IJsonValueResolver TryGetConfigValue(string key)
+        public IJsonDataNode TryGetConfigValue(string key)
         {
             var json = Config;
             try
@@ -359,13 +359,13 @@ namespace NuScien.Data
         {
             if (string.IsNullOrWhiteSpace(key)) return;
             var json = Config;
-            if (json == null) Config = new JsonObject();
+            if (json == null) Config = new JsonObjectNode();
             json = Config;
             if (json == null)
             {
-                Config = new JsonObject();
+                Config = new JsonObjectNode();
                 json = Config;
-                if (json == null) json = Config = new JsonObject();
+                if (json == null) json = Config = new JsonObjectNode();
             }
 
             var cont = false;
@@ -377,34 +377,34 @@ namespace NuScien.Data
             {
                 json.SetValue(key, s);
             }
-            else if (value is IJsonValueResolver j)
+            else if (value is IJsonDataNode j)
             {
                 if (j.ValueKind == JsonValueKind.Null || j.ValueKind == JsonValueKind.Undefined)
                 {
                     json.SetNullValue(key);
                 }
-                else if (j is IJsonString js)
+                else if (j is IJsonStringNode js)
                 {
                     json.SetValue(key, js.StringValue);
                 }
-                else if (j is IJsonValue<string> js2)
+                else if (j is IJsonValueNode<string> js2)
                 {
                     json.SetValue(key, js2.Value);
                 }
-                else if (j is IJsonNumber jn)
+                else if (j is IJsonNumberNode jn)
                 {
                     if (jn.IsInteger) json.SetValue(key, jn.GetInt64());
                     else json.SetValue(key, jn.GetDouble());
                 }
-                else if (j is IJsonValue<bool> jb)
+                else if (j is IJsonValueNode<bool> jb)
                 {
                     json.SetValue(key, jb.Value);
                 }
-                else if (j is JsonObject jo)
+                else if (j is JsonObjectNode jo)
                 {
                     json.SetValue(key, jo);
                 }
-                else if (j is JsonArray ja)
+                else if (j is JsonArrayNode ja)
                 {
                     json.SetValue(key, ja);
                 }
@@ -471,12 +471,12 @@ namespace NuScien.Data
             
             try
             {
-                var v = JsonObject.ConvertFrom(value);
+                var v = JsonObjectNode.ConvertFrom(value);
                 json.SetValue(key, v);
             }
             catch (JsonException)
             {
-                var a = JsonArray.ConvertFrom(value);
+                var a = JsonArrayNode.ConvertFrom(value);
                 json.SetValue(key, a);
             }
         }
@@ -497,7 +497,7 @@ namespace NuScien.Data
         /// </summary>
         /// <param name="value">The JSON object to fill the member of this instance.</param>
         /// <param name="blacklist">The blacklist of the entity property name.</param>
-        public override void SetProperties(JsonObject value, IEnumerable<string> blacklist)
+        public override void SetProperties(JsonObjectNode value, IEnumerable<string> blacklist)
         {
             if (value == null) return;
             base.SetProperties(value, blacklist);
@@ -507,7 +507,7 @@ namespace NuScien.Data
                 var key = prop.Key.Range(0, 7)?.Trim();
                 if (string.IsNullOrEmpty(key)) continue;
                 var config = Config;
-                if (config == null) config = Config = new JsonObject();
+                if (config == null) config = Config = new JsonObjectNode();
                 config[key] = prop.Value;
             }
         }
@@ -538,27 +538,27 @@ namespace NuScien.Data
             }
         }
 
-        private static JsonObject ParseJson(string s)
+        private static JsonObjectNode ParseJson(string s)
         {
             try
             {
-                return JsonObject.Parse(s);
+                return JsonObjectNode.Parse(s);
             }
             catch (JsonException)
             {
-                return new JsonObject();
+                return new JsonObjectNode();
             }
             catch (ArgumentException)
             {
-                return new JsonObject();
+                return new JsonObjectNode();
             }
             catch (InvalidOperationException)
             {
-                return new JsonObject();
+                return new JsonObjectNode();
             }
             catch (FormatException)
             {
-                return new JsonObject();
+                return new JsonObjectNode();
             }
         }
     }
@@ -680,7 +680,7 @@ namespace NuScien.Data
         /// <param name="targetId">The target resource identifier.</param>
         /// <param name="name">The relationship name.</param>
         /// <param name="config">The configuration.</param>
-        public OwnerResourceEntity(T owner, string targetId, string name, JsonObject config = null)
+        public OwnerResourceEntity(T owner, string targetId, string name, JsonObjectNode config = null)
         {
             if (!string.IsNullOrWhiteSpace(targetId)) TargetId = targetId;
             if (config != null) Config = config;
@@ -740,15 +740,15 @@ namespace NuScien.Data
         /// <param name="target">The target resource entity.</param>
         /// <param name="name">The relationship name.</param>
         /// <param name="config">The configuration.</param>
-        public OwnerResourceEntity(TOwner owner, TTarget target, string name = null, JsonObject config = null)
+        public OwnerResourceEntity(TOwner owner, TTarget target, string name = null, JsonObjectNode config = null)
         {
-            if (!(owner is null))
+            if (owner is not null)
             {
                 Owner = owner;
                 OwnerId = owner.Id;
             }
 
-            if (!(target is null))
+            if (target is not null)
             {
                 Target = target;
                 TargetId = target.Id;

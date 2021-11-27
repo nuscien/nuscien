@@ -56,7 +56,7 @@ namespace NuScien.UnitTest.Security
             Assert.IsNotNull(resp.AccessToken);
 
             // Test for settings.
-            await client.SaveSettingsAsync("system", "site", (JsonObject)new Configurations.SystemSiteSettings
+            await client.SaveSettingsAsync("system", "site", (JsonObjectNode)new Configurations.SystemSiteSettings
             {
                 Name = "Sample official website",
                 Owner = "Kingcean Tuan"
@@ -79,7 +79,7 @@ namespace NuScien.UnitTest.Security
                 OwnerSiteId = "site",
             };
             content.State = ResourceEntityStates.Normal;
-            if (content.Config == null) content.Config = new JsonObject();
+            if (content.Config == null) content.Config = new JsonObjectNode();
             content.Config.SetValue("test", "Hellow world!");
             await client.SaveAsync(content, "Test to submit a content.");
             contents = await client.ListContentAsync("site", true, new QueryArgs());

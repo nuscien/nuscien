@@ -205,7 +205,7 @@ namespace NuScien.Web
         {
             try
             {
-                var delta = await JsonObject.ParseAsync(Request.Body);
+                var delta = await JsonObjectNode.ParseAsync(Request.Body);
                 var r = await SaveAsync(id, delta);
                 return r.ToActionResult();
             }
@@ -230,7 +230,7 @@ namespace NuScien.Web
         /// <param name="delta">The data to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangingResultInfo> SaveAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public async Task<ChangingResultInfo> SaveAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id))
             {

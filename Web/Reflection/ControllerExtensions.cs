@@ -231,7 +231,7 @@ namespace NuScien.Web
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The action result.</returns>
-        public static ContentResult ToActionResult(this JsonObject value)
+        public static ContentResult ToActionResult(this JsonObjectNode value)
         {
             return new ContentResult
             {
@@ -246,7 +246,7 @@ namespace NuScien.Web
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The action result.</returns>
-        public static ContentResult ToActionResult(this JsonArray value)
+        public static ContentResult ToActionResult(this JsonArrayNode value)
         {
             return new ContentResult
             {
@@ -349,7 +349,7 @@ namespace NuScien.Web
             var q = new QueryArgs
             {
                 NameQuery = GetFirstStringValue(request, "q"),
-                NameExactly = GetFirstStringValue(request, "eq_name")?.ToLowerInvariant() == JsonBoolean.TrueString,
+                NameExactly = GetFirstStringValue(request, "eq_name")?.ToLowerInvariant() == JsonBooleanNode.TrueString,
                 Count = TryGetInt32Value(request, "count") ?? ResourceEntityExtensions.PageSize,
                 Offset = TryGetInt32Value(request, "offset") ?? 0,
             };
@@ -434,14 +434,14 @@ namespace NuScien.Web
             return r;
         }
 
-        internal static async Task<IActionResult> SaveEntityAsync<T>(this ControllerBase controller, Func<string, BaseResourceAccessClient, Task<T>> entityResolver, Func<T, BaseResourceAccessClient, JsonObject, Task<ChangingResultInfo>> save, string id) where T : BaseResourceEntity
+        internal static async Task<IActionResult> SaveEntityAsync<T>(this ControllerBase controller, Func<string, BaseResourceAccessClient, Task<T>> entityResolver, Func<T, BaseResourceAccessClient, JsonObjectNode, Task<ChangingResultInfo>> save, string id) where T : BaseResourceEntity
         {
             if (string.IsNullOrWhiteSpace(id)) return ChangeErrorKinds.Argument.ToActionResult("Requires entity identifier.");
             var instance = await controller.GetResourceAccessClientAsync();
             var entity = await entityResolver(id, instance);
             if (controller.Request.Body == null) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity).ToActionResult();
             if (entity == null) return ChangeErrorKinds.NotFound.ToActionResult("The resource does not exist.");
-            var delta = await JsonObject.ParseAsync(controller.Request.Body);
+            var delta = await JsonObjectNode.ParseAsync(controller.Request.Body);
             if (delta.Count == 0) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity, "Nothing update request.").ToActionResult();
             entity.SetProperties(delta);
             var result = await save(entity, instance, delta);
@@ -451,7 +451,7 @@ namespace NuScien.Web
         internal static bool? TryGetBoolean(this IQueryCollection request, string key)
         {
             var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();
-            var isPlain = JsonBoolean.TryParse(plain);
+            var isPlain = JsonBooleanNode.TryParse(plain);
             return isPlain?.Value;
         }
 
@@ -547,7 +547,7 @@ namespace NuScien.Web
             var sns = await SocialNetworkResources.CreateAsync(instance);
             if (sns?.CoreResources == null) return new ChangingResultInfo(ChangeErrorKinds.Unsupported, "Do not support this feature.").ToActionResult();
             if (!sns.CoreResources.IsUserSignedIn) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, "Requires login firstly.").ToActionResult();
-            var content = await JsonObject.ParseAsync(controller.Request.Body, default, cancellationToken);
+            var content = await JsonObjectNode.ParseAsync(controller.Request.Body, default, cancellationToken);
             var entity = await resolver(sns, id, cancellationToken);
             if (entity == null) return new ChangingResultInfo(ChangeErrorKinds.NotFound, "The entity does not exist.").ToActionResult();
             if (content == null || content.Count < 1) return new ChangingResultInfo<T>(ChangeMethods.Unchanged, entity, "Nothing need update.").ToActionResult();
@@ -563,7 +563,7 @@ namespace NuScien.Web
             var sns = await SocialNetworkResources.CreateAsync(instance);
             if (sns?.CoreResources == null) return new ChangingResultInfo(ChangeErrorKinds.Unsupported, "Do not support this feature.").ToActionResult();
             if (!sns.CoreResources.IsUserSignedIn) return new ChangingResultInfo(ChangeErrorKinds.Unauthorized, "Requires login firstly.").ToActionResult();
-            var content = await JsonObject.ParseAsync(controller.Request.Body, default, cancellationToken);
+            var content = await JsonObjectNode.ParseAsync(controller.Request.Body, default, cancellationToken);
             if (content == null || content.Count < 1 || !content.TryGetEnumValue<ResourceEntityStates>("state", out var state)) return new ChangingResultInfo(ChangeMethods.Unchanged, "Nothing need update.").ToActionResult();
             var result = await save(sns, id, state, cancellationToken) ?? new ChangingResultInfo(ChangeMethods.Invalid);
             logger?.LogInformation(eventId, $"Update state to {state} ({result.State}) of an entity ({id}).");

@@ -140,7 +140,7 @@ namespace NuScien.Users
         /// Gets or sets the role.
         /// </summary>
         [JsonPropertyName("role")]
-        [JsonConverter(typeof(JsonIntegerEnumConverter))]
+        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter))]
         [NotMapped]
         public Roles Role
         {

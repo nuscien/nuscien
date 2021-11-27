@@ -261,7 +261,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(id)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var plain = JsonBoolean.TryParse(Request.Query?["plain"]);
+            var plain = JsonBooleanNode.TryParse(Request.Query?["plain"]);
             var m = await instance.ListContentCommentsAsync(id, plain == true);
             return this.ResourceEntityResult(m);
         }

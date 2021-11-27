@@ -185,7 +185,7 @@ namespace NuScien.Security
                     await dataProvider.SaveAsync(user);
                 }
 
-                var settings = await dataProvider.GetSettingsAsync("system", null) ?? new JsonObject();
+                var settings = await dataProvider.GetSettingsAsync("system", null) ?? new JsonObjectNode();
                 var groupId = settings.TryGetStringValue("admin_current");
                 if (string.IsNullOrWhiteSpace(groupId))
                 {

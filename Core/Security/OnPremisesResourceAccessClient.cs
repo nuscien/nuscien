@@ -637,7 +637,7 @@ namespace NuScien.Security
         /// <param name="siteId">The owner site identifier; null for global configuration data.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The value.</returns>
-        protected override Task<JsonObject> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        protected override Task<JsonObjectNode> GetSettingsDataByKeyAsync(string key, string siteId, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(key)) return null;
             if (string.IsNullOrWhiteSpace(siteId)) siteId = null;
@@ -668,7 +668,7 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public override async Task<ChangingResultInfo> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        public override async Task<ChangingResultInfo> SaveSettingsAsync(string key, string siteId, JsonObjectNode value, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(key)) return new ChangingResultInfo(ChangeErrorKinds.Argument, "Requires a settings key.");
             else key = key.Trim();
@@ -755,7 +755,7 @@ namespace NuScien.Security
         {
             if (string.IsNullOrWhiteSpace(siteId)) throw new ArgumentNullException(nameof(siteId), "siteId should not be null or empty.");
             siteId = siteId.Trim();
-            var hasPerm = false;
+            bool hasPerm;
             switch (targetType)
             {
                 case SecurityEntityTypes.User:

@@ -129,10 +129,10 @@ namespace NuScien.Configurations
         /// </summary>
         /// <param name="model">The model to convert.</param>
         /// <returns>The JSON object.</returns>
-        public static explicit operator JsonObject(SystemGlobalSettings model)
+        public static explicit operator JsonObjectNode(SystemGlobalSettings model)
         {
             if (model == null) return null;
-            return JsonObject.ConvertFrom(model);
+            return JsonObjectNode.ConvertFrom(model);
         }
     }
 
@@ -182,10 +182,10 @@ namespace NuScien.Configurations
         /// </summary>
         /// <param name="model">The model to convert.</param>
         /// <returns>The JSON object.</returns>
-        public static explicit operator JsonObject(SystemSiteSettings model)
+        public static explicit operator JsonObjectNode(SystemSiteSettings model)
         {
             if (model == null) return null;
-            return JsonObject.ConvertFrom(model);
+            return JsonObjectNode.ConvertFrom(model);
         }
     }
 }

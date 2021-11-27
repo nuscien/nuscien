@@ -171,7 +171,7 @@ namespace NuScien.Data
         /// <param name="delta">The data to change.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public virtual async Task<ChangingResultInfo> SaveAsync(string id, JsonObject delta, CancellationToken cancellationToken = default)
+        public virtual async Task<ChangingResultInfo> SaveAsync(string id, JsonObjectNode delta, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(id))
             {

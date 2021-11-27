@@ -67,7 +67,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(key)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var body = await JsonObject.ParseAsync(Request.Body);
+            var body = await JsonObjectNode.ParseAsync(Request.Body);
             var result = await instance.SaveSettingsAsync(key, null, body);
             Logger?.LogInformation(new EventId(17001103, "SaveGlobalSettings"), "Save global settings {0}.", key);
             return result.ToActionResult();
@@ -85,7 +85,7 @@ namespace NuScien.Web
         {
             if (string.IsNullOrWhiteSpace(key)) return BadRequest();
             var instance = await this.GetResourceAccessClientAsync();
-            var body = await JsonObject.ParseAsync(Request.Body);
+            var body = await JsonObjectNode.ParseAsync(Request.Body);
             var result = await instance.SaveSettingsAsync(key, siteId, body);
             Logger?.LogInformation(new EventId(17001103, "SaveGlobalSettings"), "Save global settings {0}.", key);
             return result.ToActionResult();

@@ -469,7 +469,7 @@ namespace NuScien.Security
         /// <param name="siteId">The owner site identifier if bound to a site; otherwise, null.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The value.</returns>
-        public async Task<JsonObject> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default)
+        public async Task<JsonObjectNode> GetSettingsAsync(string key, string siteId, CancellationToken cancellationToken = default)
         {
             var entity = await GetContext(true).Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId && ele.StateCode == ResourceEntityExtensions.NormalStateCode, cancellationToken);
             return entity?.Config;
@@ -799,7 +799,7 @@ namespace NuScien.Security
         /// <param name="value">The value.</param>
         /// <param name="cancellationToken">The optional token to monitor for cancellation requests.</param>
         /// <returns>The change method.</returns>
-        public async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObject value, CancellationToken cancellationToken = default)
+        public async Task<ChangeMethods> SaveSettingsAsync(string key, string siteId, JsonObjectNode value, CancellationToken cancellationToken = default)
         {
             var context = GetContext();
             var entity = await context.Settings.FirstOrDefaultAsync(ele => ele.Name == key && ele.OwnerSiteId == siteId, cancellationToken);
