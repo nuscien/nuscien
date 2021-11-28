@@ -30,233 +30,6 @@ namespace NuScien.Web
     public static class ControllerExtensions
     {
         /// <summary>
-        /// Gets the first string value.
-        /// </summary>
-        /// <param name="request">The form collection.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="trim">true if need trim; otherwise, false.</param>
-        /// <returns>The string value; or null, if non-exist.</returns>
-        public static string GetFirstStringValue(this IFormCollection request, string key, bool trim = false)
-        {
-            var col = request[key];
-            string str = null;
-            if (trim)
-            {
-                foreach (var ele in col)
-                {
-                    if (ele == null) continue;
-                    var s = ele.Trim();
-                    if (s.Length == 0)
-                    {
-                        if (str == null) str = string.Empty;
-                        continue;
-                    }
-
-                    str = s;
-                }
-            }
-            else
-            {
-                foreach (var ele in col)
-                {
-                    if (ele == null) continue;
-                    if (ele.Length == 0)
-                    {
-                        if (str == null) str = string.Empty;
-                        continue;
-                    }
-
-                    str = ele;
-                }
-            }
-
-            return str;
-        }
-
-        /// <summary>
-        /// Gets the merged string value.
-        /// </summary>
-        /// <param name="request">The form collection.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="split">The splitter charactor.</param>
-        /// <param name="trim">true if need trim; otherwise, false.</param>
-        /// <returns>The string value; or null, if non-exist.</returns>
-        public static string GetMergedStringValue(this IFormCollection request, string key, char split = ',', bool trim = false)
-        {
-            IEnumerable<string> col = request[key];
-            if (trim) col = col.Select(ele => ele?.Trim()).Where(ele => !string.IsNullOrEmpty(ele));
-            return string.Join(split, col);
-        }
-
-        /// <summary>
-        /// Gets the first string value.
-        /// </summary>
-        /// <param name="request">The query collection.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="trim">true if need trim; otherwise, false.</param>
-        /// <returns>The string value; or null, if non-exist.</returns>
-        public static string GetFirstStringValue(this IQueryCollection request, string key, bool trim = false)
-        {
-            var col = request[key];
-            string str = null;
-            if (trim)
-            {
-                foreach (var ele in col)
-                {
-                    if (ele == null) continue;
-                    var s = ele.Trim();
-                    if (s.Length == 0)
-                    {
-                        if (str == null) str = string.Empty;
-                        continue;
-                    }
-
-                    str = s;
-                }
-            }
-            else
-            {
-                foreach (var ele in col)
-                {
-                    if (ele == null) continue;
-                    if (ele.Length == 0)
-                    {
-                        if (str == null) str = string.Empty;
-                        continue;
-                    }
-
-                    str = ele;
-                }
-            }
-
-            return str;
-        }
-
-        /// <summary>
-        /// Gets the merged string value.
-        /// </summary>
-        /// <param name="request">The query collection.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="split">The splitter charactor.</param>
-        /// <param name="trim">true if need trim; otherwise, false.</param>
-        /// <returns>The string value; or null, if non-exist.</returns>
-        public static string GetMergedStringValue(this IQueryCollection request, string key, char split = ',', bool trim = false)
-        {
-            IEnumerable<string> col = request[key];
-            if (trim) col = col.Select(ele => ele?.Trim()).Where(ele => !string.IsNullOrEmpty(ele));
-            return string.Join(split, col);
-        }
-
-        /// <summary>
-        /// Gets the integer value.
-        /// </summary>
-        /// <param name="request">The query collection.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>The string value; or null, if non-exist.</returns>
-        public static int? TryGetInt32Value(this IQueryCollection request, string key)
-        {
-            var s = request[key].Select(ele => ele?.Trim()).FirstOrDefault(ele => !string.IsNullOrEmpty(ele));
-            if (int.TryParse(s, out var r)) return r;
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the query data.
-        /// </summary>
-        /// <param name="request">The HTTP request.</param>
-        /// <param name="encoding">The optional encoding.</param>
-        /// <returns>The string value; or null, if non-exist.</returns>
-        public static async Task<QueryData> ReadBodyAsQueryDataAsync(this HttpRequest request, Encoding encoding = null)
-        {
-            if (request == null || request.Body == null) return null;
-            if (encoding == null) encoding = Encoding.UTF8;
-            using var reader = new StreamReader(request.Body, encoding);
-            var query = await reader.ReadToEndAsync();
-            var q = new QueryData();
-            q.ParseSet(query, false, encoding);
-            return q;
-        }
-
-        /// <summary>
-        /// Convert to an action result.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The action result.</returns>
-        public static ActionResult ToActionResult(this ChangingResultInfo value)
-        {
-            if (value == null) return new NotFoundResult();
-            var ex = value.GetException();
-            var status = ex != null ? (GetStatusCode(ex) ?? 500) : 200;
-            if (status >= 300)
-            {
-                status = value.ErrorCode switch
-                {
-                    ChangeErrorKinds.NotFound => 404,
-                    ChangeErrorKinds.Busy => 503,
-                    ChangeErrorKinds.Unsupported => 501,
-                    ChangeErrorKinds.Conflict => 409,
-                    _ => status
-                };
-            }
-
-            return new JsonResult(value)
-            {
-                StatusCode = status
-            };
-        }
-
-        /// <summary>
-        /// Convert to an action result.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The action result.</returns>
-        public static ActionResult ToActionResult(this ChangeMethods value)
-        {
-            return ToActionResult(new ChangingResultInfo(value));
-        }
-
-        /// <summary>
-        /// Convert to an action result.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="message">The error message.</param>
-        /// <returns>The action result.</returns>
-        public static ActionResult ToActionResult(this ChangeErrorKinds value, string message)
-        {
-            return ToActionResult(new ChangingResultInfo(value, message));
-        }
-
-        /// <summary>
-        /// Convert to an action result.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The action result.</returns>
-        public static ContentResult ToActionResult(this JsonObjectNode value)
-        {
-            return new ContentResult
-            {
-                ContentType = WebFormat.JsonMIME,
-                StatusCode = 200,
-                Content = value.ToString()
-            };
-        }
-
-        /// <summary>
-        /// Convert to an action result.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The action result.</returns>
-        public static ContentResult ToActionResult(this JsonArrayNode value)
-        {
-            return new ContentResult
-            {
-                ContentType = WebFormat.JsonMIME,
-                StatusCode = 200,
-                Content = value.ToString()
-            };
-        }
-
-        /// <summary>
         /// Convert to an action result.
         /// </summary>
         /// <param name="controller">The controller.</param>
@@ -284,61 +57,6 @@ namespace NuScien.Web
         }
 
         /// <summary>
-        /// Converts an exception to action result with exception message.
-        /// </summary>
-        /// <param name="controller">The controller.</param>
-        /// <param name="ex">The exception.</param>
-        /// <param name="ignoreUnknownException">true if return null for unknown exception; otherwise, false.</param>
-        /// <returns>The action result.</returns>
-        public static ActionResult ExceptionResult(this ControllerBase controller, Exception ex, bool ignoreUnknownException = false)
-        {
-            if (ex == null) return controller.StatusCode(500);
-            var result = new ErrorMessageResult(ex);
-            var status = GetStatusCode(ex, ignoreUnknownException);
-            if (!status.HasValue) return null;
-            return new JsonResult(result)
-            {
-                StatusCode = status.Value
-            };
-        }
-
-        /// <summary>
-        /// Converts an exception to action result with exception message.
-        /// </summary>
-        /// <param name="controller">The controller.</param>
-        /// <param name="status">The HTTP status code.</param>
-        /// <param name="ex">The exception.</param>
-        /// <returns>The action result.</returns>
-        public static ActionResult ExceptionResult(this ControllerBase controller, int status, Exception ex)
-        {
-            if (ex == null) return controller.StatusCode(status);
-            var result = new ErrorMessageResult(ex);
-            return new JsonResult(result)
-            {
-                StatusCode = status
-            };
-        }
-
-        /// <summary>
-        /// Converts an exception to action result with exception message.
-        /// </summary>
-        /// <param name="controller">The controller.</param>
-        /// <param name="status">The HTTP status code.</param>
-        /// <param name="ex">The exception message.</param>
-        /// <param name="errorCode">The optional error code.</param>
-        /// <returns>The action result.</returns>
-        #pragma warning disable IDE0060
-        public static ActionResult ExceptionResult(this ControllerBase controller, int status, string ex, string errorCode = null)
-        #pragma warning restore IDE0060
-        {
-            var result = new ErrorMessageResult(ex, errorCode);
-            return new JsonResult(result)
-            {
-                StatusCode = status
-            };
-        }
-
-        /// <summary>
         /// Gets the query arguments instance.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -348,31 +66,13 @@ namespace NuScien.Web
             if (request == null) return null;
             var q = new QueryArgs
             {
-                NameQuery = GetFirstStringValue(request, "q"),
-                NameExactly = GetFirstStringValue(request, "eq_name")?.ToLowerInvariant() == JsonBooleanNode.TrueString,
-                Count = TryGetInt32Value(request, "count") ?? ResourceEntityExtensions.PageSize,
-                Offset = TryGetInt32Value(request, "offset") ?? 0,
+                NameQuery = request.GetFirstStringValue("q"),
+                NameExactly = request.GetFirstStringValue("eq_name")?.ToLowerInvariant() == JsonBooleanNode.TrueString,
+                Count = request.TryGetInt32Value("count") ?? ResourceEntityExtensions.PageSize,
+                Offset = request.TryGetInt32Value("offset") ?? 0,
             };
-            var state = TryGetInt32Value(request, "state");
+            var state = request.TryGetInt32Value("state");
             if (state.HasValue) q.State = (ResourceEntityStates)state.Value;
-            return q;
-        }
-
-        /// <summary>
-        /// Gets the query data instance.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>The query data instance.</returns>
-        public static QueryData GetQueryData(this IQueryCollection request)
-        {
-            if (request == null) return null;
-            var q = new QueryData();
-            foreach (var item in request)
-            {
-                q.Add(item.Key, item.Value as IEnumerable<string>);
-            }
-
-            q.Remove("random");
             return q;
         }
 
@@ -446,13 +146,6 @@ namespace NuScien.Web
             entity.SetProperties(delta);
             var result = await save(entity, instance, delta);
             return result.ToActionResult();
-        }
-
-        internal static bool? TryGetBoolean(this IQueryCollection request, string key)
-        {
-            var plain = request?.GetFirstStringValue(key, true)?.ToLowerInvariant();
-            var isPlain = JsonBooleanNode.TryParse(plain);
-            return isPlain?.Value;
         }
 
         /// <summary>
