@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NuScien.Cms;
 using NuScien.Data;
+using NuScien.Reflection;
 using NuScien.Sns;
 using NuScien.Users;
 using Trivial.Data;

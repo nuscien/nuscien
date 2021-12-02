@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
+using NuScien.Reflection;
 using Trivial.Collection;
 using Trivial.Data;
 using Trivial.Net;

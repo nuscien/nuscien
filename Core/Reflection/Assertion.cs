@@ -14,7 +14,7 @@ using NuScien.Data;
 using Trivial.Reflection;
 using Trivial.Text;
 
-namespace Trivial.Reflection
+namespace NuScien.Reflection
 {
     /// <summary>
     /// The extensions for resource entity.

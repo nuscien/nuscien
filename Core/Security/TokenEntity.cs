@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 using NuScien.Data;
+using NuScien.Reflection;
 using Trivial.Reflection;
 using Trivial.Text;
 
