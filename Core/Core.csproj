@@ -8,15 +8,16 @@
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>6.0.0</Version>
-    <AssemblyVersion>6.0.0.0</AssemblyVersion>
-    <FileVersion>6.0.0.0</FileVersion>
+    <Version>6.1.0</Version>
+    <AssemblyVersion>6.1.0.0</AssemblyVersion>
+    <FileVersion>6.1.0.0</FileVersion>
     <Description>A core library of NuScien framework which provides a solution to build community and enterprise projects based on resource entity and accessories with ACL and CMS built-in.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
@@ -51,7 +52,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Trivial" Version="5.0.0" />
+    <PackageReference Include="Trivial" Version="5.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net48' OR '$(TargetFramework)' == 'net461'">
