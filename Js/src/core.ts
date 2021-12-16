@@ -8,7 +8,7 @@ namespace NuScien {
     /**
      * The main version.
      */
-    export const ver = "6.2";
+    export const ver = "6.3";
 
     /**
      * The state of resource entity.
