@@ -370,6 +370,15 @@ namespace NuScien.Data
                             else if (prop.Value is JsonIntegerNode i) TrySetProperty(p, new JsonArrayNode { i.Value });
                             else if (prop.Value is JsonDoubleNode l) TrySetProperty(p, new JsonArrayNode { l.Value });
                         }
+                        else if (p.PropertyType == typeof(System.Text.Json.Nodes.JsonObject))
+                        {
+                            if (prop.Value is JsonObjectNode json) TrySetProperty(p, (System.Text.Json.Nodes.JsonObject)json);
+                            else if (prop.Value is JsonArrayNode jArr) TrySetProperty(p, (System.Text.Json.Nodes.JsonObject)jArr);
+                        }
+                        else if (p.PropertyType == typeof(System.Text.Json.Nodes.JsonArray))
+                        {
+                            if (prop.Value is JsonArrayNode jArr) TrySetProperty(p, (System.Text.Json.Nodes.JsonArray)jArr);
+                        }
                         else if (p.PropertyType == typeof(Uri))
                         {
                             if (prop.Value.TryGetString(out var s) && !string.IsNullOrWhiteSpace(s))
