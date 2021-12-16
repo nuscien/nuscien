@@ -8,19 +8,21 @@
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>5.1.0</Version>
-    <AssemblyVersion>5.1.0.0</AssemblyVersion>
-    <FileVersion>5.1.0.0</FileVersion>
+    <Version>5.2.0</Version>
+    <AssemblyVersion>5.2.0.0</AssemblyVersion>
+    <FileVersion>5.2.0.0</FileVersion>
     <Description>A web library of NuScien framework to provide web API controllers, components, extensions, etc.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>acl cms</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
@@ -45,7 +47,8 @@
   <ItemGroup>
     <EmbeddedResource Include="..\Js\dist\core.d.ts" Link="Js\core.d.ts" />
     <EmbeddedResource Include="..\Js\dist\core.js" Link="Js\core.js" />
-    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="README.md" Pack="true" PackagePath="README.md"/>
+    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
