@@ -8,9 +8,9 @@
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>6.3.0</Version>
-    <AssemblyVersion>6.3.0.0</AssemblyVersion>
-    <FileVersion>6.3.0.0</FileVersion>
+    <Version>6.4.0</Version>
+    <AssemblyVersion>6.4.0.0</AssemblyVersion>
+    <FileVersion>6.4.0.0</FileVersion>
     <Description>A core library of NuScien framework which provides a solution to build community and enterprise projects based on resource entity and accessories with ACL and CMS built-in.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
