@@ -51,7 +51,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Trivial.Web" Version="5.2.0" />
+    <PackageReference Include="Trivial.Web" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
