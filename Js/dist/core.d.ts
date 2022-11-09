@@ -7,7 +7,7 @@ declare namespace NuScien {
     /**
      * The main version.
      */
-    const ver = "5.0";
+    const ver = "6.6";
     /**
      * The state of resource entity.
      */
