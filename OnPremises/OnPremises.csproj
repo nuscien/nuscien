@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net7.0;net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>NuScien.OnPremises</AssemblyName>
     <RootNamespace>NuScien</RootNamespace>
     <PackageId>NuScien.OnPremises</PackageId>
     <Product>NuScien</Product>
     <Authors>Kingcean Tuan</Authors>
     <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>6.5.0</Version>
-    <AssemblyVersion>6.5.0.0</AssemblyVersion>
-    <FileVersion>6.5.0.0</FileVersion>
+    <Version>6.6.0</Version>
+    <AssemblyVersion>6.6.0.0</AssemblyVersion>
+    <FileVersion>6.6.0.0</FileVersion>
     <Description>The NuScien on-premises library. It implements the resource access client and base business context by Entity Framework Core.</Description>
     <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -57,8 +57,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.10" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.17" Condition="'$(TargetFramework)' != 'net6.0'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" Condition="'$(TargetFramework)' == 'net7.0'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" Condition="'$(TargetFramework)' == 'net6.0'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.17" Condition="'$(TargetFramework)' != 'net6.0' AND '$(TargetFramework)' != 'net7.0'" />
   </ItemGroup>
 
 </Project>
