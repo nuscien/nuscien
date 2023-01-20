@@ -451,7 +451,7 @@ namespace NuScien.Data
                 }
                 else if (value is ulong ul)
                 {
-                    json.SetValue(key, ul);
+                    json.SetValue(key, (double)ul);
                 }
                 else
                 {
