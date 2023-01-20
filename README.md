@@ -1,4 +1,4 @@
-# NuScien 6
+# NuScien 7
 
 [![MIT Licensed](./docs/assets/badge_lisence_MIT.svg)](https://github.com/nuscien/nuscien/blob/master/LICENSE)
 
@@ -12,10 +12,8 @@ See [sample and tutorials](https://github.com/nuscien/sample) to get start. Foll
 
 [![NuGet package](https://img.shields.io/nuget/dt/NuScien?label=nuget+downloads)](https://www.nuget.org/packages/NuScien)
 
+![.NET 7](./docs/assets/badge_NET_7.svg)
 ![.NET 6](./docs/assets/badge_NET_6.svg)
-![.NET 5](./docs/assets/badge_NET_5.svg)
-![.NET Core 3.1](./docs/assets/badge_NET_Core_3_1.svg)
-![.NET Standard 2.0](./docs/assets/badge_NET_Standard_2_0.svg)
 ![.NET Framework 4.8](./docs/assets/badge_NET_Fx_4_8.svg)
 ![.NET Framework 4.6.1](./docs/assets/badge_NET_Fx_4_6_1.svg)
 
@@ -40,9 +38,8 @@ Authorization is based on OAuth 2.0 and powered by [Trivial](https://github.com/
 
 [![NuGet package](https://img.shields.io/nuget/dt/NuScien.OnPremises?label=nuget+downloads)](https://www.nuget.org/packages/NuScien.OnPremises)
 
+![.NET 7](./docs/assets/badge_NET_7.svg)
 ![.NET 6](./docs/assets/badge_NET_6.svg)
-![.NET 5](./docs/assets/badge_NET_5.svg)
-![.NET Core 3.1](./docs/assets/badge_NET_Core_3_1.svg)
 
 `NuScien.OnPremises.dll`
 
@@ -65,7 +62,6 @@ Following are the commonly used types.
 [![NuGet package](https://img.shields.io/nuget/dt/NuScien.Web?label=nuget+downloads)](https://www.nuget.org/packages/NuScien.Web)
 
 ![ASP.NET Core 6.0](./docs/assets/badge_ASPNET_6_0.svg)
-![ASP.NET Core 5.0](./docs/assets/badge_ASPNET_5_0.svg)
 
 `NuScien.Web.dll`
 
