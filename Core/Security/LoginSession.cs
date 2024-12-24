@@ -122,7 +122,7 @@ public class UserTokenInfo : BaseAccountTokenInfo<UserEntity>
     /// Initializes a new instance of the UserTokenInfo class.
     /// </summary>
     public UserTokenInfo()
-        : base(null, null)
+        : base()
     {
         TokenType = BearerTokenType;
     }
@@ -148,7 +148,7 @@ public class UserTokenInfo : BaseAccountTokenInfo<UserEntity>
     /// <param name="errorCode">The optional error code.</param>
     /// <returns>The user token information instance with error information.</returns>
     public UserTokenInfo(UserEntity user, Exception ex, string errorCode = null)
-        : base(null, null)
+        : base()
     {
         TokenType = BearerTokenType;
         User = user;
@@ -166,7 +166,7 @@ public class UserTokenInfo : BaseAccountTokenInfo<UserEntity>
     /// <param name="errorCode">The optional error code.</param>
     /// <returns>The user token information instance with error information.</returns>
     public UserTokenInfo(UserEntity user, string clientId, Exception ex, string errorCode = null)
-        : base(null, null)
+        : base()
     {
         TokenType = BearerTokenType;
         User = user;
@@ -174,14 +174,6 @@ public class UserTokenInfo : BaseAccountTokenInfo<UserEntity>
         ErrorCode = errorCode ?? ErrorCodeConstants.ServerError;
         ErrorDescription = ex?.Message;
     }
-
-    /// <summary>
-    /// Gets or sets the client identifier.
-    /// </summary>
-    [DataMember(Name = "client_id", EmitDefaultValue = true)]
-    [JsonPropertyName("client_id")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string ClientId { get; set; }
 
     /// <inheritdoc />
     protected override string GetUserId(UserEntity user)
