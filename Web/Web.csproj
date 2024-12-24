@@ -1,41 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <AssemblyName>NuScien.Web</AssemblyName>
     <RootNamespace>NuScien</RootNamespace>
     <PackageId>NuScien.Web</PackageId>
-    <Product>NuScien</Product>
-    <Authors>Kingcean Tuan</Authors>
-    <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>7.0.0</Version>
-    <AssemblyVersion>7.0.0.0</AssemblyVersion>
-    <FileVersion>7.0.0.0</FileVersion>
     <Description>A web library of NuScien framework to provide web API controllers, components, extensions, etc.</Description>
-    <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>acl cms</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\bin\Debug\</OutputPath>
-    <DocumentationFile>..\bin\Debug\$(TargetFramework)\NuScien.Web.xml</DocumentationFile>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\bin\Release\</OutputPath>
-    <DocumentationFile>..\bin\Release\$(TargetFramework)\NuScien.Web.xml</DocumentationFile>
-  </PropertyGroup>
-  
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
@@ -44,14 +20,11 @@
     <Folder Include="Js\" />
     <EmbeddedResource Include="..\Js\dist\core.d.ts" Link="Js\core.d.ts" />
     <EmbeddedResource Include="..\Js\dist\core.js" Link="Js\core.js" />
-    <None Include="README.md" Pack="true" PackagePath="README.md" />
-    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="Trivial.Web" Version="7.0.0" />
+    <PackageReference Include="Trivial.Web" />
   </ItemGroup>
 
   <ItemGroup>

@@ -16,22 +16,21 @@ using Trivial.Security;
 using Trivial.Text;
 using Trivial.Web;
 
-namespace NuScien.Web.Controllers
+namespace NuScien.Web.Controllers;
+
+/// <summary>
+/// The passport and settings controller.
+/// </summary>
+[ApiController]
+[Route("api")]
+[Route("nuscien5")]
+public class ResourceAccessController : ResourceAccessControllerBase
 {
     /// <summary>
-    /// The passport and settings controller.
+    /// Initializes a new instance of the ResourceAccessController class.
     /// </summary>
-    [ApiController]
-    [Route("api")]
-    [Route("nuscien5")]
-    public class ResourceAccessController : NuScien.Web.ResourceAccessControllerBase
+    /// <param name="logger">The logger.</param>
+    public ResourceAccessController(ILogger<ResourceAccessController> logger) : base(logger)
     {
-        /// <summary>
-        /// Initializes a new instance of the ResourceAccessController class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public ResourceAccessController(ILogger<ResourceAccessController> logger) : base(logger)
-        {
-        }
     }
 }

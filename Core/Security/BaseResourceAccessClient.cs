@@ -21,6 +21,7 @@ using Trivial.Net;
 using Trivial.Reflection;
 using Trivial.Security;
 using Trivial.Text;
+using Trivial.Users;
 
 namespace NuScien.Security
 {
@@ -147,37 +148,25 @@ namespace NuScien.Security
             {
                 if (route != null) return route;
                 route = new TokenRequestRoute<UserEntity>();
-                route.Register(PasswordTokenRequestBody.PasswordGrantType, q =>
-                {
-                    return PasswordTokenRequestBody.Parse(q.ToString());
-                }, async q =>
+                route.Register(async (TokenRequest<PasswordTokenRequestBody> q, CancellationToken cancellationToken) =>
                 {
                     var r = await SignInAsync(q);
-                    return (r.User, r);
+                    return new(r.User, r);
                 });
-                route.Register(RefreshTokenRequestBody.RefreshTokenGrantType, q =>
-                {
-                    return RefreshTokenRequestBody.Parse(q.ToString());
-                }, async q =>
+                route.Register(async (TokenRequest<RefreshTokenRequestBody> q, CancellationToken cancellationToken) =>
                 {
                     var r = await SignInAsync(q);
-                    return (r.User, r);
+                    return new(r.User, r);
                 });
-                route.Register(CodeTokenRequestBody.AuthorizationCodeGrantType, q =>
-                {
-                    return CodeTokenRequestBody.Parse(q.ToString());
-                }, async q =>
+                route.Register(async (TokenRequest<CodeTokenRequestBody> q, CancellationToken cancellationToken) =>
                 {
                     var r = await SignInAsync(q);
-                    return (r.User, r);
+                    return new(r.User, r);
                 });
-                route.Register(ClientTokenRequestBody.ClientCredentialsGrantType, q =>
-                {
-                    return ClientTokenRequestBody.Parse(q.ToString());
-                }, async q =>
+                route.Register(async (TokenRequest<ClientTokenRequestBody> q, CancellationToken cancellationToken) =>
                 {
                     var r = await SignInAsync(q);
-                    return (null, r);
+                    return new(null, r);
                 });
 
                 return route;

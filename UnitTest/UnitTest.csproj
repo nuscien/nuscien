@@ -1,40 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Tools\Common.props" />
+
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <AssemblyName>NuScien.UnitTest</AssemblyName>
     <RootNamespace>NuScien.UnitTest</RootNamespace>
     <PackageId>NuScien.UnitTest</PackageId>
-    <Product>NuScien</Product>
-    <Authors>Kingcean Tuan</Authors>
-    <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>7.0.0</Version>
-    <AssemblyVersion>7.0.0.0</AssemblyVersion>
-    <FileVersion>7.0.0.0</FileVersion>
     <Description>The unit test suite of NuScien libraries.</Description>
-    <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
     <IsPackable>false</IsPackable>
-    <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
-    <PackageTags>acl cms</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\bin\Debug\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\bin\Release\</OutputPath>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="README.md" />
-    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
@@ -43,14 +23,11 @@
   </ItemGroup>
     
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.0.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
-    <PackageReference Include="coverlet.collector" Version="3.2.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

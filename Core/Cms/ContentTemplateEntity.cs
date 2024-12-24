@@ -11,154 +11,154 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NuScien.Data;
+using Trivial.Data;
 using Trivial.Reflection;
 using Trivial.Text;
 
-namespace NuScien.Cms
+namespace NuScien.Cms;
+
+/// <summary>
+/// Base publish content template entity.
+/// </summary>
+public abstract class BaseContentTemplateEntity : BaseSiteOwnerResourceEntity
 {
     /// <summary>
-    /// Base publish content template entity.
+    /// Gets or sets the introduction.
     /// </summary>
-    public abstract class BaseContentTemplateEntity : BaseSiteOwnerResourceEntity
+    [JsonPropertyName("intro")]
+    [Column("intro")]
+    public string Introduction
     {
-        /// <summary>
-        /// Gets or sets the introduction.
-        /// </summary>
-        [JsonPropertyName("intro")]
-        [Column("intro")]
-        public string Introduction
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the publisher identifier.
-        /// </summary>
-        [JsonPropertyName("publisher")]
-        [Column("publisher")]
-        public string PublisherId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the URL of thumbnail.
-        /// </summary>
-        [JsonPropertyName("thumb")]
-        [Column("thumb")]
-        public string Thumbnail
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the content body.
-        /// </summary>
-        [JsonPropertyName("content")]
-        [Column("content")]
-        public string Content
-        {
-            get => GetCurrentPropertyWhenNotSlim<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <inheritdoc />
-        protected override void FillBaseProperties(BaseResourceEntity entity)
-        {
-            base.FillBaseProperties(entity);
-            if (entity is not BaseContentTemplateEntity e) return;
-            Introduction = e.Introduction;
-            PublisherId = e.PublisherId;
-            Thumbnail = e.Thumbnail;
-            Content = e.Content;
-        }
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
     }
 
     /// <summary>
-    /// The publish content template entity.
+    /// Gets or sets the publisher identifier.
     /// </summary>
-    [Table("nstemplates")]
-    public class ContentTemplateEntity : BaseContentTemplateEntity
+    [JsonPropertyName("publisher")]
+    [Column("publisher")]
+    public string PublisherId
     {
-        /// <summary>
-        /// Gets or sets the creator identifier.
-        /// </summary>
-        [JsonPropertyName("creator")]
-        [Column("creator")]
-        public string CreatorId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Creates a revision entity.
-        /// </summary>
-        /// <param name="message">The commit message.</param>
-        /// <returns>A revision entity.</returns>
-        public virtual ContentTemplateRevisionEntity CreateRevision(string message)
-        {
-            return new ContentTemplateRevisionEntity
-            {
-                Name = Name,
-                Config = Config,
-                State = ResourceEntityStates.Normal,
-                PublisherId = PublisherId ?? CreatorId,
-                Introduction = Introduction,
-                Thumbnail = Thumbnail,
-                Content = Content,
-                SourceId = Id,
-                Message = message
-            };
-        }
-
-        /// <inheritdoc />
-        protected override void FillBaseProperties(BaseResourceEntity entity)
-        {
-            base.FillBaseProperties(entity);
-            if (entity is not ContentTemplateEntity e) return;
-            CreatorId = e.CreatorId;
-        }
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
     }
 
     /// <summary>
-    /// The revision entity of publish content template.
+    /// Gets or sets the URL of thumbnail.
     /// </summary>
-    [Table("nstemplrev")]
-    public class ContentTemplateRevisionEntity : BaseContentTemplateEntity
+    [JsonPropertyName("thumb")]
+    [Column("thumb")]
+    public string Thumbnail
     {
-        /// <summary>
-        /// Gets or sets the owner source identifier.
-        /// </summary>
-        [JsonPropertyName("owner")]
-        [Column("owner")]
-        public string SourceId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
 
-        /// <summary>
-        /// Gets or sets the commit message.
-        /// </summary>
-        [JsonPropertyName("message")]
-        [Column("message")]
-        public string Message
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(value);
-        }
+    /// <summary>
+    /// Gets or sets the content body.
+    /// </summary>
+    [JsonPropertyName("content")]
+    [Column("content")]
+    public string Content
+    {
+        get => GetCurrentPropertyWhenNotSlim<string>();
+        set => SetCurrentProperty(value);
+    }
 
-        /// <inheritdoc />
-        protected override void FillBaseProperties(BaseResourceEntity entity)
+    /// <inheritdoc />
+    protected override void FillBaseProperties(BaseResourceEntity entity)
+    {
+        base.FillBaseProperties(entity);
+        if (entity is not BaseContentTemplateEntity e) return;
+        Introduction = e.Introduction;
+        PublisherId = e.PublisherId;
+        Thumbnail = e.Thumbnail;
+        Content = e.Content;
+    }
+}
+
+/// <summary>
+/// The publish content template entity.
+/// </summary>
+[Table("nstemplates")]
+public class ContentTemplateEntity : BaseContentTemplateEntity
+{
+    /// <summary>
+    /// Gets or sets the creator identifier.
+    /// </summary>
+    [JsonPropertyName("creator")]
+    [Column("creator")]
+    public string CreatorId
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Creates a revision entity.
+    /// </summary>
+    /// <param name="message">The commit message.</param>
+    /// <returns>A revision entity.</returns>
+    public virtual ContentTemplateRevisionEntity CreateRevision(string message)
+    {
+        return new ContentTemplateRevisionEntity
         {
-            base.FillBaseProperties(entity);
-            if (entity is not ContentTemplateRevisionEntity e) return;
-            SourceId = e.SourceId;
-            Message = e.Message;
-        }
+            Name = Name,
+            Config = Config,
+            State = ResourceEntityStates.Normal,
+            PublisherId = PublisherId ?? CreatorId,
+            Introduction = Introduction,
+            Thumbnail = Thumbnail,
+            Content = Content,
+            SourceId = Id,
+            Message = message
+        };
+    }
+
+    /// <inheritdoc />
+    protected override void FillBaseProperties(BaseResourceEntity entity)
+    {
+        base.FillBaseProperties(entity);
+        if (entity is not ContentTemplateEntity e) return;
+        CreatorId = e.CreatorId;
+    }
+}
+
+/// <summary>
+/// The revision entity of publish content template.
+/// </summary>
+[Table("nstemplrev")]
+public class ContentTemplateRevisionEntity : BaseContentTemplateEntity
+{
+    /// <summary>
+    /// Gets or sets the owner source identifier.
+    /// </summary>
+    [JsonPropertyName("owner")]
+    [Column("owner")]
+    public string SourceId
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <summary>
+    /// Gets or sets the commit message.
+    /// </summary>
+    [JsonPropertyName("message")]
+    [Column("message")]
+    public string Message
+    {
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(value);
+    }
+
+    /// <inheritdoc />
+    protected override void FillBaseProperties(BaseResourceEntity entity)
+    {
+        base.FillBaseProperties(entity);
+        if (entity is not ContentTemplateRevisionEntity e) return;
+        SourceId = e.SourceId;
+        Message = e.Message;
     }
 }

@@ -1,49 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Tools\Packages.props" />
+
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net6.0;</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0;</TargetFrameworks>
     <AssemblyName>NuScien.OnPremises</AssemblyName>
     <RootNamespace>NuScien</RootNamespace>
     <PackageId>NuScien.OnPremises</PackageId>
-    <Product>NuScien</Product>
-    <Authors>Kingcean Tuan</Authors>
-    <Company>Nanchang Jinchen Software Co., Ltd.</Company>
-    <Version>7.0.0</Version>
-    <AssemblyVersion>7.0.0.0</AssemblyVersion>
-    <FileVersion>7.0.0.0</FileVersion>
     <Description>The NuScien on-premises library. It implements the resource access client and base business context by Entity Framework Core.</Description>
-    <Copyright>Copyright (c) 2019 Kingcean Tuan.</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/nuscien/nuscien/wiki</PackageProjectUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <RepositoryUrl>https://github.com/nuscien/nuscien</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PackageIcon>logo.png</PackageIcon>
     <PackageTags>acl cms</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\bin\Debug\</OutputPath>
-    <DocumentationFile>..\bin\Debug\$(TargetFramework)\NuScien.OnPremises.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\bin\Release\</OutputPath>
-    <DocumentationFile>..\bin\Release\$(TargetFramework)\NuScien.OnPremises.xml</DocumentationFile>
-  </PropertyGroup>
+  <Import Project="..\Tools\Build.props" />
 
   <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="README.md"/>
-    <None Include="..\LICENSE" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\Materials\logo.png" Pack="true" PackagePath="logo.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>
 
 </Project>

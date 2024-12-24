@@ -9,102 +9,102 @@ using System.Text.Json.Serialization;
 using NuScien.Data;
 using NuScien.Security;
 using Trivial.Text;
+using Trivial.Users;
 
-namespace NuScien.Users
+namespace NuScien.Users;
+
+/// <summary>
+/// User group visibilities.
+/// </summary>
+public enum UserGroupVisibilities
 {
     /// <summary>
-    /// User group visibilities.
+    /// The group information is private.
     /// </summary>
-    public enum UserGroupVisibilities
+    Hidden = 0,
+
+    /// <summary>
+    /// The group information is visible but the members are private for guest.
+    /// </summary>
+    Memberwise = 1,
+
+    /// <summary>
+    /// Public visibility to search and get.
+    /// </summary>
+    Public = 2
+}
+
+/// <summary>
+/// User group information.
+/// </summary>
+[DataContract]
+[Table("nsusergroups")]
+public class UserGroupEntity : BaseSecurityEntity
+{
+    /// <summary>
+    /// Gets the security entity type.
+    /// </summary>
+    [NotMapped]
+    [JsonIgnore]
+    public override SecurityEntityTypes SecurityEntityType => SecurityEntityTypes.UserGroup;
+
+    /// <summary>
+    /// Gets or sets the owner site identifier.
+    /// </summary>
+    [DataMember(Name = "site")]
+    [JsonPropertyName("site")]
+    [Column("site")]
+    public string OwnerSiteId
     {
-        /// <summary>
-        /// The group information is private.
-        /// </summary>
-        Hidden = 0,
-
-        /// <summary>
-        /// The group information is visible but the members are private for guest.
-        /// </summary>
-        Memberwise = 1,
-
-        /// <summary>
-        /// Public visibility to search and get.
-        /// </summary>
-        Public = 2
+        get => GetCurrentProperty<string>();
+        set => SetCurrentProperty(string.IsNullOrWhiteSpace(value) ? null : value.Trim());
     }
 
     /// <summary>
-    /// User group information.
+    /// Gets or sets the membership policy.
     /// </summary>
-    [DataContract]
-    [Table("nsusergroups")]
-    public class UserGroupEntity : BaseSecurityEntity
+    [JsonPropertyName("membership")]
+    [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<UserGroupMembershipPolicies>))]
+    [NotMapped]
+    public UserGroupMembershipPolicies MembershipPolicy
     {
-        /// <summary>
-        /// Gets the security entity type.
-        /// </summary>
-        [NotMapped]
-        [JsonIgnore]
-        public override SecurityEntityTypes SecurityEntityType => SecurityEntityTypes.UserGroup;
+        get => GetCurrentProperty<UserGroupMembershipPolicies>();
+        set => SetCurrentProperty(value);
+    }
 
-        /// <summary>
-        /// Gets or sets the owner site identifier.
-        /// </summary>
-        [DataMember(Name = "site")]
-        [JsonPropertyName("site")]
-        [Column("site")]
-        public string OwnerSiteId
-        {
-            get => GetCurrentProperty<string>();
-            set => SetCurrentProperty(string.IsNullOrWhiteSpace(value) ? null : value.Trim());
-        }
+    /// <summary>
+    /// Gets or sets the membership policy code.
+    /// </summary>
+    [DataMember(Name = "membership")]
+    [JsonIgnore]
+    [Column("membership")]
+    public int MembershipPolicyCode
+    {
+        get => (int)MembershipPolicy;
+        set => MembershipPolicy = (UserGroupMembershipPolicies)value;
+    }
 
-        /// <summary>
-        /// Gets or sets the membership policy.
-        /// </summary>
-        [JsonPropertyName("membership")]
-        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<UserGroupMembershipPolicies>))]
-        [NotMapped]
-        public UserGroupMembershipPolicies MembershipPolicy
-        {
-            get => GetCurrentProperty<UserGroupMembershipPolicies>();
-            set => SetCurrentProperty(value);
-        }
+    /// <summary>
+    /// Gets or sets the visibility.
+    /// </summary>
+    [JsonPropertyName("visible")]
+    [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<UserGroupVisibilities>))]
+    [NotMapped]
+    public UserGroupVisibilities Visibility
+    {
+        get => GetCurrentProperty<UserGroupVisibilities>();
+        set => SetCurrentProperty(value);
+    }
 
-        /// <summary>
-        /// Gets or sets the membership policy code.
-        /// </summary>
-        [DataMember(Name = "membership")]
-        [JsonIgnore]
-        [Column("membership")]
-        public int MembershipPolicyCode
-        {
-            get => (int)MembershipPolicy;
-            set => MembershipPolicy = (UserGroupMembershipPolicies)value;
-        }
-
-        /// <summary>
-        /// Gets or sets the visibility.
-        /// </summary>
-        [JsonPropertyName("visible")]
-        [JsonConverter(typeof(JsonIntegerEnumCompatibleConverter<UserGroupVisibilities>))]
-        [NotMapped]
-        public UserGroupVisibilities Visibility
-        {
-            get => GetCurrentProperty<UserGroupVisibilities>();
-            set => SetCurrentProperty(value);
-        }
-
-        /// <summary>
-        /// Gets or sets the visibility code.
-        /// </summary>
-        [DataMember(Name = "visible")]
-        [JsonIgnore]
-        [Column("visible")]
-        public int VisibilityCode
-        {
-            get => (int)Visibility;
-            set => Visibility = (UserGroupVisibilities)value;
-        }
+    /// <summary>
+    /// Gets or sets the visibility code.
+    /// </summary>
+    [DataMember(Name = "visible")]
+    [JsonIgnore]
+    [Column("visible")]
+    public int VisibilityCode
+    {
+        get => (int)Visibility;
+        set => Visibility = (UserGroupVisibilities)value;
     }
 }
